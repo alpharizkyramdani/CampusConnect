@@ -51,3 +51,4 @@ class ResetDemoDataCommand extends Command
         return 0;
     }
 }
+

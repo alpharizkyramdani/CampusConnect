@@ -127,3 +127,4 @@ cd c:\xampp\htdocs\CampusConnect\backend
 php artisan app:reset-demo
 ```
 Perintah ini akan secara otomatis menyegarkan migrasi dan menginisialisasi ulang seluruh data demo realistis.
+

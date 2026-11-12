@@ -233,3 +233,4 @@ sequenceDiagram
 ---
 
 *Spesifikasi Arsitektur Sistem CampusConnect v1.0.0 — Siap untuk Produksi dan Uji Sidang Akademik.*
+

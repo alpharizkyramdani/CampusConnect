@@ -118,6 +118,44 @@ class UniversityController extends Controller
         ]);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20|unique:universities,code',
+            'email' => 'required|email|unique:universities,email',
+            'website' => 'nullable|url',
+            'address' => 'required|string',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|string',
+        ]);
+
+        $baseSlug = Str::slug($request->name) ?: 'univ';
+        $slug = $baseSlug;
+        $counter = 1;
+        while (University::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+
+        $univ = University::create([
+            'name' => $request->name,
+            'slug' => $slug,
+            'code' => strtoupper($request->code),
+            'email' => $request->email,
+            'website' => $request->website,
+            'address' => $request->address,
+            'description' => $request->description,
+            'logo' => $request->logo,
+            'status' => 'active',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'University added successfully.',
+            'data' => $univ,
+        ], 201);
+    }
+
     public function faculties($universityId): JsonResponse
     {
         $faculties = Faculty::where('university_id', $universityId)->with('departments')->get();

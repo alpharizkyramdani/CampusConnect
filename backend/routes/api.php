@@ -159,7 +159,8 @@ Route::prefix('v1')->group(function () {
         // Audit Logs (Module 18)
         Route::get('/audit-logs', [AuditLogController::class, 'index']);
 
-        // University Requests (Super Admin)
+        // University Management (Super Admin)
+        Route::post('/universities', [UniversityController::class, 'store']);
         Route::get('/university-requests', [UniversityController::class, 'getRequests']);
         Route::post('/university-requests/{id}/approve', [UniversityController::class, 'approveRequest']);
         Route::post('/university-requests/{id}/reject', [UniversityController::class, 'rejectRequest']);
