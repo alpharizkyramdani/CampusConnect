@@ -438,6 +438,13 @@ class CampusConnectWorkflowTest extends TestCase
         $approveResponse = $this->actingAs($superAdmin)->postJson("/api/v1/university-requests/{$reqId}/approve");
         $approveResponse->assertStatus(200)
                         ->assertJsonPath('success', true);
+
+        // Clean up test university so it doesn't leave junk records in database
+        $createdUniv = University::where('name', "Universitas Sains Terbuka {$rand}")->first();
+        if ($createdUniv) {
+            $createdUniv->forceDelete();
+        }
+        \App\Models\UniversityRegistrationRequest::where('id', $reqId)->delete();
     }
 
     public function test_super_admin_can_delete_university()
@@ -458,6 +465,9 @@ class CampusConnectWorkflowTest extends TestCase
                        ->assertJsonPath('success', true);
 
         $this->assertSoftDeleted('universities', ['id' => $univ->id]);
+
+        // Clean up test soft-deleted record
+        $univ->forceDelete();
     }
 
     public function test_admin_can_assign_and_revoke_user_role()

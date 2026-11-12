@@ -33,11 +33,15 @@ import {
   CartesianGrid,
   BarChart,
   Bar,
+  Legend,
 } from 'recharts';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { BarChart3, Activity, Compass, Layers, ShieldCheck } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user, activeRole, activeAssignment } = useAuth();
+  const location = useLocation();
+  const isAnalytics = location.pathname.includes('analytics');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -84,22 +88,216 @@ export const DashboardPage: React.FC = () => {
     );
   }
 
-  // 1. SUPER ADMIN DASHBOARD
+  // 1. SUPER ADMIN: ANALYTICS VIEW
+  if (activeRole === 'super_admin' && isAnalytics) {
+    const stats = data?.stats || {};
+    const campusBreakdown = data?.campus_breakdown || [];
+    const roleDistribution = data?.role_distribution || [];
+
+    return (
+      <div className="space-y-8 font-sans">
+        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-navy rounded-3xl p-6 sm:p-8 text-white shadow-xl">
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-300 uppercase tracking-widest">
+            <BarChart3 className="w-4 h-4 text-blue-400" />
+            Platform Strategic Intelligence & Analytics
+          </div>
+          <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Cross-Campus Network Analytics
+          </h1>
+          <p className="mt-1 text-slate-300 text-xs sm:text-sm max-w-2xl">
+            In-depth multi-university telemetry, organizational density, user demographic distribution, and activity benchmarking across all connected campuses.
+          </p>
+        </div>
+
+        {/* Top KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <StatCard title="Participating Campuses" value={stats.total_universities || 0} icon={Building2} color="blue" />
+          <StatCard title="Total Network Users" value={stats.total_users || 0} icon={Users2} color="indigo" />
+          <StatCard title="Campus Events" value={stats.total_events || 0} icon={CalendarCheck2} color="purple" />
+          <StatCard title="Active Borrowings" value={stats.total_borrowings || 0} icon={PackageCheck} color="rose" />
+          <StatCard title="Approved Campuses" value={stats.active_universities || 0} icon={CheckCircle} color="emerald" />
+          <StatCard title="Registration Pipeline" value={stats.pending_requests || 0} icon={Clock} color="amber" />
+        </div>
+
+        {/* Analytical Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Chart 1: Cross-Campus Activity Comparison */}
+          <div className="bg-white rounded-3xl p-6 border border-borderMuted shadow-xs">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-bold text-navy flex items-center gap-2">
+                  <Compass className="w-4 h-4 text-brand-600" />
+                  Cross-Campus Resource Comparison
+                </h3>
+                <p className="text-xs text-slate-500">Distribution of users, events, and student clubs by campus</p>
+              </div>
+              <Badge variant="blue">Real-time Telemetry</Badge>
+            </div>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={campusBreakdown.length > 0 ? campusBreakdown : [{ name: 'PNL', users_count: 2, events_count: 1, organizations_count: 1 }]}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="users_count" name="Users" fill="#2563EB" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="events_count" name="Events" fill="#8B5CF6" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="organizations_count" name="Clubs & Ormawa" fill="#10B981" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Chart 2: User Growth Trend */}
+          <div className="bg-white rounded-3xl p-6 border border-borderMuted shadow-xs">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-bold text-navy flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  Platform Adoption & User Trajectory
+                </h3>
+                <p className="text-xs text-slate-500">Monthly cumulative platform user volume</p>
+              </div>
+              <Badge variant="emerald">Growth Rate</Badge>
+            </div>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data?.user_growth || [{ month: 'Nov 2026', count: stats.total_users || 5 }]}>
+                  <defs>
+                    <linearGradient id="analyticsUserColor" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="month" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="count" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#analyticsUserColor)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Demographic & Activity Breakdown */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Role Demographics */}
+          <div className="bg-white rounded-3xl p-6 border border-borderMuted shadow-xs">
+            <h3 className="text-base font-bold text-navy flex items-center gap-2 mb-1">
+              <Layers className="w-4 h-4 text-purple-600" />
+              Role & Access Demographics
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">Breakdown of assigned platform responsibilities</p>
+
+            <div className="space-y-3">
+              {roleDistribution.map((r: any) => {
+                const total = stats.total_users || 1;
+                const pct = Math.min(100, Math.round((r.count / total) * 100));
+                return (
+                  <div key={r.slug} className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-slate-700">{r.name}</span>
+                      <span className="text-slate-500 font-mono">{r.count} users ({pct}%)</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-brand-600 h-full rounded-full transition-all"
+                        style={{ width: `${Math.max(5, pct)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Real-time System Telemetry Feed */}
+          <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-borderMuted shadow-xs">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-bold text-navy flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-brand-600" />
+                  Live Platform Telemetry Feed
+                </h3>
+                <p className="text-xs text-slate-500">Chronological security and administrative action logs</p>
+              </div>
+              <Link to="/audit-logs" className="text-xs font-bold text-brand-600 hover:text-brand-700">
+                View Full Audit Log
+              </Link>
+            </div>
+
+            <div className="space-y-2.5">
+              {(!data?.recent_activities || data.recent_activities.length === 0) ? (
+                <div className="text-xs text-slate-400 py-6 text-center">No recent telemetry events recorded.</div>
+              ) : (
+                data.recent_activities.slice(0, 5).map((act: any) => (
+                  <div key={act.id} className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                    <div className="min-w-0 pr-3">
+                      <div className="font-bold text-slate-900 truncate">
+                        {act.action}
+                      </div>
+                      <div className="text-[11px] text-slate-500 truncate">
+                        By {act.user?.name || 'System Operator'} • Campus: {act.university?.name || 'Platform Core'}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-slate-400 whitespace-nowrap font-mono shrink-0">
+                      {new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 1. SUPER ADMIN: OPERATIONAL GOVERNANCE DASHBOARD
   if (activeRole === 'super_admin') {
     const stats = data?.stats || {};
     return (
       <div className="space-y-8 font-sans">
-        <div className="bg-gradient-to-r from-navy to-brand-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
-          <div className="flex items-center gap-2 text-xs font-bold text-brand-300 uppercase tracking-widest">
-            <Sparkles className="w-4 h-4 text-brand-400" />
-            Platform Governance Console
+        <div className="bg-gradient-to-r from-navy to-brand-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-300 uppercase tracking-widest">
+              <Sparkles className="w-4 h-4 text-brand-400" />
+              Platform Governance Console
+            </div>
+            <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Welcome, Platform Super Administrator
+            </h1>
+            <p className="mt-1 text-slate-300 text-xs sm:text-sm max-w-xl">
+              Pusat kendali operasional platform: provisioning universitas, tata kelola akun administrator, dan tinjauan permohonan onboarding.
+            </p>
           </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Welcome, Platform Super Administrator
-          </h1>
-          <p className="mt-1 text-slate-300 text-xs sm:text-sm max-w-xl">
-            Real-time multi-university telemetry, institutional registration pipelines, and national academic network metrics.
-          </p>
+
+          {/* Quick Operational Shortcuts */}
+          <div className="flex flex-wrap gap-2.5 shrink-0">
+            <Link
+              to="/universities"
+              className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Kelola Kampus</span>
+            </Link>
+            <Link
+              to="/users"
+              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl backdrop-blur-xs transition-all flex items-center gap-1.5"
+            >
+              <Users2 className="w-3.5 h-3.5" />
+              <span>Kelola User</span>
+            </Link>
+            <Link
+              to="/analytics"
+              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl backdrop-blur-xs transition-all flex items-center gap-1.5"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Buka Analytics</span>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -145,7 +343,7 @@ export const DashboardPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-bold text-navy">University Inquiries</h3>
-                <Link to="/universities-manage" className="text-xs font-bold text-brand-600 hover:text-brand-700">
+                <Link to="/universities" className="text-xs font-bold text-brand-600 hover:text-brand-700">
                   Manage All
                 </Link>
               </div>

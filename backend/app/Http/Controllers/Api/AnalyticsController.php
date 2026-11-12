@@ -12,6 +12,7 @@ use App\Models\FacilityBorrowing;
 use App\Models\MaintenanceReport;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
+use App\Models\Role;
 use App\Models\ServiceRequest;
 use App\Models\StudentProfile;
 use App\Models\University;
@@ -80,6 +81,28 @@ class AnalyticsController extends Controller
         $recentActivities = ActivityLog::with(['user:id,name', 'university:id,name'])->latest()->take(8)->get();
         $recentRequests = UniversityRegistrationRequest::latest()->take(5)->get();
 
+        $campusBreakdown = University::whereNull('deleted_at')
+            ->withCount(['departments', 'organizations', 'events'])
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'name' => $u->code,
+                    'full_name' => $u->name,
+                    'users_count' => User::where('default_university_id', $u->id)->count(),
+                    'events_count' => $u->events_count,
+                    'organizations_count' => $u->organizations_count,
+                    'departments_count' => $u->departments_count,
+                ];
+            });
+
+        $roleDistribution = Role::withCount('userRoleAssignments')->get()->map(function ($r) {
+            return [
+                'name' => $r->name,
+                'slug' => $r->slug,
+                'count' => $r->user_role_assignments_count,
+            ];
+        });
+
         return response()->json([
             'success' => true,
             'role' => 'super_admin',
@@ -95,6 +118,8 @@ class AnalyticsController extends Controller
                 'user_growth' => $userGrowth,
                 'recent_activities' => $recentActivities,
                 'recent_requests' => $recentRequests,
+                'campus_breakdown' => $campusBreakdown,
+                'role_distribution' => $roleDistribution,
             ],
         ]);
     }
