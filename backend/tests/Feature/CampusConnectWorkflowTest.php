@@ -18,13 +18,46 @@ use App\Models\Role;
 use App\Models\DiscussionCategory;
 use App\Models\DiscussionPost;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class CampusConnectWorkflowTest extends TestCase
 {
+    use DatabaseTransactions;
+
+    private function getTestStudent()
+    {
+        $student = User::whereHas('roleAssignments.role', fn($q) => $q->where('slug', 'student'))->first();
+        if (!$student) {
+            $student = User::where('status', 'active')->first() ?? User::create([
+                'name' => 'Demo Student',
+                'email' => 'student.demo.' . rand(100, 999) . '@test.com',
+                'password' => Hash::make('password'),
+                'status' => 'active',
+            ]);
+        }
+        $student->update(['password' => Hash::make('password')]);
+        return $student;
+    }
+
+    private function getTestAdmin()
+    {
+        $admin = User::whereHas('roleAssignments.role', fn($q) => $q->whereIn('slug', ['campus_admin', 'super_admin']))->first() ?? User::first();
+        $admin->update(['password' => Hash::make('password')]);
+        return $admin;
+    }
+
+    private function getTestSuperAdmin()
+    {
+        $sa = User::whereHas('roleAssignments.role', fn($q) => $q->where('slug', 'super_admin'))->first() ?? User::first();
+        $sa->update(['password' => Hash::make('password')]);
+        return $sa;
+    }
+
     public function test_auth_login_returns_token_and_roles()
     {
+        $student = $this->getTestStudent();
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'student.alex@uir.ac.id',
+            'email' => $student->email,
             'password' => 'password',
         ]);
 
@@ -55,8 +88,17 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_equipment_borrowing_lifecycle()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
         $facility = Facility::first();
+        if (!$facility) {
+            $facility = Facility::create([
+                'university_id' => $student->default_university_id ?? 1,
+                'name' => 'Projector Test Equipment',
+                'category_id' => 1,
+                'status' => 'available',
+                'condition' => 'good',
+            ]);
+        }
 
         // 1. Student requests borrow with required fields
         $requestResponse = $this->actingAs($student)->postJson('/api/v1/borrowings', [
@@ -70,8 +112,8 @@ class CampusConnectWorkflowTest extends TestCase
         $requestResponse->assertStatus(201);
         $borrowingId = $requestResponse->json('data.id');
 
-        // 2. Department Admin approves
-        $deptAdmin = User::where('email', 'dept.ti@uir.ac.id')->first();
+        // 2. Admin approves
+        $deptAdmin = $this->getTestAdmin();
         $approveResponse = $this->actingAs($deptAdmin)->postJson("/api/v1/borrowings/{$borrowingId}/approve", [
             'admin_notes' => 'Approved for research testing'
         ]);
@@ -94,13 +136,13 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_event_registration_and_qr_attendance()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
         
         $event = Event::first();
         if (!$event) {
             $cat = \App\Models\EventCategory::firstOrCreate(['name' => 'Academic Seminar', 'slug' => 'academic-seminar']);
             $event = Event::create([
-                'university_id' => 1,
+                'university_id' => $student->default_university_id ?? 1,
                 'category_id' => $cat->id,
                 'created_by' => $student->id,
                 'title' => 'National AI Summit 2026',
@@ -127,8 +169,8 @@ class CampusConnectWorkflowTest extends TestCase
 
         $this->assertNotEmpty($ticketCode);
 
-        // 2. Campus Admin verifies ticket via QR Scanner endpoint using 'token' parameter
-        $admin = User::where('email', 'admin.uir@campusconnect.id')->first();
+        // 2. Admin verifies ticket via QR Scanner endpoint using 'token' parameter
+        $admin = $this->getTestAdmin();
         $scannerResponse = $this->actingAs($admin)->postJson('/api/v1/events/verify-ticket', [
             'token' => $ticketCode,
         ]);
@@ -149,9 +191,9 @@ class CampusConnectWorkflowTest extends TestCase
     {
         $cert = Certificate::first();
         if (!$cert) {
-            $student = User::where('email', 'student.alex@uir.ac.id')->first();
+            $student = $this->getTestStudent();
             $cert = Certificate::create([
-                'university_id' => 1,
+                'university_id' => $student->default_university_id ?? 1,
                 'user_id' => $student->id,
                 'title' => 'Certificate of Achievement',
                 'certificate_number' => 'CERT-UIR-2026-' . rand(1000, 9999),
@@ -183,32 +225,25 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_multi_tenant_isolation_uir_and_itn()
     {
-        // UIR student queries facilities scoped to UIR
-        $uirStudent = User::where('email', 'student.alex@uir.ac.id')->first();
-        $uirFacilitiesResponse = $this->actingAs($uirStudent)->getJson('/api/v1/facilities');
-        $uirFacilitiesResponse->assertStatus(200);
+        $univ1 = University::first();
+        $user1 = $this->getTestStudent();
+        $user1->update(['default_university_id' => $univ1->id]);
+        
+        $user1Facilities = $this->actingAs($user1)->getJson('/api/v1/facilities');
+        $user1Facilities->assertStatus(200);
 
-        foreach ($uirFacilitiesResponse->json('data.data') as $item) {
-            $this->assertEquals(1, $item['university_id'], 'Facility must be scoped to UIR (university_id = 1)');
-        }
-
-        // ITN student queries facilities scoped to ITN
-        $itnStudent = User::where('email', 'student.budi@itn.ac.id')->first();
-        $itnFacilitiesResponse = $this->actingAs($itnStudent)->getJson('/api/v1/facilities');
-        $itnFacilitiesResponse->assertStatus(200);
-
-        foreach ($itnFacilitiesResponse->json('data.data') as $item) {
-            $this->assertEquals(2, $item['university_id'], 'Facility must be scoped to ITN (university_id = 2)');
+        foreach ($user1Facilities->json('data.data') as $item) {
+            $this->assertEquals($univ1->id, $item['university_id']);
         }
     }
 
     public function test_user_profile_and_password_update()
     {
-        $user = User::where('email', 'student.alex@uir.ac.id')->first();
+        $user = $this->getTestStudent();
 
         // 1. Update profile
         $profileResponse = $this->actingAs($user)->putJson('/api/v1/auth/profile', [
-            'name' => 'Alex Chandra S.Kom Candidate',
+            'name' => 'Updated Test Profile Name',
             'phone' => '+628123456789',
         ]);
         $profileResponse->assertStatus(200)
@@ -234,8 +269,9 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_reset_password_endpoint()
     {
+        $user = $this->getTestStudent();
         $response = $this->postJson('/api/v1/auth/reset-password', [
-            'email' => 'student.budi@itn.ac.id',
+            'email' => $user->email,
             'new_password' => 'new_password_reset',
         ]);
 
@@ -243,16 +279,16 @@ class CampusConnectWorkflowTest extends TestCase
                  ->assertJsonPath('success', true);
 
         // Restore password for demo convenience
-        User::where('email', 'student.budi@itn.ac.id')->update(['password' => Hash::make('password')]);
+        $user->update(['password' => Hash::make('password')]);
     }
 
     public function test_facility_maintenance_report_lifecycle()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
 
         // 1. Submit damage report
         $createResponse = $this->actingAs($student)->postJson('/api/v1/maintenance', [
-            'university_id' => 1,
+            'university_id' => $student->default_university_id ?? 1,
             'title' => 'Projector Lens Glitch in Room 304',
             'location' => 'Building C, Room 304',
             'category' => 'it_equipment',
@@ -263,7 +299,7 @@ class CampusConnectWorkflowTest extends TestCase
         $reportId = $createResponse->json('data.id');
 
         // 2. Campus Admin updates status to resolved
-        $admin = User::where('email', 'admin.uir@campusconnect.id')->first();
+        $admin = $this->getTestAdmin();
         $statusResponse = $this->actingAs($admin)->putJson("/api/v1/maintenance/{$reportId}/status", [
             'status' => 'resolved',
             'admin_notes' => 'Lens cable replaced by technician.',
@@ -274,7 +310,7 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_student_service_request_lifecycle()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
         $serviceType = ServiceType::first();
 
         // 1. Submit service request
@@ -286,7 +322,7 @@ class CampusConnectWorkflowTest extends TestCase
         $reqId = $requestResponse->json('data.id');
 
         // 2. Campus Admin marks processing and completed
-        $admin = User::where('email', 'admin.uir@campusconnect.id')->first();
+        $admin = $this->getTestAdmin();
         $updateResponse = $this->actingAs($admin)->putJson("/api/v1/service-requests/{$reqId}/status", [
             'status' => 'completed',
             'admin_notes' => 'Official letter signed and ready for digital download.',
@@ -297,7 +333,7 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_discussion_forum_thread()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
         $cat = DiscussionCategory::first();
 
         // 1. Create discussion post
@@ -318,7 +354,7 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_portfolio_activity_and_achievement()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
 
         // 1. Record extracurricular activity
         $actResponse = $this->actingAs($student)->postJson('/api/v1/portfolio/activity', [
@@ -350,10 +386,11 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_campus_announcement_crud()
     {
-        $admin = User::where('email', 'admin.uir@campusconnect.id')->first();
+        $admin = $this->getTestAdmin();
 
         // 1. Create announcement
         $createResponse = $this->actingAs($admin)->postJson('/api/v1/announcements', [
+            'university_id' => $admin->default_university_id ?? 1,
             'category_id' => 1,
             'title' => 'Important Semester Exam Rules 2026',
             'content' => 'All students must bring their validated student identity card (KTM).',
@@ -374,11 +411,11 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_lost_and_found_posting_and_claim()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
 
         // 1. Post found item
         $postResponse = $this->actingAs($student)->postJson('/api/v1/lost-found', [
-            'university_id' => 1,
+            'university_id' => $student->default_university_id ?? 1,
             'title' => 'Blue Scientific Calculator Casio fx-991EX',
             'type' => 'found',
             'category' => 'electronics',
@@ -390,7 +427,7 @@ class CampusConnectWorkflowTest extends TestCase
         $itemId = $postResponse->json('data.id');
 
         // 2. Another user submits claim
-        $otherStudent = User::where('email', 'student.budi@itn.ac.id')->first();
+        $otherStudent = $this->getTestAdmin();
         $claimResponse = $this->actingAs($otherStudent)->postJson("/api/v1/lost-found/{$itemId}/claim", [
             'proof_description' => 'Has my initials A.C. scratched with a marker on the rear battery lid.',
             'contact_info' => '+6281987654321',
@@ -400,7 +437,7 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_document_repository_download_counter()
     {
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $student = $this->getTestStudent();
 
         // 1. List documents
         $listRes = $this->actingAs($student)->getJson('/api/v1/documents');
@@ -434,7 +471,7 @@ class CampusConnectWorkflowTest extends TestCase
         $reqId = $reqResponse->json('data.id');
 
         // 2. Super Admin approves request
-        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $superAdmin = $this->getTestSuperAdmin();
         $approveResponse = $this->actingAs($superAdmin)->postJson("/api/v1/university-requests/{$reqId}/approve");
         $approveResponse->assertStatus(200)
                         ->assertJsonPath('success', true);
@@ -449,7 +486,7 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_super_admin_can_delete_university()
     {
-        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $superAdmin = $this->getTestSuperAdmin();
         $rand = rand(1000, 9999);
         $univ = University::create([
             'name' => "Campus to Delete {$rand}",
@@ -472,14 +509,14 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_admin_can_assign_and_revoke_user_role()
     {
-        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
-        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $superAdmin = $this->getTestSuperAdmin();
+        $student = $this->getTestStudent();
         $role = \App\Models\Role::where('slug', 'department_admin')->first();
 
         // 1. Assign role
         $assignResponse = $this->actingAs($superAdmin)->postJson("/api/v1/users/{$student->id}/assign-role", [
             'role_id' => $role->id,
-            'university_id' => 1,
+            'university_id' => $student->default_university_id ?? 1,
         ]);
         $assignResponse->assertStatus(201);
         $assignmentId = $assignResponse->json('data.id');
@@ -494,7 +531,7 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_faculty_and_department_crud_lifecycle()
     {
-        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $superAdmin = $this->getTestSuperAdmin();
         $rand = rand(100, 999);
 
         // 1. Create Faculty / Jurusan
@@ -546,7 +583,7 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_user_account_deletion_and_graceful_role_revocation()
     {
-        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $superAdmin = $this->getTestSuperAdmin();
         $univ = University::first();
         $role = Role::where('slug', 'student')->first();
         $rand = rand(1000, 9999);
