@@ -144,6 +144,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{id}/follow-status', [FollowController::class, 'status']);
         Route::get('/users/{id}/followers', [FollowController::class, 'followers']);
         Route::get('/users/{id}/following', [FollowController::class, 'following']);
+        Route::delete('/users/followers/{followerId}', [FollowController::class, 'removeFollower']);
         Route::get('/users-suggestions', [FollowController::class, 'suggestions']);
 
         // Direct Messaging (Chatan 1-on-1)

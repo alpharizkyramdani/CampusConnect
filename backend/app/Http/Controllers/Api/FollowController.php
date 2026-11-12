@@ -127,6 +127,33 @@ class FollowController extends Controller
         ]);
     }
 
+    public function removeFollower(Request $request, $followerId): JsonResponse
+    {
+        $currentUser = $request->user();
+
+        $followRecord = UserFollow::where('user_id', $currentUser->id)
+            ->where('follower_id', $followerId)
+            ->first();
+
+        if (!$followRecord) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengikut tidak ditemukan dalam daftar Anda.',
+            ], 404);
+        }
+
+        $followerName = $followRecord->follower?->name ?? 'Pengguna';
+        $followRecord->delete();
+
+        $followersCount = UserFollow::where('user_id', $currentUser->id)->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$followerName} berhasil dihapus dari daftar pengikut Anda.",
+            'followers_count' => $followersCount,
+        ]);
+    }
+
     public function suggestions(Request $request): JsonResponse
     {
         $user = $request->user();

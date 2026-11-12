@@ -203,5 +203,36 @@ class SocialAndChatTest extends TestCase
         $suggestedIds = collect($suggRes->json('data'))->pluck('id')->toArray();
         $this->assertNotContains($adminUser->id, $suggestedIds);
     }
+
+    public function test_user_can_remove_follower_from_their_profile(): void
+    {
+        $userMe = $this->createTestUser('Myself');
+        $userFollower = $this->createTestUser('Follower Person');
+
+        // Follower Person follows Myself
+        UserFollow::create([
+            'user_id' => $userMe->id,
+            'follower_id' => $userFollower->id,
+        ]);
+
+        $this->assertDatabaseHas('user_follows', [
+            'user_id' => $userMe->id,
+            'follower_id' => $userFollower->id,
+        ]);
+
+        // Myself removes Follower Person from my followers
+        $removeRes = $this->actingAs($userMe, 'sanctum')->deleteJson("/api/v1/users/followers/{$userFollower->id}");
+
+        $removeRes->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'followers_count' => 0,
+            ]);
+
+        $this->assertDatabaseMissing('user_follows', [
+            'user_id' => $userMe->id,
+            'follower_id' => $userFollower->id,
+        ]);
+    }
 }
 

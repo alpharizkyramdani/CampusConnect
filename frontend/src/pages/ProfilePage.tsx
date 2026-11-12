@@ -18,6 +18,7 @@ import {
   MessageSquare,
   UserCheck,
   UserPlus,
+  UserMinus,
   Users,
   Sparkles,
   ArrowLeft,
@@ -131,6 +132,53 @@ export const ProfilePage: React.FC = () => {
       console.error(e);
     } finally {
       setLoadingFollowList(false);
+    }
+  };
+
+  const [removingFollowerId, setRemovingFollowerId] = useState<number | null>(null);
+
+  const handleRemoveFollower = async (followerId: number, followerName: string) => {
+    if (!window.confirm(`Hapus ${followerName} dari daftar pengikut Anda? Pengguna tidak akan diberi tahu bahwa Anda telah menghapus mereka.`)) {
+      return;
+    }
+
+    setRemovingFollowerId(followerId);
+    try {
+      const res = await api.delete(`/users/followers/${followerId}`);
+      if (res.data.success) {
+        // Remove from local list
+        setFollowList((prev) => prev.filter((item: any) => (item.follower?.id || item.follower_id) !== followerId));
+        // Decrement followers count
+        setFollowStats((prev) => ({
+          ...prev,
+          followers_count: typeof res.data.followers_count === 'number' ? res.data.followers_count : Math.max(0, prev.followers_count - 1),
+        }));
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal menghapus pengikut');
+    } finally {
+      setRemovingFollowerId(null);
+    }
+  };
+
+  const handleUnfollowFromList = async (targetId: number, targetName: string) => {
+    if (!window.confirm(`Batal mengikuti ${targetName}?`)) {
+      return;
+    }
+
+    try {
+      const res = await api.post(`/users/${targetId}/follow`);
+      if (res.data.success && !res.data.is_following) {
+        // Remove from local list
+        setFollowList((prev) => prev.filter((item: any) => (item.user?.id || item.user_id) !== targetId));
+        // Decrement following count
+        setFollowStats((prev) => ({
+          ...prev,
+          following_count: Math.max(0, prev.following_count - 1),
+        }));
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal berhenti mengikuti');
     }
   };
 
@@ -516,6 +564,31 @@ export const ProfilePage: React.FC = () => {
                     </Link>
 
                     <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Tombol Hapus Pengikut (jika melihat daftar pengikut di profil sendiri) */}
+                      {!isOtherUser && followModalType === 'followers' && (
+                        <button
+                          onClick={() => handleRemoveFollower(person.id, person.name)}
+                          disabled={removingFollowerId === person.id}
+                          className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 font-bold rounded-xl text-[11px] flex items-center gap-1 transition-colors disabled:opacity-50"
+                          title="Hapus dari daftar pengikut Anda"
+                        >
+                          <UserMinus className="w-3 h-3" />
+                          <span>{removingFollowerId === person.id ? 'Menghapus...' : 'Hapus'}</span>
+                        </button>
+                      )}
+
+                      {/* Tombol Batal Ikuti (jika melihat daftar following di profil sendiri) */}
+                      {!isOtherUser && followModalType === 'following' && (
+                        <button
+                          onClick={() => handleUnfollowFromList(person.id, person.name)}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 border border-slate-200/60 font-bold rounded-xl text-[11px] flex items-center gap-1 transition-colors"
+                          title="Batal mengikuti akun ini"
+                        >
+                          <UserMinus className="w-3 h-3" />
+                          <span>Batal Ikuti</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => {
                           setFollowModalOpen(false);
