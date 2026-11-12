@@ -247,6 +247,41 @@ class UniversityController extends Controller
         ], 201);
     }
 
+    public function updateFaculty(Request $request, $id): JsonResponse
+    {
+        $faculty = Faculty::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20',
+            'description' => 'nullable|string',
+        ]);
+
+        $faculty->update([
+            'name' => $request->name,
+            'code' => strtoupper($request->code),
+            'description' => $request->description,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Faculty / Jurusan {$faculty->name} updated successfully.",
+            'data' => $faculty->load('departments'),
+        ]);
+    }
+
+    public function destroyFaculty(Request $request, $id): JsonResponse
+    {
+        $faculty = Faculty::findOrFail($id);
+        $name = $faculty->name;
+        $faculty->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Faculty / Jurusan {$name} has been deleted successfully.",
+        ]);
+    }
+
     public function departments($universityId): JsonResponse
     {
         $departments = Department::where('university_id', $universityId)->get();
@@ -276,6 +311,41 @@ class UniversityController extends Controller
             'message' => "Department {$dept->name} created successfully.",
             'data' => $dept,
         ], 201);
+    }
+
+    public function updateDepartment(Request $request, $id): JsonResponse
+    {
+        $dept = Department::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20',
+            'description' => 'nullable|string',
+        ]);
+
+        $dept->update([
+            'name' => $request->name,
+            'code' => strtoupper($request->code),
+            'description' => $request->description,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Department / Program Studi {$dept->name} updated successfully.",
+            'data' => $dept,
+        ]);
+    }
+
+    public function destroyDepartment(Request $request, $id): JsonResponse
+    {
+        $dept = Department::findOrFail($id);
+        $name = $dept->name;
+        $dept->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Department / Program Studi {$name} has been deleted successfully.",
+        ]);
     }
 }
 

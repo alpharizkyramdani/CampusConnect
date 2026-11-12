@@ -47,7 +47,7 @@ class CertificateController extends Controller
                 'title' => $certificate->title,
                 'recipient_name' => $certificate->recipient_name,
                 'issue_date' => $certificate->issue_date->format('d F Y'),
-                'university_name' => $certificate->university->name,
+                'university_name' => $certificate->university?->name ?? 'CampusConnect University Network',
                 'event_name' => $certificate->event?->title,
                 'issuer_name' => $certificate->issuer?->name,
                 'verify_hash' => $certificate->verify_hash,

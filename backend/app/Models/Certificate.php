@@ -31,7 +31,7 @@ class Certificate extends Model
 
     public function university()
     {
-        return $this->belongsTo(University::class);
+        return $this->belongsTo(University::class)->withTrashed();
     }
 
     public function event()

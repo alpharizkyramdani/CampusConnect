@@ -449,4 +449,56 @@ class CampusConnectWorkflowTest extends TestCase
 
         $this->assertDatabaseMissing('user_role_assignments', ['id' => $assignmentId]);
     }
+
+    public function test_faculty_and_department_crud_lifecycle()
+    {
+        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $rand = rand(100, 999);
+
+        // 1. Create Faculty / Jurusan
+        $facCreate = $this->actingAs($superAdmin)->postJson('/api/v1/universities/1/faculties', [
+            'name' => "Jurusan Teknik Elektro {$rand}",
+            'code' => "JTE{$rand}",
+            'description' => 'Jurusan Rekayasa Kelistrikan & Komputasi',
+        ]);
+        $facCreate->assertStatus(201);
+        $facId = $facCreate->json('data.id');
+
+        // 2. Update Faculty / Jurusan
+        $facUpdate = $this->actingAs($superAdmin)->putJson("/api/v1/faculties/{$facId}", [
+            'name' => "Jurusan Teknik Elektro & Informatika {$rand}",
+            'code' => "JTEI{$rand}",
+            'description' => 'Jurusan Terpadu Elektro & Informatika',
+        ]);
+        $facUpdate->assertStatus(200)
+                  ->assertJsonPath('data.code', "JTEI{$rand}");
+
+        // 3. Create Department / Prodi
+        $deptCreate = $this->actingAs($superAdmin)->postJson("/api/v1/faculties/{$facId}/departments", [
+            'name' => "Prodi Teknologi Rekayasa Komputer {$rand}",
+            'code' => "TRK{$rand}",
+            'description' => 'Program Sarjana Terapan',
+        ]);
+        $deptCreate->assertStatus(201);
+        $deptId = $deptCreate->json('data.id');
+
+        // 4. Update Department / Prodi
+        $deptUpdate = $this->actingAs($superAdmin)->putJson("/api/v1/departments/{$deptId}", [
+            'name' => "Prodi Rekayasa Perangkat Lunak {$rand}",
+            'code' => "RPL{$rand}",
+            'description' => 'Program Vokasi Unggulan',
+        ]);
+        $deptUpdate->assertStatus(200)
+                   ->assertJsonPath('data.code', "RPL{$rand}");
+
+        // 5. Delete Department / Prodi
+        $deptDelete = $this->actingAs($superAdmin)->deleteJson("/api/v1/departments/{$deptId}");
+        $deptDelete->assertStatus(200);
+        $this->assertDatabaseMissing('departments', ['id' => $deptId]);
+
+        // 6. Delete Faculty / Jurusan
+        $facDelete = $this->actingAs($superAdmin)->deleteJson("/api/v1/faculties/{$facId}");
+        $facDelete->assertStatus(200);
+        $this->assertDatabaseMissing('faculties', ['id' => $facId]);
+    }
 }

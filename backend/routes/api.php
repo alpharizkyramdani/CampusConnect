@@ -171,7 +171,11 @@ Route::prefix('v1')->group(function () {
         Route::put('/universities/{id}', [UniversityController::class, 'update']);
         Route::delete('/universities/{id}', [UniversityController::class, 'destroy']);
         Route::post('/universities/{universityId}/faculties', [UniversityController::class, 'storeFaculty']);
+        Route::put('/faculties/{id}', [UniversityController::class, 'updateFaculty']);
+        Route::delete('/faculties/{id}', [UniversityController::class, 'destroyFaculty']);
         Route::post('/faculties/{facultyId}/departments', [UniversityController::class, 'storeDepartment']);
+        Route::put('/departments/{id}', [UniversityController::class, 'updateDepartment']);
+        Route::delete('/departments/{id}', [UniversityController::class, 'destroyDepartment']);
         Route::get('/university-requests', [UniversityController::class, 'getRequests']);
         Route::post('/university-requests/{id}/approve', [UniversityController::class, 'approveRequest']);
         Route::post('/university-requests/{id}/reject', [UniversityController::class, 'rejectRequest']);

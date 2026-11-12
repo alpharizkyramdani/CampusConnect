@@ -90,6 +90,20 @@ export const DirectoryPage: React.FC = () => {
   const [deptCode, setDeptCode] = useState('');
   const [deptDesc, setDeptDesc] = useState('');
 
+  // Faculty Edit State
+  const [editFacultyModalOpen, setEditFacultyModalOpen] = useState(false);
+  const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
+  const [editFacultyName, setEditFacultyName] = useState('');
+  const [editFacultyCode, setEditFacultyCode] = useState('');
+  const [editFacultyDesc, setEditFacultyDesc] = useState('');
+
+  // Department Edit State
+  const [editDeptModalOpen, setEditDeptModalOpen] = useState(false);
+  const [editingDept, setEditingDept] = useState<any | null>(null);
+  const [editDeptName, setEditDeptName] = useState('');
+  const [editDeptCode, setEditDeptCode] = useState('');
+  const [editDeptDesc, setEditDeptDesc] = useState('');
+
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -178,6 +192,110 @@ export const DirectoryPage: React.FC = () => {
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to create department.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openEditFaculty = (f: Faculty) => {
+    setEditingFaculty(f);
+    setEditFacultyName(f.name);
+    setEditFacultyCode(f.code || '');
+    setEditFacultyDesc(f.description || '');
+    setEditFacultyModalOpen(true);
+    setMessage(null);
+  };
+
+  const handleUpdateFaculty = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFaculty) return;
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.put(`/faculties/${editingFaculty.id}`, {
+        name: editFacultyName,
+        code: editFacultyCode,
+        description: editFacultyDesc,
+      });
+      if (res.data.success) {
+        setMessage({ type: 'success', text: `Faculty / Jurusan "${editFacultyName}" updated successfully!` });
+        setEditFacultyModalOpen(false);
+        setEditingFaculty(null);
+        fetchFacultiesForUniv(selectedUnivForFaculties);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to update faculty');
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update faculty.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteFaculty = async (f: Faculty) => {
+    if (!window.confirm(`Are you sure you want to delete Faculty / Jurusan "${f.name}" and all its departments?`)) return;
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.delete(`/faculties/${f.id}`);
+      if (res.data.success) {
+        setMessage({ type: 'success', text: `Faculty / Jurusan "${f.name}" deleted successfully!` });
+        fetchFacultiesForUniv(selectedUnivForFaculties);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete faculty');
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to delete faculty.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openEditDepartment = (d: any) => {
+    setEditingDept(d);
+    setEditDeptName(d.name);
+    setEditDeptCode(d.code || '');
+    setEditDeptDesc(d.description || '');
+    setEditDeptModalOpen(true);
+    setMessage(null);
+  };
+
+  const handleUpdateDepartment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDept) return;
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.put(`/departments/${editingDept.id}`, {
+        name: editDeptName,
+        code: editDeptCode,
+        description: editDeptDesc,
+      });
+      if (res.data.success) {
+        setMessage({ type: 'success', text: `Department / Prodi "${editDeptName}" updated successfully!` });
+        setEditDeptModalOpen(false);
+        setEditingDept(null);
+        fetchFacultiesForUniv(selectedUnivForFaculties);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to update department');
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update department.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteDepartment = async (d: any) => {
+    if (!window.confirm(`Are you sure you want to delete Department / Program Studi "${d.name}"?`)) return;
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.delete(`/departments/${d.id}`);
+      if (res.data.success) {
+        setMessage({ type: 'success', text: `Department / Prodi "${d.name}" deleted successfully!` });
+        fetchFacultiesForUniv(selectedUnivForFaculties);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete department');
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to delete department.' });
     } finally {
       setActionLoading(false);
     }
@@ -634,17 +752,35 @@ export const DirectoryPage: React.FC = () => {
                     <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-navy text-white">
                       {f.code}
                     </span>
-                    <Badge variant="blue">{f.departments?.length || 0} Departments</Badge>
+                    <Badge variant="blue">{f.departments?.length || 0} Departments / Prodi</Badge>
                   </div>
 
                   {isSuperAdmin && (
-                    <button
-                      onClick={() => setAddDeptModalFaculty(f)}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-slate-500" />
-                      <span>+ Add Department</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setAddDeptModalFaculty(f)}
+                        className="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Add Prodi</span>
+                      </button>
+
+                      <button
+                        onClick={() => openEditFaculty(f)}
+                        title="Edit Faculty / Jurusan"
+                        className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-slate-500" />
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteFaculty(f)}
+                        title="Delete Faculty / Jurusan"
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                      </button>
+                    </div>
                   )}
                 </div>
                 <h3 className="text-base font-extrabold text-navy">{f.name}</h3>
@@ -653,14 +789,38 @@ export const DirectoryPage: React.FC = () => {
                 <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {(!f.departments || f.departments.length === 0) ? (
                     <div className="text-xs text-slate-400 col-span-3 py-2 italic">
-                      No departments/majors yet. Click '+ Add Department' above to register one.
+                      No departments/majors yet. Click '+ Add Prodi' above to register one.
                     </div>
                   ) : (
                     f.departments.map((d) => (
-                      <div key={d.id} className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 text-xs">
-                        <span className="font-mono text-[10px] text-brand-600 font-bold block">{d.code}</span>
-                        <h4 className="font-bold text-slate-900 mt-0.5">{d.name}</h4>
-                        <p className="text-slate-500 text-[11px] mt-1 line-clamp-2">{d.description || 'Program Studi & Himpunan Mahasiswa'}</p>
+                      <div key={d.id} className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 text-xs flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-mono text-[10px] text-brand-600 font-bold block">{d.code}</span>
+                            {isSuperAdmin && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditDepartment(d)}
+                                  title="Edit Department / Prodi"
+                                  className="p-1 text-slate-400 hover:text-brand-600 rounded hover:bg-white transition-colors"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteDepartment(d)}
+                                  title="Delete Department / Prodi"
+                                  className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-white transition-colors"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <h4 className="font-bold text-slate-900">{d.name}</h4>
+                          <p className="text-slate-500 text-[11px] mt-1 line-clamp-2">{d.description || 'Program Studi & Himpunan Mahasiswa'}</p>
+                        </div>
                       </div>
                     ))
                   )}
@@ -1156,6 +1316,124 @@ export const DirectoryPage: React.FC = () => {
             >
               <Plus className="w-4 h-4" />
               <span>{actionLoading ? 'Adding...' : 'Add Department'}</span>
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Edit Faculty */}
+      <Modal
+        isOpen={editFacultyModalOpen}
+        onClose={() => setEditFacultyModalOpen(false)}
+        title={`Edit Faculty / Jurusan: ${editingFaculty?.name || ''}`}
+      >
+        <form onSubmit={handleUpdateFaculty} className="space-y-4 text-xs">
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Faculty / Jurusan Name</label>
+            <input
+              type="text"
+              required
+              value={editFacultyName}
+              onChange={(e) => setEditFacultyName(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Code (Acronym)</label>
+            <input
+              type="text"
+              required
+              value={editFacultyCode}
+              onChange={(e) => setEditFacultyCode(e.target.value.toUpperCase())}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-mono font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Description</label>
+            <textarea
+              rows={3}
+              value={editFacultyDesc}
+              onChange={(e) => setEditFacultyDesc(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditFacultyModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={actionLoading}
+              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>{actionLoading ? 'Saving...' : 'Save Changes'}</span>
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Edit Department */}
+      <Modal
+        isOpen={editDeptModalOpen}
+        onClose={() => setEditDeptModalOpen(false)}
+        title={`Edit Department / Program Studi: ${editingDept?.name || ''}`}
+      >
+        <form onSubmit={handleUpdateDepartment} className="space-y-4 text-xs">
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Department / Prodi Name</label>
+            <input
+              type="text"
+              required
+              value={editDeptName}
+              onChange={(e) => setEditDeptName(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Code</label>
+            <input
+              type="text"
+              required
+              value={editDeptCode}
+              onChange={(e) => setEditDeptCode(e.target.value.toUpperCase())}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-mono font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Description</label>
+            <textarea
+              rows={3}
+              value={editDeptDesc}
+              onChange={(e) => setEditDeptDesc(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditDeptModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={actionLoading}
+              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>{actionLoading ? 'Saving...' : 'Save Changes'}</span>
             </button>
           </div>
         </form>
