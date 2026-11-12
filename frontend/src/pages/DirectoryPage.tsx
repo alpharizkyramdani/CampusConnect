@@ -27,6 +27,7 @@ import {
   Power,
   AlertTriangle,
   X,
+  MessageSquare,
 } from 'lucide-react';
 
 interface UniversityRequest {
@@ -1149,32 +1150,44 @@ export const DirectoryPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Card Actions (Suspend / Aktifkan / Hapus) */}
-                      {canManageLecturers && (
-                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleToggleLecturerStatus(lec)}
-                            title={isSuspended ? 'Aktifkan kembali dosen ini' : 'Nonaktifkan (suspend) dosen ini'}
-                            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${
-                              isSuspended
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                            }`}
-                          >
-                            <Power className="w-3.5 h-3.5" />
-                            <span>{isSuspended ? 'Aktifkan' : 'Suspend'}</span>
-                          </button>
+                      {/* Card Actions: Kirim Pesan & Admin Actions */}
+                      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <Link
+                          to="/messages"
+                          state={{ partnerId: lec.id }}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition-colors flex items-center gap-1.5"
+                          title="Kirim pesan langsung ke dosen ini"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Kirim Pesan</span>
+                        </Link>
 
-                          <button
-                            onClick={() => handleDeleteLecturer(lec)}
-                            title="Hapus akun dosen secara permanen"
-                            className="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 transition-colors flex items-center gap-1.5"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Hapus</span>
-                          </button>
-                        </div>
-                      )}
+                        {canManageLecturers && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleToggleLecturerStatus(lec)}
+                              title={isSuspended ? 'Aktifkan kembali dosen ini' : 'Nonaktifkan (suspend) dosen ini'}
+                              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${
+                                isSuspended
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                              }`}
+                            >
+                              <Power className="w-3.5 h-3.5" />
+                              <span>{isSuspended ? 'Aktifkan' : 'Suspend'}</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteLecturer(lec)}
+                              title="Hapus akun dosen secara permanen"
+                              className="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 transition-colors flex items-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Hapus</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

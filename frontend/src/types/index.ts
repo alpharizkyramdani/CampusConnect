@@ -481,3 +481,74 @@ export interface ActivityLog {
   user?: User;
   university?: University;
 }
+
+// ----------------------------------------------------
+// Social Suite & Direct Messaging Types
+// ----------------------------------------------------
+
+export interface CampusPost {
+  id: number;
+  user_id: number;
+  university_id?: number;
+  content: string;
+  media_url?: string;
+  repost_of_id?: number;
+  likes_count: number;
+  comments_count: number;
+  reposts_count: number;
+  created_at: string;
+  author: User;
+  university?: University;
+  repost_of?: CampusPost;
+  is_liked_by_me?: boolean;
+  is_reposted_by_me?: boolean;
+}
+
+export interface CampusPostComment {
+  id: number;
+  post_id: number;
+  user_id: number;
+  content: string;
+  created_at: string;
+  author: User;
+}
+
+export interface DirectMessage {
+  id: number;
+  sender_id: number;
+  receiver_id: number;
+  message: string;
+  is_read: boolean;
+  read_at?: string;
+  created_at: string;
+  sender?: User;
+  receiver?: User;
+}
+
+export interface ConversationPartner {
+  partner: {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string;
+    department?: string;
+  };
+  last_message?: DirectMessage;
+  unread_count: number;
+}
+
+export interface UserFollowStatus {
+  user_id: number;
+  is_following: boolean;
+  followers_count: number;
+  following_count: number;
+}
+
+export interface UserSuggestion {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string;
+  student_profile?: StudentProfile;
+  lecturer_profile?: LecturerProfile;
+}

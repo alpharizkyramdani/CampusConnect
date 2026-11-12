@@ -23,6 +23,17 @@ export const ProfilePage: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [followStats, setFollowStats] = useState({ followers_count: 0, following_count: 0 });
+
+  React.useEffect(() => {
+    if (user?.id) {
+      api.get(`/users/${user.id}/follow-status`).then((res) => {
+        if (res.data.success) {
+          setFollowStats(res.data.data);
+        }
+      }).catch(() => {});
+    }
+  }, [user?.id]);
 
   const handleUploadFile = async (file: File) => {
     setUploading(true);
@@ -114,6 +125,18 @@ export const ProfilePage: React.FC = () => {
                 {a.role?.name}
               </Badge>
             ))}
+          </div>
+
+          {/* Social Followers & Following Stats */}
+          <div className="mt-4 grid grid-cols-2 gap-3 w-full p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+            <div>
+              <span className="font-extrabold text-navy text-base block">{followStats.followers_count}</span>
+              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Pengikut</span>
+            </div>
+            <div>
+              <span className="font-extrabold text-navy text-base block">{followStats.following_count}</span>
+              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Mengikuti</span>
+            </div>
           </div>
 
           <div className="w-full mt-6 pt-6 border-t border-slate-100 text-left text-xs space-y-3">

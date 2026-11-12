@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationDropdown } from './NotificationDropdown';
-import { Menu, LogOut, User as UserIcon, Building2, ChevronDown, Sparkles, Settings } from 'lucide-react';
+import { Menu, LogOut, User as UserIcon, Building2, ChevronDown, Sparkles, Settings, MessageSquare } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
@@ -51,6 +51,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       <div className="flex items-center gap-3">
         {/* Role Switcher */}
         <RoleSwitcher />
+
+        {/* Messages */}
+        <Link
+          to="/messages"
+          className="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition-colors relative"
+          title="Pesan Kampus (DM)"
+        >
+          <MessageSquare className="w-5 h-5" />
+        </Link>
 
         {/* Notifications */}
         <NotificationDropdown />

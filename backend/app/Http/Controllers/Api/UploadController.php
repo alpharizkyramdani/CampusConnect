@@ -30,3 +30,4 @@ class UploadController extends Controller
         ]);
     }
 }
+

@@ -32,6 +32,8 @@ import { UserManagementPage } from '../pages/UserManagementPage';
 import { AuditLogsPage } from '../pages/AuditLogsPage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { SettingsPage } from '../pages/SettingsPage';
+import { CampusFeedPage } from '../pages/CampusFeedPage';
+import { MessagesPage } from '../pages/MessagesPage';
 
 interface ProtectedRouteProps {
   allowedRoles?: RoleName[];
@@ -100,6 +102,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="/services" element={<StudentServicesPage />} />
           <Route path="/certificates" element={<CertificatesPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/feed" element={<CampusFeedPage />} />
+          <Route path="/messages" element={<MessagesPage />} />
           <Route path="/discussions" element={<DiscussionsPage />} />
           <Route path="/directory" element={<DirectoryPage />} />
           <Route path="/universities-manage" element={<DirectoryPage />} />

@@ -6,15 +6,18 @@ use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateController;
+use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\DiscussionController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\FacilityController;
+use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\LostFoundController;
 use App\Http\Controllers\Api\MaintenanceController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PortfolioController;
+use App\Http\Controllers\Api\SocialFeedController;
 use App\Http\Controllers\Api\StudentServiceController;
 use App\Http\Controllers\Api\UniversityController;
 use App\Http\Controllers\Api\UploadController;
@@ -58,6 +61,10 @@ Route::prefix('v1')->group(function () {
 
     // Public Certificate Verification
     Route::get('/certificates/verify/{hash}', [CertificateController::class, 'verify']);
+
+    // Public Campus Social Feed
+    Route::get('/feed', [SocialFeedController::class, 'index']);
+    Route::get('/feed/{id}/comments', [SocialFeedController::class, 'getComments']);
 
     // 2. AUTHENTICATED ROUTES
     Route::middleware('auth:sanctum')->group(function () {
@@ -122,8 +129,28 @@ Route::prefix('v1')->group(function () {
         Route::get('/organizations/{id}/applications', [OrganizationController::class, 'listApplications']);
         Route::post('/applications/{id}/review', [OrganizationController::class, 'reviewApplication']);
 
-        // File Upload (Avatar & Logos)
+        // File Upload (Avatar & Logos & Post Media)
         Route::post('/upload', [UploadController::class, 'uploadImage']);
+
+        // Campus Social Feed (Twitter-style Microblogging)
+        Route::post('/feed', [SocialFeedController::class, 'store']);
+        Route::post('/feed/{id}/like', [SocialFeedController::class, 'toggleLike']);
+        Route::post('/feed/{id}/repost', [SocialFeedController::class, 'repost']);
+        Route::post('/feed/{id}/comments', [SocialFeedController::class, 'comment']);
+        Route::delete('/feed/{id}', [SocialFeedController::class, 'destroy']);
+
+        // Social Follows (Pertemanan & Following)
+        Route::post('/users/{id}/follow', [FollowController::class, 'toggleFollow']);
+        Route::get('/users/{id}/follow-status', [FollowController::class, 'status']);
+        Route::get('/users/{id}/followers', [FollowController::class, 'followers']);
+        Route::get('/users/{id}/following', [FollowController::class, 'following']);
+        Route::get('/users-suggestions', [FollowController::class, 'suggestions']);
+
+        // Direct Messaging (Chatan 1-on-1)
+        Route::get('/chat/conversations', [ChatController::class, 'conversations']);
+        Route::get('/chat/messages/{partnerId}', [ChatController::class, 'messages']);
+        Route::post('/chat/messages/{partnerId}', [ChatController::class, 'sendMessage']);
+        Route::get('/chat/unread-count', [ChatController::class, 'unreadCount']);
 
         // Student Services (Module 09)
         Route::get('/service-types', [StudentServiceController::class, 'serviceTypes']);

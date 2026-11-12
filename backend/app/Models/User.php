@@ -80,6 +80,31 @@ class User extends Authenticatable
         return $this->belongsTo(University::class, 'default_university_id');
     }
 
+    public function followers()
+    {
+        return $this->hasMany(UserFollow::class, 'user_id');
+    }
+
+    public function following()
+    {
+        return $this->hasMany(UserFollow::class, 'follower_id');
+    }
+
+    public function campusPosts()
+    {
+        return $this->hasMany(CampusPost::class, 'user_id');
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'receiver_id');
+    }
+
     public function hasRole(string $roleSlug, ?int $universityId = null): bool
     {
         return $this->roleAssignments()

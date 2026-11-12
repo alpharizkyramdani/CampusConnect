@@ -16,6 +16,7 @@ import {
   BookOpen,
   FolderLock,
   MessagesSquare,
+  MessageSquare,
   Sparkles,
   BarChart3,
   UserCog,
@@ -43,6 +44,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Platform Administration',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Campus Feed (Social)', icon: Sparkles, path: '/feed' },
+              { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
               { label: 'Universities', icon: Building, path: '/universities-manage' },
               { label: 'User Directory', icon: UserCog, path: '/users' },
               { label: 'Platform Analytics', icon: BarChart3, path: '/analytics' },
@@ -57,6 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Campus Management',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Campus Feed (Social)', icon: Sparkles, path: '/feed' },
+              { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
               { label: 'Announcements', icon: Megaphone, path: '/announcements' },
               { label: 'Academic Calendar', icon: CalendarDays, path: '/calendar' },
               { label: 'Campus Events', icon: CalendarCheck2, path: '/events' },
@@ -111,6 +116,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Academic Portal',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Campus Feed (Timeline)', icon: Sparkles, path: '/feed' },
+              { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
               { label: 'Campus Announcements', icon: Megaphone, path: '/announcements' },
               { label: 'Academic Calendar', icon: CalendarDays, path: '/calendar' },
               { label: 'Campus Events', icon: CalendarCheck2, path: '/events' },
@@ -127,6 +134,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Student Hub',
             items: [
               { label: 'My Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Campus Feed (Timeline)', icon: Sparkles, path: '/feed' },
+              { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
               { label: 'Campus Announcements', icon: Megaphone, path: '/announcements' },
               { label: 'Campus Events & Tickets', icon: CalendarCheck2, path: '/events' },
               { label: 'Academic Calendar', icon: CalendarDays, path: '/calendar' },
