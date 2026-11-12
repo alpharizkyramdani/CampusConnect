@@ -13,6 +13,9 @@ import {
   Save,
   ShieldCheck,
   Building,
+  Upload,
+  Camera,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -24,6 +27,27 @@ export const SettingsPage: React.FC = () => {
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleUploadAvatar = async (file: File) => {
+    setUploadingAvatar(true);
+    setErrorMsg('');
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data.success && res.data.url) {
+        setAvatar(res.data.url);
+        setSuccessMsg('Foto profil berhasil diunggah! Jangan lupa klik "Save Profile Changes".');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || 'Gagal mengunggah gambar profil.');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -204,22 +228,77 @@ export const SettingsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex items-center gap-5">
-                <img
-                  src={avatar || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=2563EB&color=fff`}
-                  alt={user?.name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-slate-100 shadow-xs ring-2 ring-brand-100"
-                />
-                <div className="flex-1">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Avatar Image URL</label>
-                  <input
-                    type="url"
-                    value={avatar}
-                    onChange={(e) => setAvatar(e.target.value)}
-                    placeholder="https://example.com/photo.jpg"
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
-                  />
-                  <span className="text-[10px] text-slate-400 mt-1 block">Leave empty to use automatic avatar generation</span>
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Foto Profil / Avatar
+                  </label>
+                  {uploadingAvatar && (
+                    <span className="text-xs text-brand-600 font-semibold animate-pulse">
+                      Sedang mengunggah...
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-5">
+                  <div className="relative group shrink-0">
+                    <img
+                      src={avatar || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=2563EB&color=fff`}
+                      alt={user?.name}
+                      className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-md ring-2 ring-brand-200"
+                    />
+                    <label
+                      title="Upload foto profil"
+                      className="absolute inset-0 bg-black/40 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-bold"
+                    >
+                      <Camera className="w-5 h-5 mb-0.5" />
+                      <span>Ganti</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleUploadAvatar(e.target.files[0])}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex-1 w-full space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="cursor-pointer px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-xs">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload dari Perangkat (HP/Laptop)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => e.target.files?.[0] && handleUploadAvatar(e.target.files[0])}
+                        />
+                      </label>
+
+                      {avatar && (
+                        <button
+                          type="button"
+                          onClick={() => setAvatar('')}
+                          className="px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                        >
+                          Hapus Foto Khusus
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="url"
+                        value={avatar}
+                        onChange={(e) => setAvatar(e.target.value)}
+                        placeholder="Atau tempel URL gambar: https://example.com/photo.jpg"
+                        className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+                      />
+                    </div>
+                    <span className="text-[10px] text-slate-400 block">
+                      Mendukung format JPG, PNG, WEBP, GIF (Maks. 5 MB). Kosongkan untuk menggunakan inisial nama otomatis.
+                    </span>
+                  </div>
                 </div>
               </div>
 

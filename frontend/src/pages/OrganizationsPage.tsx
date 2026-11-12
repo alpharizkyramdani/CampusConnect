@@ -18,7 +18,20 @@ import {
   Shield,
   Trash2,
   Building2,
+  Upload,
+  Image as ImageIcon,
+  Pencil,
+  Camera,
 } from 'lucide-react';
+
+const PRESET_LOGOS = [
+  { label: 'HIMA Informatika / Komputer', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=200&auto=format&fit=crop&q=80' },
+  { label: 'UKM Robotika & IoT', url: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&auto=format&fit=crop&q=80' },
+  { label: 'BEM / Eksekutif Mahasiswa', url: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=200&auto=format&fit=crop&q=80' },
+  { label: 'UKM Seni & Musik', url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&auto=format&fit=crop&q=80' },
+  { label: 'UKM Olahraga & Atletik', url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=200&auto=format&fit=crop&q=80' },
+  { label: 'UKM Penalaran & Debat', url: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=200&auto=format&fit=crop&q=80' },
+];
 
 export const OrganizationsPage: React.FC = () => {
   const { user, activeAssignment, hasAnyRole } = useAuth();
@@ -35,13 +48,28 @@ export const OrganizationsPage: React.FC = () => {
   // Add Organization Modal (Campus Admin & Super Admin)
   const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
-  const [newOrgType, setNewOrgType] = useState<'ukm' | 'bem' | 'hima' | 'dpm'>('ukm');
+  const [newOrgType, setNewOrgType] = useState<Organization['type']>('ukm');
   const [newOrgCategory, setNewOrgCategory] = useState('Technology & Robotics');
   const [newOrgDescription, setNewOrgDescription] = useState('');
   const [newOrgVision, setNewOrgVision] = useState('');
   const [newOrgMission, setNewOrgMission] = useState('');
+  const [newOrgLogo, setNewOrgLogo] = useState('');
   const [newOrgUnivId, setNewOrgUnivId] = useState('');
   const [creatingOrg, setCreatingOrg] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Edit Organization Modal
+  const [editOrgModalOpen, setEditOrgModalOpen] = useState(false);
+  const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
+  const [editOrgName, setEditOrgName] = useState('');
+  const [editOrgType, setEditOrgType] = useState<Organization['type']>('ukm');
+  const [editOrgCategory, setEditOrgCategory] = useState('');
+  const [editOrgDescription, setEditOrgDescription] = useState('');
+  const [editOrgVision, setEditOrgVision] = useState('');
+  const [editOrgMission, setEditOrgMission] = useState('');
+  const [editOrgLogo, setEditOrgLogo] = useState('');
+  const [editOrgRecruitment, setEditOrgRecruitment] = useState(true);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Appoint Member Modal
   const [appointModalOpen, setAppointModalOpen] = useState(false);
@@ -106,6 +134,87 @@ export const OrganizationsPage: React.FC = () => {
     fetchOrganizations();
   }, [selectedType, activeAssignment]);
 
+  const handleUploadImageFile = async (file: File, target: 'create' | 'edit') => {
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data.success && res.data.url) {
+        if (target === 'create') {
+          setNewOrgLogo(res.data.url);
+        } else {
+          setEditOrgLogo(res.data.url);
+        }
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to upload logo image');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const openEditModal = (org: Organization) => {
+    setEditingOrg(org);
+    setEditOrgName(org.name);
+    setEditOrgType(org.type);
+    setEditOrgCategory(org.category || '');
+    setEditOrgDescription(org.description || '');
+    setEditOrgVision(org.vision || '');
+    setEditOrgMission(org.mission || '');
+    setEditOrgLogo(org.logo || '');
+    setEditOrgRecruitment(!!org.recruitment_open);
+    setEditOrgModalOpen(true);
+  };
+
+  const handleUpdateOrganization = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingOrg) return;
+    setSavingEdit(true);
+    try {
+      const res = await api.put(`/organizations/${editingOrg.id}`, {
+        name: editOrgName,
+        type: editOrgType,
+        category: editOrgCategory,
+        description: editOrgDescription,
+        vision: editOrgVision || null,
+        mission: editOrgMission || null,
+        logo: editOrgLogo || null,
+        recruitment_open: editOrgRecruitment,
+      });
+
+      if (res.data.success) {
+        alert('Organization updated successfully!');
+        setEditOrgModalOpen(false);
+        setEditingOrg(null);
+        if (selectedOrg && selectedOrg.id === editingOrg.id) {
+          setSelectedOrg(res.data.data);
+        }
+        fetchOrganizations();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to update organization');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeleteOrganization = async (org: Organization) => {
+    if (!window.confirm(`Are you sure you want to delete organization "${org.name}"? This action cannot be undone.`)) return;
+    try {
+      const res = await api.delete(`/organizations/${org.id}`);
+      if (res.data.success) {
+        alert('Organization deleted successfully.');
+        if (selectedOrg?.id === org.id) setSelectedOrg(null);
+        fetchOrganizations();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete organization');
+    }
+  };
+
   const handleCreateOrganization = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreatingOrg(true);
@@ -122,6 +231,7 @@ export const OrganizationsPage: React.FC = () => {
         description: newOrgDescription,
         vision: newOrgVision || null,
         mission: newOrgMission || null,
+        logo: newOrgLogo || null,
         recruitment_open: true,
       });
 
@@ -132,6 +242,7 @@ export const OrganizationsPage: React.FC = () => {
         setNewOrgDescription('');
         setNewOrgVision('');
         setNewOrgMission('');
+        setNewOrgLogo('');
         fetchOrganizations();
       }
     } catch (err: any) {
@@ -336,7 +447,7 @@ export const OrganizationsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-5 flex gap-2">
+              <div className="p-5 flex gap-2 items-center">
                 <button
                   onClick={async () => {
                     const res = await api.get(`/organizations/${org.id}`);
@@ -362,11 +473,31 @@ export const OrganizationsPage: React.FC = () => {
                 )}
 
                 {isOrgAdmin && (
+                  <>
+                    <button
+                      onClick={() => openAppQueue(org)}
+                      className="px-2.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl font-bold text-xs transition-colors"
+                      title="Applicants"
+                    >
+                      Applicants
+                    </button>
+                    <button
+                      onClick={() => openEditModal(org)}
+                      className="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition-colors"
+                      title="Edit Logo / Info"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+
+                {canCreateOrg && (
                   <button
-                    onClick={() => openAppQueue(org)}
-                    className="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl font-bold text-xs transition-colors"
+                    onClick={() => handleDeleteOrganization(org)}
+                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                    title="Delete Organization"
                   >
-                    Applicants
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -476,6 +607,72 @@ export const OrganizationsPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Logo Upload & Selector */}
+          <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <label className="font-bold text-slate-700 block uppercase text-[11px] flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-brand-600" />
+                Logo Organisasi / HIMA / UKM
+              </span>
+              {uploadingLogo && <span className="text-[10px] text-brand-600 animate-pulse font-normal">Mengunggah logo...</span>}
+            </label>
+
+            <div className="flex items-center gap-3">
+              <img
+                src={newOrgLogo || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=150&auto=format&fit=crop&q=80'}
+                alt="Logo Preview"
+                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0 bg-white shadow-xs"
+              />
+              <div className="flex-1 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg text-xs flex items-center gap-1.5 transition-colors border border-brand-200">
+                    <Upload className="w-3 h-3" />
+                    <span>Upload Logo (PNG/JPG)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleUploadImageFile(e.target.files[0], 'create')}
+                    />
+                  </label>
+                  {newOrgLogo && (
+                    <button
+                      type="button"
+                      onClick={() => setNewOrgLogo('')}
+                      className="text-[11px] text-slate-400 hover:text-rose-600"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  placeholder="Atau tempel tautan/URL gambar logo..."
+                  value={newOrgLogo}
+                  onChange={(e) => setNewOrgLogo(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded-lg bg-white text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="pt-2 border-t border-slate-200/60">
+              <div className="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Pilihan Preset Logo Cepat:</div>
+              <div className="flex flex-wrap gap-1.5">
+                {PRESET_LOGOS.map((p) => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => setNewOrgLogo(p.url)}
+                    className="px-2 py-0.5 rounded text-[10px] bg-white border border-slate-200 hover:border-brand-500 hover:text-brand-600 transition-colors"
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="pt-2 flex justify-end gap-2">
             <button
               type="button"
@@ -521,20 +718,31 @@ export const OrganizationsPage: React.FC = () => {
                 </div>
               </div>
 
-              {isOrgAdmin && (
-                <button
-                  onClick={() => {
-                    setAppointModalOpen(true);
-                    if (availableUsers.length > 0 && !appointUserId) {
-                      setAppointUserId(availableUsers[0].id.toString());
-                    }
-                  }}
-                  className="px-3.5 py-2 bg-brand-600 text-white hover:bg-brand-700 font-bold rounded-xl text-xs flex items-center gap-1.5 shrink-0 shadow-xs"
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>+ Appoint / Add Member</span>
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {isOrgAdmin && (
+                  <button
+                    onClick={() => openEditModal(selectedOrg)}
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 shrink-0 transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit Info & Logo</span>
+                  </button>
+                )}
+                {isOrgAdmin && (
+                  <button
+                    onClick={() => {
+                      setAppointModalOpen(true);
+                      if (availableUsers.length > 0 && !appointUserId) {
+                        setAppointUserId(availableUsers[0].id.toString());
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-brand-600 text-white hover:bg-brand-700 font-bold rounded-xl text-xs flex items-center gap-1.5 shrink-0 shadow-xs"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>+ Appoint / Add Member</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {selectedOrg.vision && (
@@ -807,6 +1015,182 @@ export const OrganizationsPage: React.FC = () => {
             ))
           )}
         </div>
+      </Modal>
+
+      {/* Modal: Edit Organization / HIMA / UKM */}
+      <Modal
+        isOpen={editOrgModalOpen}
+        onClose={() => setEditOrgModalOpen(false)}
+        title={`Edit Organization: ${editingOrg?.name || ''}`}
+      >
+        <form onSubmit={handleUpdateOrganization} className="space-y-4 text-xs">
+          <div>
+            <label className="font-bold text-slate-700 block uppercase mb-1">Organization Name</label>
+            <input
+              type="text"
+              required
+              value={editOrgName}
+              onChange={(e) => setEditOrgName(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="font-bold text-slate-700 block uppercase mb-1">Organization Type</label>
+              <select
+                value={editOrgType}
+                onChange={(e) => setEditOrgType(e.target.value as any)}
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-semibold"
+              >
+                <option value="ukm">UKM (Unit Kegiatan Mahasiswa)</option>
+                <option value="bem">BEM (Badan Eksekutif Mahasiswa)</option>
+                <option value="hima">HIMA (Himpunan Mahasiswa Jurusan)</option>
+                <option value="dpm">DPM (Dewan Perwakilan Mahasiswa)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block uppercase mb-1">Category</label>
+              <input
+                type="text"
+                required
+                value={editOrgCategory}
+                onChange={(e) => setEditOrgCategory(e.target.value)}
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Logo Edit Section */}
+          <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <label className="font-bold text-slate-700 block uppercase text-[11px] flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-brand-600" />
+                Logo Organisasi / HIMA / UKM
+              </span>
+              {uploadingLogo && <span className="text-[10px] text-brand-600 animate-pulse font-normal">Mengunggah logo...</span>}
+            </label>
+
+            <div className="flex items-center gap-3">
+              <img
+                src={editOrgLogo || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=150&auto=format&fit=crop&q=80'}
+                alt="Logo Preview"
+                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0 bg-white shadow-xs"
+              />
+              <div className="flex-1 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg text-xs flex items-center gap-1.5 transition-colors border border-brand-200">
+                    <Upload className="w-3 h-3" />
+                    <span>Upload Logo Baru</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleUploadImageFile(e.target.files[0], 'edit')}
+                    />
+                  </label>
+                  {editOrgLogo && (
+                    <button
+                      type="button"
+                      onClick={() => setEditOrgLogo('')}
+                      className="text-[11px] text-slate-400 hover:text-rose-600"
+                    >
+                      Reset Logo
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  placeholder="Atau tautan URL gambar..."
+                  value={editOrgLogo}
+                  onChange={(e) => setEditOrgLogo(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded-lg bg-white text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="pt-2 border-t border-slate-200/60">
+              <div className="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Pilihan Preset Logo Cepat:</div>
+              <div className="flex flex-wrap gap-1.5">
+                {PRESET_LOGOS.map((p) => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => setEditOrgLogo(p.url)}
+                    className="px-2 py-0.5 rounded text-[10px] bg-white border border-slate-200 hover:border-brand-500 hover:text-brand-600 transition-colors"
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase mb-1">Summary & Description</label>
+            <textarea
+              required
+              rows={3}
+              value={editOrgDescription}
+              onChange={(e) => setEditOrgDescription(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="font-bold text-slate-700 block uppercase mb-1">Vision</label>
+              <textarea
+                rows={2}
+                value={editOrgVision}
+                onChange={(e) => setEditOrgVision(e.target.value)}
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block uppercase mb-1">Mission</label>
+              <textarea
+                rows={2}
+                value={editOrgMission}
+                onChange={(e) => setEditOrgMission(e.target.value)}
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              id="editOrgRecruitment"
+              checked={editOrgRecruitment}
+              onChange={(e) => setEditOrgRecruitment(e.target.checked)}
+              className="rounded text-brand-600 focus:ring-brand-500"
+            />
+            <label htmlFor="editOrgRecruitment" className="font-semibold text-slate-700 cursor-pointer">
+              Buka Pendaftaran Anggota Baru (Open Recruitment)
+            </label>
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditOrgModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={savingEdit}
+              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Pencil className="w-4 h-4" />
+              <span>{savingEdit ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

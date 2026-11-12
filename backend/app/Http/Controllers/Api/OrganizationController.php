@@ -153,6 +153,7 @@ class OrganizationController extends Controller
             'description' => 'required|string',
             'vision' => 'nullable|string',
             'mission' => 'nullable|string',
+            'logo' => 'nullable|string',
             'recruitment_open' => 'boolean',
         ]);
 
@@ -172,6 +173,7 @@ class OrganizationController extends Controller
             'description' => $request->description,
             'vision' => $request->vision,
             'mission' => $request->mission,
+            'logo' => $request->logo,
             'status' => 'active',
             'recruitment_open' => $request->boolean('recruitment_open', true),
         ]);
@@ -181,6 +183,57 @@ class OrganizationController extends Controller
             'message' => "Organization {$org->name} created successfully.",
             'data' => $org->load('university'),
         ], 201);
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        $org = Organization::findOrFail($id);
+
+        $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'type' => 'sometimes|required|in:ukm,bem,hima,dpm',
+            'category' => 'sometimes|required|string|max:100',
+            'description' => 'sometimes|required|string',
+            'vision' => 'nullable|string',
+            'mission' => 'nullable|string',
+            'logo' => 'nullable|string',
+            'status' => 'nullable|in:active,suspended',
+            'recruitment_open' => 'nullable|boolean',
+        ]);
+
+        $org->update($request->only([
+            'name',
+            'type',
+            'category',
+            'description',
+            'vision',
+            'mission',
+            'logo',
+            'status',
+            'recruitment_open',
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Organization {$org->name} updated successfully.",
+            'data' => $org->fresh('university'),
+        ]);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $org = Organization::findOrFail($id);
+        $name = $org->name;
+
+        $org->members()->delete();
+        $org->applications()->delete();
+        $org->workPrograms()->delete();
+        $org->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Organization {$name} has been deleted successfully.",
+        ]);
     }
 
     public function addMember(Request $request, $id): JsonResponse

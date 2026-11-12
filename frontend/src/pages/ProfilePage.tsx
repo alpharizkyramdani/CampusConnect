@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { Badge } from '../components/ui/Badge';
+import { Modal } from '../components/ui/Modal';
 import {
   User as UserIcon,
   Mail,
@@ -10,10 +12,57 @@ import {
   Shield,
   Calendar,
   CheckCircle2,
+  Camera,
+  Upload,
 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
-  const { user, studentProfile, lecturerProfile, roleAssignments, activeAssignment } = useAuth();
+  const { user, studentProfile, lecturerProfile, roleAssignments, activeAssignment, refreshUser } = useAuth();
+
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleUploadFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data.success && res.data.url) {
+        setAvatarUrl(res.data.url);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal mengunggah foto profil');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSaveAvatar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setSaving(true);
+    try {
+      const res = await api.put('/auth/profile', {
+        name: user.name,
+        phone: user.phone,
+        avatar: avatarUrl.trim() || null,
+      });
+      if (res.data.success) {
+        await refreshUser();
+        setAvatarModalOpen(false);
+        alert('Foto profil berhasil diperbarui!');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal menyimpan foto profil');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 font-sans">
@@ -27,13 +76,37 @@ export const ProfilePage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Profile Card */}
         <div className="bg-white rounded-3xl p-6 border border-borderMuted shadow-xs text-center flex flex-col items-center">
-          <img
-            src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=2563EB&color=fff`}
-            alt={user?.name}
-            className="w-24 h-24 rounded-full object-cover border-4 border-slate-50 shadow-md ring-2 ring-brand-100"
-          />
+          <div className="relative group">
+            <img
+              src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=2563EB&color=fff`}
+              alt={user?.name}
+              className="w-24 h-24 rounded-full object-cover border-4 border-slate-50 shadow-md ring-2 ring-brand-100"
+            />
+            <button
+              onClick={() => {
+                setAvatarUrl(user?.avatar || '');
+                setAvatarModalOpen(true);
+              }}
+              title="Ganti Foto Profil"
+              className="absolute bottom-0 right-0 p-2 bg-brand-600 hover:bg-brand-700 text-white rounded-full shadow-md transition-colors"
+            >
+              <Camera className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           <h2 className="mt-4 font-extrabold text-lg text-navy">{user?.name}</h2>
           <p className="text-xs text-slate-400">{user?.email}</p>
+
+          <button
+            onClick={() => {
+              setAvatarUrl(user?.avatar || '');
+              setAvatarModalOpen(true);
+            }}
+            className="mt-3 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs rounded-xl transition-colors border border-brand-200 flex items-center gap-1.5"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span>Ganti Foto Profil</span>
+          </button>
 
           <div className="mt-4 flex flex-wrap gap-1.5 justify-center">
             {roleAssignments.map((a) => (
@@ -144,6 +217,86 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal: Ganti Foto Profil */}
+      <Modal
+        isOpen={avatarModalOpen}
+        onClose={() => setAvatarModalOpen(false)}
+        title="Ganti Foto Profil Akun"
+      >
+        <form onSubmit={handleSaveAvatar} className="space-y-5 text-xs">
+          <p className="text-slate-500">
+            Unggah foto profil baru dari galeri/penyimpanan perangkat Anda atau masukkan tautan URL gambar secara langsung.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+            <img
+              src={avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=2563EB&color=fff`}
+              alt="Preview"
+              className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-md ring-2 ring-brand-200 shrink-0"
+            />
+
+            <div className="flex-1 w-full space-y-2">
+              <label className="cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs">
+                <Upload className="w-3.5 h-3.5" />
+                <span>Pilih Foto dari Perangkat</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleUploadFile(e.target.files[0])}
+                />
+              </label>
+
+              {uploading && (
+                <div className="text-xs text-brand-600 font-semibold animate-pulse">
+                  Mengunggah gambar... Mohon tunggu.
+                </div>
+              )}
+
+              {avatarUrl && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setAvatarUrl('')}
+                    className="text-rose-600 hover:underline text-[11px] font-semibold"
+                  >
+                    Gunakan avatar inisial nama standar
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase mb-1">Atau Tempel Tautan Gambar (URL)</label>
+            <input
+              type="url"
+              placeholder="https://..."
+              value={avatarUrl}
+              onChange={(e) => setAvatarUrl(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-white text-xs"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setAvatarModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={saving || uploading}
+              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-xs transition-all disabled:opacity-50"
+            >
+              {saving ? 'Menyimpan...' : 'Simpan Foto Profil'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

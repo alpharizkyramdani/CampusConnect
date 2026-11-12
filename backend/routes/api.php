@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PortfolioController;
 use App\Http\Controllers\Api\StudentServiceController;
 use App\Http\Controllers\Api\UniversityController;
+use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
@@ -113,11 +114,16 @@ Route::prefix('v1')->group(function () {
 
         // Organizations (Module 08)
         Route::post('/organizations', [OrganizationController::class, 'store']);
+        Route::put('/organizations/{id}', [OrganizationController::class, 'update']);
+        Route::delete('/organizations/{id}', [OrganizationController::class, 'destroy']);
         Route::post('/organizations/{id}/members', [OrganizationController::class, 'addMember']);
         Route::delete('/organizations/{id}/members/{memberId}', [OrganizationController::class, 'removeMember']);
         Route::post('/organizations/{id}/apply', [OrganizationController::class, 'apply']);
         Route::get('/organizations/{id}/applications', [OrganizationController::class, 'listApplications']);
         Route::post('/applications/{id}/review', [OrganizationController::class, 'reviewApplication']);
+
+        // File Upload (Avatar & Logos)
+        Route::post('/upload', [UploadController::class, 'uploadImage']);
 
         // Student Services (Module 09)
         Route::get('/service-types', [StudentServiceController::class, 'serviceTypes']);
