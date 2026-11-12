@@ -223,10 +223,57 @@ class UniversityController extends Controller
         return response()->json(['success' => true, 'data' => $faculties]);
     }
 
+    public function storeFaculty(Request $request, $universityId): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20',
+            'description' => 'nullable|string',
+        ]);
+
+        $faculty = Faculty::create([
+            'university_id' => $universityId,
+            'name' => $request->name,
+            'code' => strtoupper($request->code),
+            'description' => $request->description,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Faculty {$faculty->name} created successfully.",
+            'data' => $faculty->load('departments'),
+        ], 201);
+    }
+
     public function departments($universityId): JsonResponse
     {
         $departments = Department::where('university_id', $universityId)->get();
         return response()->json(['success' => true, 'data' => $departments]);
+    }
+
+    public function storeDepartment(Request $request, $facultyId): JsonResponse
+    {
+        $faculty = Faculty::findOrFail($facultyId);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20',
+            'description' => 'nullable|string',
+        ]);
+
+        $dept = Department::create([
+            'university_id' => $faculty->university_id,
+            'faculty_id' => $faculty->id,
+            'name' => $request->name,
+            'code' => strtoupper($request->code),
+            'description' => $request->description,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Department {$dept->name} created successfully.",
+            'data' => $dept,
+        ], 201);
     }
 }
 

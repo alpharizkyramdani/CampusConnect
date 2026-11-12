@@ -53,6 +53,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/organizations', [OrganizationController::class, 'index']);
     Route::get('/organizations/{id}', [OrganizationController::class, 'show']);
     Route::get('/academic-calendar', [AcademicCalendarController::class, 'index']);
+    Route::get('/achievements', [PortfolioController::class, 'listAchievements']);
 
     // Public Certificate Verification
     Route::get('/certificates/verify/{hash}', [CertificateController::class, 'verify']);
@@ -111,6 +112,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/claims/{id}/review', [LostFoundController::class, 'reviewClaim']);
 
         // Organizations (Module 08)
+        Route::post('/organizations', [OrganizationController::class, 'store']);
+        Route::post('/organizations/{id}/members', [OrganizationController::class, 'addMember']);
+        Route::delete('/organizations/{id}/members/{memberId}', [OrganizationController::class, 'removeMember']);
         Route::post('/organizations/{id}/apply', [OrganizationController::class, 'apply']);
         Route::get('/organizations/{id}/applications', [OrganizationController::class, 'listApplications']);
         Route::post('/applications/{id}/review', [OrganizationController::class, 'reviewApplication']);
@@ -148,9 +152,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/portfolio', [PortfolioController::class, 'getPortfolio']);
         Route::post('/portfolio/activity', [PortfolioController::class, 'storeActivity']);
         Route::post('/portfolio/achievement', [PortfolioController::class, 'storeAchievement']);
+        Route::put('/achievements/{id}/verify', [PortfolioController::class, 'verifyAchievement']);
 
         // User Management (Module 17)
         Route::get('/users', [UserManagementController::class, 'index']);
+        Route::post('/users', [UserManagementController::class, 'store']);
         Route::get('/users/{id}', [UserManagementController::class, 'show']);
         Route::put('/users/{id}/status', [UserManagementController::class, 'updateStatus']);
         Route::post('/users/{id}/assign-role', [UserManagementController::class, 'assignRole']);
@@ -159,10 +165,12 @@ Route::prefix('v1')->group(function () {
         // Audit Logs (Module 18)
         Route::get('/audit-logs', [AuditLogController::class, 'index']);
 
-        // University Management (Super Admin)
+        // University Management (Super Admin & Campus Admin)
         Route::post('/universities', [UniversityController::class, 'store']);
         Route::put('/universities/{id}', [UniversityController::class, 'update']);
         Route::delete('/universities/{id}', [UniversityController::class, 'destroy']);
+        Route::post('/universities/{universityId}/faculties', [UniversityController::class, 'storeFaculty']);
+        Route::post('/faculties/{facultyId}/departments', [UniversityController::class, 'storeDepartment']);
         Route::get('/university-requests', [UniversityController::class, 'getRequests']);
         Route::post('/university-requests/{id}/approve', [UniversityController::class, 'approveRequest']);
         Route::post('/university-requests/{id}/reject', [UniversityController::class, 'rejectRequest']);

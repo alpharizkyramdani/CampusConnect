@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserRoleAssignment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserManagementController extends Controller
 {
@@ -110,6 +111,53 @@ class UserManagementController extends Controller
             'success' => true,
             'message' => 'Role assigned successfully',
             'data' => $assignment->load(['role', 'university', 'department']),
+        ], 201);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'role_id' => 'required|exists:roles,id',
+            'university_id' => 'nullable|exists:universities,id',
+            'department_id' => 'nullable|exists:departments,id',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'default_university_id' => $request->university_id,
+            'status' => 'active',
+        ]);
+
+        $role = Role::findOrFail($request->role_id);
+
+        UserRoleAssignment::create([
+            'user_id' => $user->id,
+            'role_id' => $role->id,
+            'university_id' => $request->university_id,
+            'department_id' => $request->department_id,
+            'status' => 'active',
+            'assigned_by' => $request->user()->id,
+            'assigned_at' => now(),
+        ]);
+
+        ActivityLog::create([
+            'university_id' => $request->university_id,
+            'user_id' => $request->user()->id,
+            'action' => 'user.create_and_assign',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['email' => $user->email, 'role' => $role->slug, 'university_id' => $request->university_id],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "User {$user->name} created successfully with role {$role->name}.",
+            'data' => $user->load('roleAssignments.role', 'roleAssignments.university'),
         ], 201);
     }
 

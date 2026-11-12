@@ -125,12 +125,12 @@ class OrganizationController extends Controller
         ]);
 
         if ($request->status === 'approved') {
-            OrganizationMember::firstOrCreate([
+            OrganizationMember::updateOrCreate([
                 'organization_id' => $app->organization_id,
                 'user_id' => $app->user_id,
             ], [
-                'role_title' => 'Member',
-                'division' => $app->department_interest ?? 'General Division',
+                'role_title' => $request->role_title ?? 'Anggota Departemen',
+                'division' => $request->division ?? ($app->department_interest ?? 'General Division'),
                 'joined_at' => now(),
                 'status' => 'active',
             ]);
@@ -140,6 +140,87 @@ class OrganizationController extends Controller
             'success' => true,
             'message' => "Application {$request->status} successfully",
             'data' => $app->fresh(['user', 'reviewer']),
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'university_id' => 'required|exists:universities,id',
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:ukm,bem,hima,dpm',
+            'category' => 'required|string|max:100',
+            'description' => 'required|string',
+            'vision' => 'nullable|string',
+            'mission' => 'nullable|string',
+            'recruitment_open' => 'boolean',
+        ]);
+
+        $baseSlug = Str::slug($request->name) ?: 'org';
+        $slug = $baseSlug;
+        $counter = 1;
+        while (Organization::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+
+        $org = Organization::create([
+            'university_id' => $request->university_id,
+            'name' => $request->name,
+            'slug' => $slug,
+            'type' => $request->type,
+            'category' => $request->category,
+            'description' => $request->description,
+            'vision' => $request->vision,
+            'mission' => $request->mission,
+            'status' => 'active',
+            'recruitment_open' => $request->boolean('recruitment_open', true),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Organization {$org->name} created successfully.",
+            'data' => $org->load('university'),
+        ], 201);
+    }
+
+    public function addMember(Request $request, $id): JsonResponse
+    {
+        $org = Organization::findOrFail($id);
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role_title' => 'required|string|max:100',
+            'division' => 'nullable|string|max:100',
+        ]);
+
+        $member = OrganizationMember::updateOrCreate(
+            [
+                'organization_id' => $org->id,
+                'user_id' => $request->user_id,
+            ],
+            [
+                'role_title' => $request->role_title,
+                'division' => $request->division ?? 'BPH / Pengurus Inti',
+                'status' => 'active',
+                'joined_at' => now(),
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Member assigned as {$request->role_title} ({$member->division}) successfully.",
+            'data' => $member->load('user'),
+        ]);
+    }
+
+    public function removeMember($id, $memberId): JsonResponse
+    {
+        $member = OrganizationMember::where('organization_id', $id)->where('id', $memberId)->firstOrFail();
+        $member->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Member removed successfully.',
         ]);
     }
 }

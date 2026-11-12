@@ -125,5 +125,40 @@ class PortfolioController extends Controller
             'data' => $achievement,
         ], 201);
     }
+
+    public function listAchievements(Request $request): JsonResponse
+    {
+        $universityId = $request->query('university_id');
+        $level = $request->query('level');
+        $search = $request->query('search');
+
+        $achievements = Achievement::when($universityId, function ($q) use ($universityId) {
+                $q->whereHas('user.studentProfile', fn($sub) => $sub->where('university_id', $universityId));
+            })
+            ->when($level, fn($q) => $q->where('level', $level))
+            ->when($search, fn($q) => $q->where(fn($sub) => $sub->where('title', 'like', "%{$search}%")->orWhere('rank', 'like', "%{$search}%")))
+            ->with(['user:id,name,email,avatar', 'user.studentProfile.university:id,name,code', 'user.studentProfile.department:id,name'])
+            ->latest()
+            ->paginate(15);
+
+        return response()->json([
+            'success' => true,
+            'data' => $achievements,
+        ]);
+    }
+
+    public function verifyAchievement(Request $request, $id): JsonResponse
+    {
+        $achievement = Achievement::findOrFail($id);
+        $achievement->update([
+            'is_verified' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student achievement successfully verified and published to Hall of Fame.',
+            'data' => $achievement->fresh(['user.studentProfile.university']),
+        ]);
+    }
 }
 

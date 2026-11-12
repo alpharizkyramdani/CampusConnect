@@ -14,13 +14,27 @@ import {
   CheckCircle2,
   Calendar,
   Building,
+  Search,
+  CheckCheck,
+  ShieldCheck,
+  GraduationCap,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 export const PortfolioPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, hasAnyRole } = useAuth();
+  const canVerify = hasAnyRole(['super_admin', 'campus_admin', 'ukm_admin', 'ormawa_admin']);
+
+  const [activeTab, setActiveTab] = useState<'hall_of_fame' | 'my_portfolio'>('hall_of_fame');
   const [portfolio, setPortfolio] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Hall of Fame State
+  const [hallAchievements, setHallAchievements] = useState<any[]>([]);
+  const [hallLoading, setHallLoading] = useState(false);
+  const [hallSearch, setHallSearch] = useState('');
+  const [hallLevel, setHallLevel] = useState('');
+  const [verifyingId, setVerifyingId] = useState<number | null>(null);
 
   // Add Activity Modal
   const [activityModal, setActivityModal] = useState(false);
@@ -56,9 +70,50 @@ export const PortfolioPage: React.FC = () => {
     }
   };
 
+  const fetchHallAchievements = async () => {
+    setHallLoading(true);
+    try {
+      const res = await api.get('/achievements', {
+        params: {
+          search: hallSearch || undefined,
+          level: hallLevel || undefined,
+        },
+      });
+      if (res.data.success) {
+        setHallAchievements(res.data.data.data || res.data.data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setHallLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchPortfolio();
+    fetchHallAchievements();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'hall_of_fame') {
+      fetchHallAchievements();
+    }
+  }, [hallLevel, activeTab]);
+
+  const handleVerify = async (id: number) => {
+    setVerifyingId(id);
+    try {
+      const res = await api.put(`/achievements/${id}/verify`);
+      if (res.data.success) {
+        fetchHallAchievements();
+        fetchPortfolio();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Verification failed');
+    } finally {
+      setVerifyingId(null);
+    }
+  };
 
   const handleAddActivity = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,46 +254,213 @@ export const PortfolioPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 font-sans">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-navy via-brand-950 to-brand-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-6 font-sans">
+      {/* Top Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-brand-300 uppercase tracking-widest">
-            <Sparkles className="w-4 h-4 text-brand-400" />
-            Curriculum Vitae & Verified Activity Portfolio
-          </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
-            {portfolio?.user?.name || user?.name}'s Digital Portfolio
+          <h1 className="text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2.5">
+            <Trophy className="w-6 h-6 text-brand-600" />
+            Student Achievements & Digital Portfolio
           </h1>
-          <p className="mt-1 text-slate-300 text-xs sm:text-sm max-w-xl">
-            A comprehensive, verified record of your campus competitions, certificates, events attended, and organization leadership positions.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Explore national & international student accolades across universities, or generate your official digital CV
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2.5">
           <button
-            onClick={exportPDF}
-            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
-          >
-            <Download className="w-4 h-4" />
-            Export Portfolio PDF
-          </button>
-          <button
             onClick={() => setAchievementModal(true)}
-            className="px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+            className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all"
           >
-            <Trophy className="w-4 h-4" />
-            Add Award
-          </button>
-          <button
-            onClick={() => setActivityModal(true)}
-            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Add Activity
+            <Trophy className="w-4 h-4 text-amber-300" />
+            <span>+ Submit Achievement</span>
           </button>
         </div>
       </div>
+
+      {/* Tab Navigation */}
+      <div className="flex flex-wrap gap-2 border-b border-borderMuted pb-3">
+        <button
+          onClick={() => setActiveTab('hall_of_fame')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            activeTab === 'hall_of_fame'
+              ? 'bg-brand-600 text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Trophy className="w-4 h-4 text-amber-400" />
+          <span>Public Hall of Fame & Achievements ({hallAchievements.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('my_portfolio')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            activeTab === 'my_portfolio'
+              ? 'bg-brand-600 text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          <span>My Personal Digital Portfolio & CV</span>
+        </button>
+      </div>
+
+      {/* TAB 1: PUBLIC HALL OF FAME */}
+      {activeTab === 'hall_of_fame' && (
+        <div className="space-y-6">
+          {/* Filter Bar */}
+          <div className="bg-white p-4 rounded-2xl border border-borderMuted shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={hallSearch}
+                onChange={(e) => setHallSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && fetchHallAchievements()}
+                placeholder="Search by achievement, competition, rank..."
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+              <select
+                value={hallLevel}
+                onChange={(e) => setHallLevel(e.target.value)}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+              >
+                <option value="">All Competition Levels</option>
+                <option value="international">International Level</option>
+                <option value="national">National Level</option>
+                <option value="regional">Regional Level</option>
+                <option value="campus">Campus Level</option>
+              </select>
+            </div>
+          </div>
+
+          {hallLoading ? (
+            <div className="p-12 text-center text-xs text-slate-400 animate-pulse">Loading Hall of Fame records...</div>
+          ) : hallAchievements.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 text-center border border-borderMuted">
+              <Trophy className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <h3 className="font-bold text-slate-800 text-base">No achievements found</h3>
+              <p className="text-xs text-slate-500 mt-1">Submit your academic or competition awards to appear in the Hall of Fame.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {hallAchievements.map((ach) => (
+                <div
+                  key={ach.id}
+                  className="bg-white rounded-3xl border border-borderMuted overflow-hidden shadow-xs p-6 flex flex-col justify-between hover:shadow-md transition-shadow"
+                >
+                  <div>
+                    {/* Header: Student Info */}
+                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+                      <img
+                        src={ach.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(ach.user?.name || 'S')}&background=2563EB&color=fff`}
+                        alt={ach.user?.name}
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="font-extrabold text-xs text-navy truncate">{ach.user?.name}</div>
+                        <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                          <GraduationCap className="w-3.5 h-3.5 text-brand-500 shrink-0" />
+                          <span>{ach.user?.student_profile?.university?.code || 'Campus'} • {ach.user?.student_profile?.department?.name || 'Student'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Level & Year */}
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge
+                        variant={
+                          ach.level === 'international' ? 'purple' : ach.level === 'national' ? 'blue' : 'amber'
+                        }
+                        size="sm"
+                      >
+                        {ach.level.toUpperCase()}
+                      </Badge>
+                      <span className="font-mono text-xs font-bold text-slate-600">{ach.year}</span>
+                    </div>
+
+                    <h3 className="font-extrabold text-sm text-navy mt-1 leading-snug">{ach.title}</h3>
+                    <div className="text-xs font-bold text-amber-600 mt-1 flex items-center gap-1.5">
+                      <Trophy className="w-3.5 h-3.5" />
+                      <span>{ach.rank || 'Champion / Awardee'}</span>
+                    </div>
+
+                    {ach.description && (
+                      <p className="text-xs text-slate-500 mt-2 line-clamp-3 leading-relaxed">
+                        {ach.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Verification Status & Admin Actions */}
+                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <Badge variant={ach.is_verified ? 'emerald' : 'amber'} size="sm">
+                      {ach.is_verified ? 'Verified & Endorsed' : 'Pending Verification'}
+                    </Badge>
+
+                    {canVerify && !ach.is_verified && (
+                      <button
+                        onClick={() => handleVerify(ach.id)}
+                        disabled={verifyingId === ach.id}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs transition-all disabled:opacity-50"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>{verifyingId === ach.id ? 'Verifying...' : 'Verify'}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 2: PERSONAL PORTFOLIO & CV */}
+      {activeTab === 'my_portfolio' && (
+        <div className="space-y-8">
+          {/* Header Card */}
+          <div className="bg-gradient-to-r from-navy via-brand-950 to-brand-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold text-brand-300 uppercase tracking-widest">
+                <Sparkles className="w-4 h-4 text-brand-400" />
+                Curriculum Vitae & Verified Activity Portfolio
+              </div>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
+                {portfolio?.user?.name || user?.name}'s Digital Portfolio
+              </h2>
+              <p className="mt-1 text-slate-300 text-xs sm:text-sm max-w-xl">
+                A comprehensive, verified record of your campus competitions, certificates, events attended, and organization leadership positions.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2.5">
+              <button
+                onClick={exportPDF}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+              >
+                <Download className="w-4 h-4" />
+                Export Portfolio PDF
+              </button>
+              <button
+                onClick={() => setAchievementModal(true)}
+                className="px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+              >
+                <Trophy className="w-4 h-4" />
+                Add Award
+              </button>
+              <button
+                onClick={() => setActivityModal(true)}
+                className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Add Activity
+              </button>
+            </div>
+          </div>
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -375,6 +597,8 @@ export const PortfolioPage: React.FC = () => {
           </div>
         </div>
       </div>
+        </div>
+      )}
 
       {/* Add Award Modal */}
       <Modal
