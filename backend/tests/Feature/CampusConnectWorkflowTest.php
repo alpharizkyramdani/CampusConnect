@@ -407,4 +407,46 @@ class CampusConnectWorkflowTest extends TestCase
         $approveResponse->assertStatus(200)
                         ->assertJsonPath('success', true);
     }
+
+    public function test_super_admin_can_delete_university()
+    {
+        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $rand = rand(1000, 9999);
+        $univ = University::create([
+            'name' => "Campus to Delete {$rand}",
+            'slug' => "campus-delete-{$rand}",
+            'code' => "DEL{$rand}",
+            'email' => "del_{$rand}@test.com",
+            'address' => 'Jl. Test Delete No. 1',
+            'status' => 'active',
+        ]);
+
+        $deleteResponse = $this->actingAs($superAdmin)->deleteJson("/api/v1/universities/{$univ->id}");
+        $deleteResponse->assertStatus(200)
+                       ->assertJsonPath('success', true);
+
+        $this->assertSoftDeleted('universities', ['id' => $univ->id]);
+    }
+
+    public function test_admin_can_assign_and_revoke_user_role()
+    {
+        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $role = \App\Models\Role::where('slug', 'department_admin')->first();
+
+        // 1. Assign role
+        $assignResponse = $this->actingAs($superAdmin)->postJson("/api/v1/users/{$student->id}/assign-role", [
+            'role_id' => $role->id,
+            'university_id' => 1,
+        ]);
+        $assignResponse->assertStatus(201);
+        $assignmentId = $assignResponse->json('data.id');
+
+        // 2. Revoke role
+        $revokeResponse = $this->actingAs($superAdmin)->deleteJson("/api/v1/users/{$student->id}/roles/{$assignmentId}");
+        $revokeResponse->assertStatus(200)
+                       ->assertJsonPath('success', true);
+
+        $this->assertDatabaseMissing('user_role_assignments', ['id' => $assignmentId]);
+    }
 }

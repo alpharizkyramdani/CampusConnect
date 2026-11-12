@@ -344,6 +344,7 @@ export const DirectoryPage: React.FC = () => {
         await fetchData();
       }
     } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete university.');
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to delete university.' });
     } finally {
       setActionLoading(false);

@@ -160,6 +160,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{id}', [UserManagementController::class, 'show']);
         Route::put('/users/{id}/status', [UserManagementController::class, 'updateStatus']);
         Route::post('/users/{id}/assign-role', [UserManagementController::class, 'assignRole']);
+        Route::delete('/users/{userId}/roles/{assignmentId}', [UserManagementController::class, 'revokeRole']);
         Route::get('/roles', [UserManagementController::class, 'roles']);
 
         // Audit Logs (Module 18)

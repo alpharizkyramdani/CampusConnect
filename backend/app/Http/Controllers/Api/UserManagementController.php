@@ -96,6 +96,19 @@ class UserManagementController extends Controller
             'organization_id' => 'nullable|exists:organizations,id',
         ]);
 
+        $existing = UserRoleAssignment::where('user_id', $user->id)
+            ->where('role_id', $request->role_id)
+            ->where('university_id', $request->university_id)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'success' => true,
+                'message' => "User already holds this role for the specified scope.",
+                'data' => $existing->load(['role', 'university', 'department']),
+            ]);
+        }
+
         $assignment = UserRoleAssignment::create([
             'user_id' => $user->id,
             'role_id' => $request->role_id,
@@ -112,6 +125,38 @@ class UserManagementController extends Controller
             'message' => 'Role assigned successfully',
             'data' => $assignment->load(['role', 'university', 'department']),
         ], 201);
+    }
+
+    public function revokeRole(Request $request, $userId, $assignmentId): JsonResponse
+    {
+        $user = User::findOrFail($userId);
+        $assignment = UserRoleAssignment::where('user_id', $user->id)
+            ->where('id', $assignmentId)
+            ->firstOrFail();
+
+        $roleName = $assignment->role ? $assignment->role->name : 'Role';
+
+        ActivityLog::create([
+            'university_id' => $assignment->university_id ?? $user->default_university_id,
+            'user_id' => $request->user()->id,
+            'action' => 'user.revoke_role',
+            'entity_type' => 'UserRoleAssignment',
+            'entity_id' => $assignment->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => [
+                'target_user' => $user->email,
+                'revoked_role' => $roleName,
+                'university_id' => $assignment->university_id,
+            ],
+        ]);
+
+        $assignment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Role {$roleName} has been revoked successfully from {$user->name}.",
+        ]);
     }
 
     public function store(Request $request): JsonResponse

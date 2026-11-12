@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Department;
 use App\Models\Faculty;
 use App\Models\University;
@@ -16,8 +17,9 @@ class UniversityController extends Controller
     public function index(Request $request): JsonResponse
     {
         $search = $request->query('search');
+        $status = $request->query('status');
 
-        $universities = University::where('status', 'active')
+        $universities = University::when($status, fn($q) => $q->where('status', $status))
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
