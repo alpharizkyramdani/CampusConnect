@@ -102,6 +102,9 @@ export interface LecturerProfile {
   title?: string;
   specialization?: string;
   bio?: string;
+  university?: University;
+  faculty?: Faculty;
+  department?: Department;
 }
 
 export interface AnnouncementCategory {

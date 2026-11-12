@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Department;
+use App\Models\LecturerProfile;
 use App\Models\Role;
+use App\Models\StudentProfile;
 use App\Models\User;
 use App\Models\UserRoleAssignment;
 use Illuminate\Http\JsonResponse;
@@ -29,7 +32,7 @@ class UserManagementController extends Controller
             })
             ->when($status, fn($q) => $q->where('status', $status))
             ->when($search, fn($q) => $q->where(fn($sub) => $sub->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")))
-            ->with(['roleAssignments.role', 'roleAssignments.university', 'studentProfile', 'lecturerProfile'])
+            ->with(['roleAssignments.role', 'roleAssignments.university', 'studentProfile.department', 'lecturerProfile.department', 'lecturerProfile.faculty'])
             ->latest()
             ->paginate(15);
 
@@ -227,6 +230,10 @@ class UserManagementController extends Controller
             'role_id' => 'required|exists:roles,id',
             'university_id' => 'nullable|exists:universities,id',
             'department_id' => 'nullable|exists:departments,id',
+            'nidn' => 'nullable|string|max:50',
+            'nim' => 'nullable|string|max:50',
+            'title' => 'nullable|string|max:100',
+            'specialization' => 'nullable|string|max:255',
         ]);
 
         $user = User::create([
@@ -249,6 +256,30 @@ class UserManagementController extends Controller
             'assigned_at' => now(),
         ]);
 
+        $department = $request->department_id ? Department::find($request->department_id) : null;
+
+        if ($role->slug === 'lecturer' || $request->filled('nidn')) {
+            LecturerProfile::create([
+                'user_id' => $user->id,
+                'university_id' => $request->university_id,
+                'faculty_id' => $department?->faculty_id,
+                'department_id' => $request->department_id,
+                'nidn' => $request->nidn ?? ('00' . rand(10000000, 99999999)),
+                'title' => $request->title ?? 'Dosen Pengajar / Peneliti',
+                'specialization' => $request->specialization ?? 'Academic Research & Education',
+            ]);
+        } elseif ($role->slug === 'student' || $request->filled('nim')) {
+            StudentProfile::create([
+                'user_id' => $user->id,
+                'university_id' => $request->university_id,
+                'faculty_id' => $department?->faculty_id,
+                'department_id' => $request->department_id,
+                'nim' => $request->nim ?? ('220' . rand(100000, 999999)),
+                'batch_year' => $request->batch_year ?? date('Y'),
+                'academic_status' => 'active',
+            ]);
+        }
+
         ActivityLog::create([
             'university_id' => $request->university_id,
             'user_id' => $request->user()->id,
@@ -261,7 +292,7 @@ class UserManagementController extends Controller
         return response()->json([
             'success' => true,
             'message' => "User {$user->name} created successfully with role {$role->name}.",
-            'data' => $user->load('roleAssignments.role', 'roleAssignments.university'),
+            'data' => $user->load('roleAssignments.role', 'roleAssignments.university', 'lecturerProfile', 'studentProfile'),
         ], 201);
     }
 

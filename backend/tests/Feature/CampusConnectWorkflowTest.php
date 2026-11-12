@@ -97,6 +97,23 @@ class CampusConnectWorkflowTest extends TestCase
         $student = User::where('email', 'student.alex@uir.ac.id')->first();
         
         $event = Event::first();
+        if (!$event) {
+            $cat = \App\Models\EventCategory::firstOrCreate(['name' => 'Academic Seminar', 'slug' => 'academic-seminar']);
+            $event = Event::create([
+                'university_id' => 1,
+                'category_id' => $cat->id,
+                'created_by' => $student->id,
+                'title' => 'National AI Summit 2026',
+                'slug' => 'national-ai-summit-2026-' . rand(100, 999),
+                'start_time' => now()->addDays(5),
+                'end_time' => now()->addDays(6),
+                'location' => 'Main Auditorium',
+                'quota' => 200,
+                'registered_count' => 0,
+                'status' => 'published',
+            ]);
+        }
+
         $existing = EventRegistration::where('event_id', $event->id)->where('user_id', $student->id)->first();
         
         if ($existing) {
@@ -131,6 +148,20 @@ class CampusConnectWorkflowTest extends TestCase
     public function test_certificate_public_verification()
     {
         $cert = Certificate::first();
+        if (!$cert) {
+            $student = User::where('email', 'student.alex@uir.ac.id')->first();
+            $cert = Certificate::create([
+                'university_id' => 1,
+                'user_id' => $student->id,
+                'title' => 'Certificate of Achievement',
+                'certificate_number' => 'CERT-UIR-2026-' . rand(1000, 9999),
+                'verify_hash' => \Illuminate\Support\Str::random(32),
+                'recipient_name' => $student->name,
+                'issue_date' => now()->format('Y-m-d'),
+                'issuer_name' => 'CampusConnect Academic Board',
+                'issued_at' => now(),
+            ]);
+        }
 
         // 1. Valid verification by verify_hash
         $response = $this->getJson("/api/v1/certificates/verify/{$cert->verify_hash}");
