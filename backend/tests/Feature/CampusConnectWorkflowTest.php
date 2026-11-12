@@ -388,11 +388,12 @@ class CampusConnectWorkflowTest extends TestCase
 
     public function test_super_admin_university_registration_approval()
     {
+        $rand = rand(1000, 9999);
         // 1. Submit university request
         $reqResponse = $this->postJson('/api/v1/auth/register-university', [
-            'university_name' => 'Universitas Sains Terbuka',
-            'email' => 'contact@ust.ac.id',
-            'website' => 'https://ust.ac.id',
+            'university_name' => "Universitas Sains Terbuka {$rand}",
+            'email' => "contact_{$rand}@ust.ac.id",
+            'website' => "https://ust{$rand}.ac.id",
             'address' => 'Jl. Pendidikan Nasional No. 10',
             'contact_person' => 'Prof. Dr. Hendriawan',
             'contact_phone' => '+62811223344',

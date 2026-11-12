@@ -65,12 +65,31 @@ class UniversityController extends Controller
             'admin_notes' => $request->admin_notes ?? 'Approved by Super Admin.',
         ]);
 
-        $code = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $reg->university_name), 0, 4));
+        $baseSlug = Str::slug($reg->university_name) ?: 'univ';
+        $slug = $baseSlug;
+        $counter = 1;
+        while (University::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+
+        $baseCode = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $reg->university_name), 0, 4));
+        if (strlen($baseCode) < 3) $baseCode = 'UNIV';
+        $code = $baseCode . rand(10, 99);
+        while (University::where('code', $code)->exists()) {
+            $code = $baseCode . rand(100, 999);
+        }
+
+        $email = $reg->email;
+        if (University::where('email', $email)->exists()) {
+            $parts = explode('@', $email);
+            $email = $parts[0] . '+' . rand(100, 999) . '@' . ($parts[1] ?? 'campusconnect.id');
+        }
+
         $univ = University::create([
             'name' => $reg->university_name,
-            'slug' => Str::slug($reg->university_name),
-            'code' => $code . rand(10, 99),
-            'email' => $reg->email,
+            'slug' => $slug,
+            'code' => $code,
+            'email' => $email,
             'website' => $reg->website,
             'address' => $reg->address,
             'status' => 'active',

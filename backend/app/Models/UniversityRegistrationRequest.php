@@ -21,3 +21,4 @@ class UniversityRegistrationRequest extends Model
         'notes',
     ];
 }
+

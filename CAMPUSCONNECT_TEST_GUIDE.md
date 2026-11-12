@@ -305,3 +305,4 @@ Semua akun demo menggunakan kata sandi default: **`password`**
 ## 4. Kesimpulan Pengujian
 
 Seluruh skenario pengujian di atas telah diverifikasi secara menyeluruh. Platform **CampusConnect** terbukti berfungsi secara penuh (*functional end-to-end*), responsif pada berbagai ukuran layar, aman secara hak akses (*RBAC*), dan terisolasi secara multi-tenant.
+

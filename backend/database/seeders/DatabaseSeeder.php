@@ -98,26 +98,26 @@ class DatabaseSeeder extends Seeder
 
         // 2. UNIVERSITIES
         $uir = University::create([
-            'name' => 'Universitas Indonesia Raya',
+            'name' => 'Universitas Islam Riau',
             'slug' => 'uir',
             'code' => 'UIR',
             'email' => 'info@uir.ac.id',
             'website' => 'https://uir.ac.id',
-            'address' => 'Jl. Merdeka Akademika No. 45, Jakarta Pusat',
+            'address' => 'Jl. Kaharuddin Nasution No. 113, Pekanbaru, Riau',
             'logo' => 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=150&auto=format&fit=crop&q=80',
-            'description' => 'Premier research and comprehensive university fostering innovation and leadership in Indonesia.',
+            'description' => 'Universitas unggul yang berkomitmen mencetak generasi profesional, berdaya saing, dan berakhlak mulia.',
             'status' => 'active',
         ]);
 
         $itn = University::create([
-            'name' => 'Institut Teknologi Nusantara',
+            'name' => 'Institut Teknologi Nasional',
             'slug' => 'itn',
             'code' => 'ITN',
             'email' => 'contact@itn.ac.id',
             'website' => 'https://itn.ac.id',
-            'address' => 'Jl. Ganesha Sains No. 10, Bandung',
+            'address' => 'Jl. Bendungan Sigura-gura No. 2, Malang, Jawa Timur',
             'logo' => 'https://images.unsplash.com/photo-1562774053-701939374585?w=150&auto=format&fit=crop&q=80',
-            'description' => 'Leading institute of technology specializing in engineering, computing, and applied science.',
+            'description' => 'Institut teknologi terkemuka berfokus pada rekayasa teknologi, kecerdasan buatan, dan sains terapan.',
             'status' => 'active',
         ]);
 

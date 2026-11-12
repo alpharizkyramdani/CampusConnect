@@ -160,7 +160,7 @@ export const LoginPage: React.FC = () => {
               <ShieldCheck className="w-3.5 h-3.5 text-brand-600" />
               <span>Quick Test Accounts (Click to Fill)</span>
             </div>
-            <div className="grid grid-cols-2 gap-1.5 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-xs max-h-52 overflow-y-auto pr-1">
               <button
                 type="button"
                 onClick={() => fillDemoAccount('superadmin@campusconnect.id')}
@@ -174,8 +174,16 @@ export const LoginPage: React.FC = () => {
                 onClick={() => fillDemoAccount('admin.uir@campusconnect.id')}
                 className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
               >
-                <div className="font-bold truncate">Campus Admin</div>
-                <div className="text-[10px] text-slate-500 truncate">Univ. Indonesia Raya</div>
+                <div className="font-bold truncate">Admin UIR</div>
+                <div className="text-[10px] text-slate-500 truncate">Univ. Islam Riau</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoAccount('admin.itn@campusconnect.id')}
+                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
+              >
+                <div className="font-bold truncate">Admin ITN</div>
+                <div className="text-[10px] text-slate-500 truncate">Inst. Tek. Nasional</div>
               </button>
               <button
                 type="button"
@@ -187,11 +195,43 @@ export const LoginPage: React.FC = () => {
               </button>
               <button
                 type="button"
+                onClick={() => fillDemoAccount('ukm.robotics@uir.ac.id')}
+                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
+              >
+                <div className="font-bold truncate">UKM Admin</div>
+                <div className="text-[10px] text-slate-500 truncate">Robotics Club</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoAccount('bem.ft@uir.ac.id')}
+                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
+              >
+                <div className="font-bold truncate">Ormawa Admin</div>
+                <div className="text-[10px] text-slate-500 truncate">BEM FT</div>
+              </button>
+              <button
+                type="button"
                 onClick={() => fillDemoAccount('student.alex@uir.ac.id')}
                 className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
               >
-                <div className="font-bold truncate">Student (Alex)</div>
-                <div className="text-[10px] text-slate-500 truncate">Multi-role (Student+UKM)</div>
+                <div className="font-bold truncate">Alex Chandra</div>
+                <div className="text-[10px] text-slate-500 truncate">Student + UKM</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoAccount('student.budi@itn.ac.id')}
+                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
+              >
+                <div className="font-bold truncate">Budi Santoso</div>
+                <div className="text-[10px] text-slate-500 truncate">Student ITN</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoAccount('lecturer.sarah@uir.ac.id')}
+                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
+              >
+                <div className="font-bold truncate">Dr. Sarah</div>
+                <div className="text-[10px] text-slate-500 truncate">Lecturer UIR</div>
               </button>
             </div>
           </div>
