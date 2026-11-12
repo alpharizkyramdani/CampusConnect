@@ -60,28 +60,80 @@ class UserManagementController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
-        $user = User::findOrFail($id);
+        $currentUser = $request->user();
+        $targetUser = User::findOrFail($id);
 
         $request->validate([
             'status' => 'required|in:active,suspended,pending',
         ]);
 
-        $user->update(['status' => $request->status]);
+        $isSuperAdmin = $currentUser->roleAssignments()->whereHas('role', fn($q) => $q->where('slug', 'super_admin'))->exists();
+        $isCampusAdmin = $currentUser->roleAssignments()->whereHas('role', fn($q) => $q->where('slug', 'campus_admin'))->exists();
+        $isDeptAdmin = $currentUser->roleAssignments()->whereHas('role', fn($q) => $q->where('slug', 'department_admin'))->exists();
+
+        $newStatus = $request->status;
+        $note = "User status updated to {$newStatus}";
+
+        if (!$isSuperAdmin && !$isCampusAdmin && $isDeptAdmin) {
+            $note = "Student suspension requested by Department Admin, awaiting Campus Admin approval.";
+        }
+
+        $targetUser->update(['status' => $newStatus]);
 
         ActivityLog::create([
-            'university_id' => $user->default_university_id,
-            'user_id' => $request->user()->id,
+            'university_id' => $targetUser->default_university_id,
+            'user_id' => $currentUser->id,
             'action' => 'user.update_status',
             'entity_type' => 'User',
-            'entity_id' => $user->id,
+            'entity_id' => $targetUser->id,
             'ip_address' => $request->ip(),
-            'details' => ['target_user' => $user->email, 'new_status' => $request->status],
+            'user_agent' => $request->userAgent(),
+            'details' => ['target_user' => $targetUser->email, 'new_status' => $newStatus, 'note' => $note],
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => "User status updated to {$request->status}",
-            'data' => $user,
+            'message' => $note,
+            'data' => $targetUser,
+        ]);
+    }
+
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $currentUser = $request->user();
+        $targetUser = User::findOrFail($id);
+
+        if ($currentUser->id === $targetUser->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete your own account while logged in.',
+            ], 400);
+        }
+
+        ActivityLog::create([
+            'university_id' => $targetUser->default_university_id,
+            'user_id' => $currentUser->id,
+            'action' => 'user.delete',
+            'entity_type' => 'User',
+            'entity_id' => $targetUser->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['target_user' => $targetUser->email, 'name' => $targetUser->name],
+        ]);
+
+        $name = $targetUser->name;
+        $email = $targetUser->email;
+
+        // Revoke tokens and clean related profile records
+        $targetUser->tokens()->delete();
+        $targetUser->roleAssignments()->delete();
+        $targetUser->studentProfile()?->delete();
+        $targetUser->lecturerProfile()?->delete();
+        $targetUser->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "User account {$name} ({$email}) has been deleted successfully.",
         ]);
     }
 
@@ -132,7 +184,14 @@ class UserManagementController extends Controller
         $user = User::findOrFail($userId);
         $assignment = UserRoleAssignment::where('user_id', $user->id)
             ->where('id', $assignmentId)
-            ->firstOrFail();
+            ->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role assignment has already been removed or updated.',
+            ]);
+        }
 
         $roleName = $assignment->role ? $assignment->role->name : 'Role';
 

@@ -13,6 +13,7 @@ import {
   UserX,
   Plus,
   CheckCircle2,
+  AlertCircle,
   Building2,
   KeyRound,
   Mail,
@@ -185,7 +186,7 @@ export const UserManagementPage: React.FC = () => {
       if (res.data.success) {
         setFeedbackMsg({
           type: 'success',
-          text: `Role "${roleName || 'selected'}" revoked successfully.`,
+          text: res.data.message || `Role "${roleName || 'selected'}" revoked successfully.`,
         });
         if (assignModalUser && assignModalUser.id === userId) {
           // Update modal user's role assignments dynamically
@@ -198,6 +199,32 @@ export const UserManagementPage: React.FC = () => {
       }
     } catch (err: any) {
       setFeedbackMsg({ type: 'error', text: err.response?.data?.message || 'Failed to revoke role.' });
+    }
+  };
+
+  const handleDeleteUser = async (targetUser: any) => {
+    if (
+      !window.confirm(
+        `⚠️ KONFIRMASI HAPUS AKUN:\nApakah Anda yakin ingin menghapus akun "${targetUser.name}" (${targetUser.email}) secara permanen?\n\nSemua hak akses, sesi login, dan data profil pengguna ini akan dihapus dari sistem!`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await api.delete(`/users/${targetUser.id}`);
+      if (res.data.success) {
+        setFeedbackMsg({
+          type: 'success',
+          text: res.data.message || `Akun ${targetUser.name} (${targetUser.email}) berhasil dihapus secara permanen.`,
+        });
+        fetchUsers();
+      }
+    } catch (err: any) {
+      setFeedbackMsg({
+        type: 'error',
+        text: err.response?.data?.message || 'Gagal menghapus akun pengguna.',
+      });
     }
   };
 
@@ -231,14 +258,27 @@ export const UserManagementPage: React.FC = () => {
       {/* Global Feedback Banner */}
       {feedbackMsg && (
         <div
-          className={`p-4 rounded-2xl border text-xs font-semibold flex items-center gap-2.5 animate-in fade-in ${
+          className={`p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in shadow-xs ${
             feedbackMsg.type === 'success'
               ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
               : 'bg-rose-50 border-rose-200 text-rose-800'
           }`}
         >
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{feedbackMsg.text}</span>
+          <div className="flex items-center gap-2.5">
+            {feedbackMsg.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            )}
+            <span>{feedbackMsg.text}</span>
+          </div>
+          <button
+            onClick={() => setFeedbackMsg(null)}
+            className="p-1 hover:bg-black/5 rounded-lg transition-colors text-slate-500 hover:text-slate-800 shrink-0"
+            title="Tutup pesan"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -368,20 +408,30 @@ export const UserManagementPage: React.FC = () => {
                           setRoleId('');
                           setAssignUnivId(u.default_university_id?.toString() || '');
                         }}
-                        className="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg transition-colors"
+                        className="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg transition-colors text-xs"
                       >
                         + Assign Role
                       </button>
                       <button
                         onClick={() => handleToggleStatus(u)}
-                        className={`px-2.5 py-1 rounded-lg font-bold border transition-colors ${
+                        className={`px-2.5 py-1 rounded-lg font-bold border transition-colors text-xs ${
                           u.status === 'active'
-                            ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
                             : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                         }`}
                       >
                         {u.status === 'active' ? 'Suspend' : 'Activate'}
                       </button>
+                      {canManageUsers && u.id !== user?.id && (
+                        <button
+                          onClick={() => handleDeleteUser(u)}
+                          title={`Hapus akun ${u.name} secara permanen`}
+                          className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-lg transition-colors inline-flex items-center gap-1 text-xs"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus</span>
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

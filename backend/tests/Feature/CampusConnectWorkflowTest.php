@@ -14,6 +14,7 @@ use App\Models\MaintenanceReport;
 use App\Models\LostFoundItem;
 use App\Models\ServiceType;
 use App\Models\ServiceRequest;
+use App\Models\Role;
 use App\Models\DiscussionCategory;
 use App\Models\DiscussionPost;
 use Illuminate\Support\Facades\Hash;
@@ -500,5 +501,45 @@ class CampusConnectWorkflowTest extends TestCase
         $facDelete = $this->actingAs($superAdmin)->deleteJson("/api/v1/faculties/{$facId}");
         $facDelete->assertStatus(200);
         $this->assertDatabaseMissing('faculties', ['id' => $facId]);
+    }
+
+    public function test_user_account_deletion_and_graceful_role_revocation()
+    {
+        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $univ = University::first();
+        $role = Role::where('slug', 'student')->first();
+        $rand = rand(1000, 9999);
+
+        // 1. Create a user
+        $createRes = $this->actingAs($superAdmin)->postJson('/api/v1/users', [
+            'name' => "Temporary Test User {$rand}",
+            'email' => "tempuser{$rand}@example.com",
+            'password' => 'Password123!',
+            'role_id' => $role->id,
+            'university_id' => $univ->id,
+        ]);
+        $createRes->assertStatus(201);
+        $userId = $createRes->json('data.id');
+        $assignmentId = $createRes->json('data.role_assignments.0.id');
+
+        // 2. Revoke role once
+        $revoke1 = $this->actingAs($superAdmin)->deleteJson("/api/v1/users/{$userId}/roles/{$assignmentId}");
+        $revoke1->assertStatus(200)
+                ->assertJsonPath('success', true);
+
+        // 3. Double revoke (should be handled gracefully, no ModelNotFoundException!)
+        $revoke2 = $this->actingAs($superAdmin)->deleteJson("/api/v1/users/{$userId}/roles/{$assignmentId}");
+        $revoke2->assertStatus(200)
+                ->assertJsonPath('success', true);
+
+        // 4. Super Admin deletes user account
+        $deleteRes = $this->actingAs($superAdmin)->deleteJson("/api/v1/users/{$userId}");
+        $deleteRes->assertStatus(200)
+                  ->assertJsonPath('success', true);
+        $this->assertDatabaseMissing('users', ['id' => $userId]);
+
+        // 5. Attempting to delete own account is rejected
+        $selfDelete = $this->actingAs($superAdmin)->deleteJson("/api/v1/users/{$superAdmin->id}");
+        $selfDelete->assertStatus(400);
     }
 }

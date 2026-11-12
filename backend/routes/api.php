@@ -159,6 +159,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/users', [UserManagementController::class, 'store']);
         Route::get('/users/{id}', [UserManagementController::class, 'show']);
         Route::put('/users/{id}/status', [UserManagementController::class, 'updateStatus']);
+        Route::delete('/users/{id}', [UserManagementController::class, 'destroy']);
         Route::post('/users/{id}/assign-role', [UserManagementController::class, 'assignRole']);
         Route::delete('/users/{userId}/roles/{assignmentId}', [UserManagementController::class, 'revokeRole']);
         Route::get('/roles', [UserManagementController::class, 'roles']);
