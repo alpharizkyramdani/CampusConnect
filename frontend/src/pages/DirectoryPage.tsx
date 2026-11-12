@@ -22,6 +22,10 @@ import {
   Globe,
   Phone,
   FileText,
+  Pencil,
+  Trash2,
+  Power,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface UniversityRequest {
@@ -58,6 +62,22 @@ export const DirectoryPage: React.FC = () => {
   const [website, setWebsite] = useState('');
   const [address, setAddress] = useState('');
   const [description, setDescription] = useState('');
+
+  // Modal State for Edit University (Super Admin)
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingUniv, setEditingUniv] = useState<University | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editCode, setEditCode] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editWebsite, setEditWebsite] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editStatus, setEditStatus] = useState<'active' | 'suspended'>('active');
+
+  // Modal State for Delete University (Super Admin)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingUniv, setDeletingUniv] = useState<University | null>(null);
+
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -148,6 +168,105 @@ export const DirectoryPage: React.FC = () => {
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to create university.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openEditModal = (univ: University) => {
+    setEditingUniv(univ);
+    setEditName(univ.name);
+    setEditCode(univ.code);
+    setEditEmail(univ.email);
+    setEditWebsite(univ.website || '');
+    setEditAddress(univ.address || '');
+    setEditDescription(univ.description || '');
+    setEditStatus(univ.status === 'suspended' ? 'suspended' : 'active');
+    setEditModalOpen(true);
+    setMessage(null);
+  };
+
+  const handleUpdateUniversity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUniv) return;
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.put(`/universities/${editingUniv.id}`, {
+        name: editName,
+        code: editCode,
+        email: editEmail,
+        website: editWebsite || null,
+        address: editAddress,
+        description: editDescription || null,
+        status: editStatus,
+      });
+
+      if (res.data.success) {
+        setMessage({ type: 'success', text: `University "${editName}" updated successfully!` });
+        setEditModalOpen(false);
+        setEditingUniv(null);
+        await fetchData();
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update university.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (univ: University) => {
+    const nextStatus = univ.status === 'active' ? 'suspended' : 'active';
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.put(`/universities/${univ.id}`, {
+        name: univ.name,
+        code: univ.code,
+        email: univ.email,
+        website: univ.website || null,
+        address: univ.address || 'Campus Headquarters',
+        description: univ.description || null,
+        status: nextStatus,
+      });
+
+      if (res.data.success) {
+        setMessage({
+          type: 'success',
+          text: `University "${univ.name}" status updated to ${nextStatus.toUpperCase()}!`,
+        });
+        await fetchData();
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to toggle status.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openDeleteModal = (univ: University) => {
+    setDeletingUniv(univ);
+    setDeleteModalOpen(true);
+    setMessage(null);
+  };
+
+  const handleDeleteUniversity = async () => {
+    if (!deletingUniv) return;
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.delete(`/universities/${deletingUniv.id}`);
+      if (res.data.success) {
+        setMessage({
+          type: 'success',
+          text: `University "${deletingUniv.name}" has been removed successfully!`,
+        });
+        setDeleteModalOpen(false);
+        setDeletingUniv(null);
+        await fetchData();
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to delete university.' });
     } finally {
       setActionLoading(false);
     }
@@ -312,19 +431,65 @@ export const DirectoryPage: React.FC = () => {
                   </div>
                 </div>
 
-                {u.website && (
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <a
-                      href={u.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs font-bold text-brand-600 flex items-center gap-1 hover:underline"
-                    >
-                      Official Portal <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                    <Badge variant="emerald" size="sm">Active Tenancy</Badge>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    {u.website ? (
+                      <a
+                        href={u.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs font-bold text-brand-600 flex items-center gap-1 hover:underline"
+                      >
+                        Official Portal <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      <span className="text-[11px] text-slate-400 italic">No web link provided</span>
+                    )}
+
+                    <Badge variant={u.status === 'suspended' ? 'rose' : 'emerald'} size="sm">
+                      {u.status === 'suspended' ? 'Suspended' : 'Active Tenancy'}
+                    </Badge>
                   </div>
-                )}
+
+                  {isSuperAdmin && (
+                    <div className="pt-2 border-t border-dashed border-slate-200 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(u)}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all"
+                        >
+                          <Pencil className="w-3 h-3 text-slate-500" />
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(u)}
+                          disabled={actionLoading}
+                          className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all disabled:opacity-50 ${
+                            u.status === 'active'
+                              ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                          }`}
+                        >
+                          <Power className="w-3 h-3" />
+                          <span>{u.status === 'active' ? 'Suspend' : 'Activate'}</span>
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => openDeleteModal(u)}
+                        disabled={actionLoading}
+                        className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all disabled:opacity-50"
+                      >
+                        <Trash2 className="w-3 h-3 text-rose-600" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -574,6 +739,155 @@ export const DirectoryPage: React.FC = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal: Edit University (Super Admin) */}
+      <Modal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        title={`Edit Institution: ${editingUniv?.name || ''}`}
+      >
+        <form onSubmit={handleUpdateUniversity} className="space-y-4">
+          <p className="text-xs text-slate-500">
+            Update institutional records, metadata, and tenancy operational status.
+          </p>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Official University Name</label>
+            <input
+              type="text"
+              required
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Campus Code</label>
+              <input
+                type="text"
+                required
+                value={editCode}
+                onChange={(e) => setEditCode(e.target.value.toUpperCase())}
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono font-bold focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Institutional Email</label>
+              <input
+                type="email"
+                required
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Official Website</label>
+              <input
+                type="url"
+                value={editWebsite}
+                onChange={(e) => setEditWebsite(e.target.value)}
+                placeholder="https://..."
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Tenancy Status</label>
+              <select
+                value={editStatus}
+                onChange={(e) => setEditStatus(e.target.value as 'active' | 'suspended')}
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 font-semibold focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+              >
+                <option value="active">Active (Full Access)</option>
+                <option value="suspended">Suspended (Access Locked)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Campus Address</label>
+            <input
+              type="text"
+              required
+              value={editAddress}
+              onChange={(e) => setEditAddress(e.target.value)}
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+            <textarea
+              rows={3}
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={actionLoading}
+              className="px-5 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              {actionLoading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Delete University Confirmation (Super Admin) */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete University Confirmation"
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="text-xs text-rose-900 space-y-1">
+              <p className="font-bold">Are you sure you want to delete this university?</p>
+              <p className="text-rose-700">
+                You are about to remove <strong>{deletingUniv?.name}</strong> ({deletingUniv?.code}).
+                This will soft-delete the institution from the active CampusConnect directory while safely preserving historical records and audit logs.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setDeleteModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteUniversity}
+              disabled={actionLoading}
+              className="px-5 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {actionLoading ? 'Deleting...' : 'Yes, Delete University'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

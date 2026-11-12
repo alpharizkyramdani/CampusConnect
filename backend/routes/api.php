@@ -161,6 +161,8 @@ Route::prefix('v1')->group(function () {
 
         // University Management (Super Admin)
         Route::post('/universities', [UniversityController::class, 'store']);
+        Route::put('/universities/{id}', [UniversityController::class, 'update']);
+        Route::delete('/universities/{id}', [UniversityController::class, 'destroy']);
         Route::get('/university-requests', [UniversityController::class, 'getRequests']);
         Route::post('/university-requests/{id}/approve', [UniversityController::class, 'approveRequest']);
         Route::post('/university-requests/{id}/reject', [UniversityController::class, 'rejectRequest']);

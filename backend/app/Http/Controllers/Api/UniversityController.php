@@ -156,6 +156,67 @@ class UniversityController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, $id): JsonResponse
+    {
+        $univ = University::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20|unique:universities,code,' . $univ->id,
+            'email' => 'required|email|unique:universities,email,' . $univ->id,
+            'website' => 'nullable|url',
+            'address' => 'required|string',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,suspended',
+        ]);
+
+        $univ->update([
+            'name' => $request->name,
+            'code' => strtoupper($request->code),
+            'email' => $request->email,
+            'website' => $request->website,
+            'address' => $request->address,
+            'description' => $request->description,
+            'status' => $request->status,
+        ]);
+
+        ActivityLog::create([
+            'university_id' => $univ->id,
+            'user_id' => $request->user()->id,
+            'action' => 'university.update',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['university_id' => $univ->id, 'name' => $univ->name, 'status' => $univ->status],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'University updated successfully.',
+            'data' => $univ,
+        ]);
+    }
+
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $univ = University::findOrFail($id);
+
+        ActivityLog::create([
+            'university_id' => $univ->id,
+            'user_id' => $request->user()->id,
+            'action' => 'university.delete',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['university_id' => $univ->id, 'name' => $univ->name],
+        ]);
+
+        $univ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "University {$univ->name} has been deleted successfully.",
+        ]);
+    }
+
     public function faculties($universityId): JsonResponse
     {
         $faculties = Faculty::where('university_id', $universityId)->with('departments')->get();
