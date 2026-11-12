@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DirectMessage;
 use App\Models\User;
+use App\Notifications\SocialNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ChatController extends Controller
 {
@@ -121,6 +123,19 @@ class ChatController extends Controller
             'message' => $request->message,
             'is_read' => false,
         ]);
+
+        // Send instant notification to receiver
+        $receiver->notify(new SocialNotification(
+            type: 'message',
+            title: "Pesan Baru dari {$sender->name}",
+            message: Str::limit($request->message, 80),
+            extraData: [
+                'sender_id' => $sender->id,
+                'sender_name' => $sender->name,
+                'sender_avatar' => $sender->avatar,
+                'action_url' => "/messages",
+            ]
+        ));
 
         return response()->json([
             'success' => true,

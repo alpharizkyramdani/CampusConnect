@@ -96,6 +96,12 @@ class SocialAndChatTest extends TestCase
                 'followers_count' => 1,
             ]);
 
+        // Check that Diana received a follow notification
+        $dianaNotif = $userB->notifications()->first();
+        $this->assertNotNull($dianaNotif);
+        $this->assertEquals('follow', $dianaNotif->data['type']);
+        $this->assertEquals($userA->id, $dianaNotif->data['sender_id']);
+
         // Check follow status
         $statusRes = $this->actingAs($userA, 'sanctum')->getJson("/api/v1/users/{$userB->id}/follow-status");
         $statusRes->assertStatus(200)

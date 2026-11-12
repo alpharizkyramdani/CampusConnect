@@ -88,6 +88,35 @@ class SocialFeedSeeder extends Seeder
             'message' => 'Halo! Jangan lupa besok kita kumpul bahas materi presentasi praktikum jam 10 pagi ya.',
             'is_read' => false,
         ]);
+
+        // 4. Sample Notifications for users
+        foreach ($users as $idx => $target) {
+            $follower = $users[($idx + 1) % $users->count()];
+            $target->notify(new \App\Notifications\SocialNotification(
+                type: 'follow',
+                title: 'Pengikut Baru',
+                message: "{$follower->name} mulai mengikuti Anda.",
+                extraData: [
+                    'sender_id' => $follower->id,
+                    'sender_name' => $follower->name,
+                    'sender_avatar' => $follower->avatar,
+                    'action_url' => "/profile/{$follower->id}",
+                ]
+            ));
+
+            $chatter = $users[($idx + 2) % $users->count()];
+            $target->notify(new \App\Notifications\SocialNotification(
+                type: 'message',
+                title: "Pesan Baru dari {$chatter->name}",
+                message: "Hai! Apa kabar? Ada info materi praktikum terbaru?",
+                extraData: [
+                    'sender_id' => $chatter->id,
+                    'sender_name' => $chatter->name,
+                    'sender_avatar' => $chatter->avatar,
+                    'action_url' => "/messages",
+                ]
+            ));
+        }
     }
 }
 

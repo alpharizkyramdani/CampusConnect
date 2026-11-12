@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\CampusPost;
 use App\Models\CampusPostComment;
 use App\Models\CampusPostLike;
+use App\Notifications\SocialNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SocialFeedController extends Controller
 {
@@ -133,6 +135,21 @@ class SocialFeedController extends Controller
             ]);
             $post->increment('likes_count');
             $isLiked = true;
+
+            if ($post->user_id !== $user->id && $post->author) {
+                $post->author->notify(new SocialNotification(
+                    type: 'like',
+                    title: 'Suka Postingan',
+                    message: "{$user->name} menyukai postingan Anda.",
+                    extraData: [
+                        'sender_id' => $user->id,
+                        'sender_name' => $user->name,
+                        'sender_avatar' => $user->avatar,
+                        'post_id' => $post->id,
+                        'action_url' => "/feed",
+                    ]
+                ));
+            }
         }
 
         return response()->json([
@@ -193,6 +210,21 @@ class SocialFeedController extends Controller
         ]);
 
         $post->increment('comments_count');
+
+        if ($post->user_id !== $request->user()->id && $post->author) {
+            $post->author->notify(new SocialNotification(
+                type: 'comment',
+                title: 'Komentar Baru',
+                message: "{$request->user()->name} mengomentari postingan Anda: \"" . Str::limit($request->content, 60) . "\"",
+                extraData: [
+                    'sender_id' => $request->user()->id,
+                    'sender_name' => $request->user()->name,
+                    'sender_avatar' => $request->user()->avatar,
+                    'post_id' => $post->id,
+                    'action_url' => "/feed",
+                ]
+            ));
+        }
 
         return response()->json([
             'success' => true,

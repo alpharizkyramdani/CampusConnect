@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserFollow;
+use App\Notifications\SocialNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -37,6 +38,19 @@ class FollowController extends Controller
             ]);
             $isFollowing = true;
             $message = "You are now following {$targetUser->name}!";
+
+            // Send notification to target user
+            $targetUser->notify(new SocialNotification(
+                type: 'follow',
+                title: 'Pengikut Baru',
+                message: "{$currentUser->name} mulai mengikuti Anda.",
+                extraData: [
+                    'sender_id' => $currentUser->id,
+                    'sender_name' => $currentUser->name,
+                    'sender_avatar' => $currentUser->avatar,
+                    'action_url' => "/profile/{$currentUser->id}",
+                ]
+            ));
         }
 
         $followersCount = UserFollow::where('user_id', $targetUser->id)->count();
