@@ -2,15 +2,49 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
-import { GraduationCap, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Modal } from '../components/ui/Modal';
+import { GraduationCap, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle, CheckCircle2, KeyRound } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Forgot password modal state
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState('');
+  const [resetError, setResetError] = useState('');
+
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetError('');
+    setResetSuccess('');
+
+    try {
+      const res = await api.post('/auth/reset-password', {
+        email: resetEmail,
+        new_password: resetNewPassword,
+      });
+
+      if (res.data.success) {
+        setResetSuccess(res.data.message || 'Password reset successfully!');
+        setPassword(resetNewPassword);
+        setEmail(resetEmail);
+      }
+    } catch (err: any) {
+      setResetError(err.response?.data?.message || 'Password reset failed.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,9 +117,18 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => { setResetModalOpen(true); setResetSuccess(''); setResetError(''); }}
+                  className="text-[11px] font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="mt-1.5 relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Lock className="w-4 h-4" />
@@ -156,19 +199,96 @@ export const LoginPage: React.FC = () => {
           <div className="mt-6 text-center text-xs text-slate-600 space-y-1.5">
             <div>
               New student?{' '}
-              <Link to="/register-student" className="font-bold text-brand-600 hover:text-brand-700">
+              <Link to="/register?type=student" className="font-bold text-brand-600 hover:text-brand-700">
                 Register Student Account
               </Link>
             </div>
             <div>
               Academic staff?{' '}
-              <Link to="/register-lecturer" className="font-bold text-brand-600 hover:text-brand-700">
+              <Link to="/register?type=lecturer" className="font-bold text-brand-600 hover:text-brand-700">
                 Register Lecturer
+              </Link>
+            </div>
+            <div className="pt-2">
+              Represent a university?{' '}
+              <Link to="/register-university" className="font-bold text-navy hover:text-brand-600">
+                Register Your University
               </Link>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Reset Password Modal */}
+      <Modal
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        title="Reset Password Portal"
+      >
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          <p className="text-xs text-slate-500">
+            Enter your registered university email and set a new password. Your account password will be updated directly.
+          </p>
+
+          {resetSuccess && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span>{resetSuccess}</span>
+            </div>
+          )}
+
+          {resetError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>{resetError}</span>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Registered Email</label>
+            <input
+              type="email"
+              required
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="e.g. student.alex@uir.ac.id"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">New Password (Min. 6 chars)</label>
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={resetNewPassword}
+              onChange={(e) => setResetNewPassword(e.target.value)}
+              placeholder="Enter new password"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setResetModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Close
+            </button>
+            <button
+              type="submit"
+              disabled={resetLoading}
+              className="px-5 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 flex items-center gap-1.5"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              {resetLoading ? 'Resetting...' : 'Reset Password'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
+

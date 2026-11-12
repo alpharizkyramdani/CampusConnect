@@ -20,3 +20,4 @@ class DocumentCategory extends Model
         return $this->hasMany(Document::class, 'category_id');
     }
 }
+

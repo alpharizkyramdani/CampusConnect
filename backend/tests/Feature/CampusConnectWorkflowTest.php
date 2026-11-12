@@ -10,6 +10,13 @@ use App\Models\EventRegistration;
 use App\Models\Facility;
 use App\Models\FacilityBorrowing;
 use App\Models\Certificate;
+use App\Models\MaintenanceReport;
+use App\Models\LostFoundItem;
+use App\Models\ServiceType;
+use App\Models\ServiceRequest;
+use App\Models\DiscussionCategory;
+use App\Models\DiscussionPost;
+use Illuminate\Support\Facades\Hash;
 
 class CampusConnectWorkflowTest extends TestCase
 {
@@ -88,13 +95,11 @@ class CampusConnectWorkflowTest extends TestCase
     {
         $student = User::where('email', 'student.alex@uir.ac.id')->first();
         
-        // Find or create an open event
         $event = Event::first();
         $existing = EventRegistration::where('event_id', $event->id)->where('user_id', $student->id)->first();
         
         if ($existing) {
             $ticketCode = $existing->ticket_code;
-            // Reset status to registered if previously attended
             $existing->update(['status' => 'registered', 'checked_in_at' => null]);
         } else {
             $regResponse = $this->actingAs($student)->postJson("/api/v1/events/{$event->id}/register");
@@ -142,5 +147,263 @@ class CampusConnectWorkflowTest extends TestCase
         $invalidResponse = $this->getJson('/api/v1/certificates/verify/NON_EXISTENT_CERT_HASH');
         $invalidResponse->assertStatus(404)
                         ->assertJsonPath('success', false);
+    }
+
+    public function test_multi_tenant_isolation_uir_and_itn()
+    {
+        // UIR student queries facilities scoped to UIR
+        $uirStudent = User::where('email', 'student.alex@uir.ac.id')->first();
+        $uirFacilitiesResponse = $this->actingAs($uirStudent)->getJson('/api/v1/facilities');
+        $uirFacilitiesResponse->assertStatus(200);
+
+        foreach ($uirFacilitiesResponse->json('data.data') as $item) {
+            $this->assertEquals(1, $item['university_id'], 'Facility must be scoped to UIR (university_id = 1)');
+        }
+
+        // ITN student queries facilities scoped to ITN
+        $itnStudent = User::where('email', 'student.budi@itn.ac.id')->first();
+        $itnFacilitiesResponse = $this->actingAs($itnStudent)->getJson('/api/v1/facilities');
+        $itnFacilitiesResponse->assertStatus(200);
+
+        foreach ($itnFacilitiesResponse->json('data.data') as $item) {
+            $this->assertEquals(2, $item['university_id'], 'Facility must be scoped to ITN (university_id = 2)');
+        }
+    }
+
+    public function test_user_profile_and_password_update()
+    {
+        $user = User::where('email', 'student.alex@uir.ac.id')->first();
+
+        // 1. Update profile
+        $profileResponse = $this->actingAs($user)->putJson('/api/v1/auth/profile', [
+            'name' => 'Alex Chandra S.Kom Candidate',
+            'phone' => '+628123456789',
+        ]);
+        $profileResponse->assertStatus(200)
+                        ->assertJsonPath('success', true);
+
+        // 2. Update password with invalid current password -> error 422
+        $badPassResponse = $this->actingAs($user)->putJson('/api/v1/auth/password', [
+            'current_password' => 'wrong_password',
+            'new_password' => 'new_secret_123',
+        ]);
+        $badPassResponse->assertStatus(422);
+
+        // 3. Update password with valid current password -> success 200
+        $goodPassResponse = $this->actingAs($user)->putJson('/api/v1/auth/password', [
+            'current_password' => 'password',
+            'new_password' => 'new_secret_123',
+        ]);
+        $goodPassResponse->assertStatus(200);
+
+        // Restore password to 'password' for demo convenience
+        $user->update(['password' => Hash::make('password')]);
+    }
+
+    public function test_reset_password_endpoint()
+    {
+        $response = $this->postJson('/api/v1/auth/reset-password', [
+            'email' => 'student.budi@itn.ac.id',
+            'new_password' => 'new_password_reset',
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJsonPath('success', true);
+
+        // Restore password for demo convenience
+        User::where('email', 'student.budi@itn.ac.id')->update(['password' => Hash::make('password')]);
+    }
+
+    public function test_facility_maintenance_report_lifecycle()
+    {
+        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+
+        // 1. Submit damage report
+        $createResponse = $this->actingAs($student)->postJson('/api/v1/maintenance', [
+            'university_id' => 1,
+            'title' => 'Projector Lens Glitch in Room 304',
+            'location' => 'Building C, Room 304',
+            'category' => 'it_equipment',
+            'priority' => 'medium',
+            'description' => 'Display exhibits pink discoloration during presentation.',
+        ]);
+        $createResponse->assertStatus(201);
+        $reportId = $createResponse->json('data.id');
+
+        // 2. Campus Admin updates status to resolved
+        $admin = User::where('email', 'admin.uir@campusconnect.id')->first();
+        $statusResponse = $this->actingAs($admin)->putJson("/api/v1/maintenance/{$reportId}/status", [
+            'status' => 'resolved',
+            'admin_notes' => 'Lens cable replaced by technician.',
+        ]);
+        $statusResponse->assertStatus(200)
+                       ->assertJsonPath('data.status', 'resolved');
+    }
+
+    public function test_student_service_request_lifecycle()
+    {
+        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $serviceType = ServiceType::first();
+
+        // 1. Submit service request
+        $requestResponse = $this->actingAs($student)->postJson('/api/v1/service-requests', [
+            'service_type_id' => $serviceType->id,
+            'notes' => 'Required for internship application at tech company.',
+        ]);
+        $requestResponse->assertStatus(201);
+        $reqId = $requestResponse->json('data.id');
+
+        // 2. Campus Admin marks processing and completed
+        $admin = User::where('email', 'admin.uir@campusconnect.id')->first();
+        $updateResponse = $this->actingAs($admin)->putJson("/api/v1/service-requests/{$reqId}/status", [
+            'status' => 'completed',
+            'admin_notes' => 'Official letter signed and ready for digital download.',
+        ]);
+        $updateResponse->assertStatus(200)
+                       ->assertJsonPath('data.status', 'completed');
+    }
+
+    public function test_discussion_forum_thread()
+    {
+        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+        $cat = DiscussionCategory::first();
+
+        // 1. Create discussion post
+        $postResponse = $this->actingAs($student)->postJson('/api/v1/discussions', [
+            'category_id' => $cat->id,
+            'title' => 'Tips for National Robotics Competition 2026',
+            'content' => 'Anyone interested in forming a cross-disciplinary team for the upcoming contest?',
+        ]);
+        $postResponse->assertStatus(201);
+        $postId = $postResponse->json('data.id');
+
+        // 2. Comment on discussion
+        $commentResponse = $this->actingAs($student)->postJson("/api/v1/discussions/{$postId}/comments", [
+            'content' => 'I can contribute on the computer vision and ROS subsystem!',
+        ]);
+        $commentResponse->assertStatus(201);
+    }
+
+    public function test_portfolio_activity_and_achievement()
+    {
+        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+
+        // 1. Record extracurricular activity
+        $actResponse = $this->actingAs($student)->postJson('/api/v1/portfolio/activity', [
+            'title' => 'National Hackathon Project Lead',
+            'activity_type' => 'competition',
+            'role' => 'Team Captain',
+            'organizer' => 'Higher Education Innovation Council',
+            'start_date' => now()->subMonths(2)->format('Y-m-d'),
+            'end_date' => now()->subMonths(1)->format('Y-m-d'),
+            'description' => 'Architected an automated student disaster relief coordination system.',
+        ]);
+        $actResponse->assertStatus(201);
+
+        // 2. Record achievement
+        $achResponse = $this->actingAs($student)->postJson('/api/v1/portfolio/achievement', [
+            'title' => '1st Place Winner National AI Challenge',
+            'level' => 'national',
+            'rank' => '1st Place',
+            'year' => 2025,
+            'description' => 'Awarded gold trophy in autonomous robotic vision track.',
+        ]);
+        $achResponse->assertStatus(201);
+
+        // 3. Fetch comprehensive portfolio
+        $portfolioResponse = $this->actingAs($student)->getJson('/api/v1/portfolio');
+        $portfolioResponse->assertStatus(200)
+                          ->assertJsonPath('success', true);
+    }
+
+    public function test_campus_announcement_crud()
+    {
+        $admin = User::where('email', 'admin.uir@campusconnect.id')->first();
+
+        // 1. Create announcement
+        $createResponse = $this->actingAs($admin)->postJson('/api/v1/announcements', [
+            'category_id' => 1,
+            'title' => 'Important Semester Exam Rules 2026',
+            'content' => 'All students must bring their validated student identity card (KTM).',
+            'priority' => 'high',
+            'target_audience' => 'students',
+        ]);
+        $createResponse->assertStatus(201);
+        $announcementId = $createResponse->json('data.id');
+
+        // 2. Fetch announcements list
+        $listResponse = $this->getJson('/api/v1/announcements');
+        $listResponse->assertStatus(200);
+
+        // 3. Delete announcement
+        $deleteResponse = $this->actingAs($admin)->deleteJson("/api/v1/announcements/{$announcementId}");
+        $deleteResponse->assertStatus(200);
+    }
+
+    public function test_lost_and_found_posting_and_claim()
+    {
+        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+
+        // 1. Post found item
+        $postResponse = $this->actingAs($student)->postJson('/api/v1/lost-found', [
+            'university_id' => 1,
+            'title' => 'Blue Scientific Calculator Casio fx-991EX',
+            'type' => 'found',
+            'category' => 'electronics',
+            'location' => 'Informatics Lab 2 desk B4',
+            'event_date' => now()->format('Y-m-d'),
+            'description' => 'Calculator left behind after calculus practical session.',
+        ]);
+        $postResponse->assertStatus(201);
+        $itemId = $postResponse->json('data.id');
+
+        // 2. Another user submits claim
+        $otherStudent = User::where('email', 'student.budi@itn.ac.id')->first();
+        $claimResponse = $this->actingAs($otherStudent)->postJson("/api/v1/lost-found/{$itemId}/claim", [
+            'proof_description' => 'Has my initials A.C. scratched with a marker on the rear battery lid.',
+            'contact_info' => '+6281987654321',
+        ]);
+        $claimResponse->assertStatus(201);
+    }
+
+    public function test_document_repository_download_counter()
+    {
+        $student = User::where('email', 'student.alex@uir.ac.id')->first();
+
+        // 1. List documents
+        $listRes = $this->actingAs($student)->getJson('/api/v1/documents');
+        $listRes->assertStatus(200);
+
+        $docs = $listRes->json('data.data');
+        if (!empty($docs)) {
+            $docId = $docs[0]['id'];
+            $initialCount = $docs[0]['download_count'];
+
+            // 2. Trigger download
+            $downRes = $this->actingAs($student)->getJson("/api/v1/documents/{$docId}/download");
+            $downRes->assertStatus(200);
+            $this->assertEquals($initialCount + 1, $downRes->json('data.download_count'));
+        }
+    }
+
+    public function test_super_admin_university_registration_approval()
+    {
+        // 1. Submit university request
+        $reqResponse = $this->postJson('/api/v1/auth/register-university', [
+            'university_name' => 'Universitas Sains Terbuka',
+            'email' => 'contact@ust.ac.id',
+            'website' => 'https://ust.ac.id',
+            'address' => 'Jl. Pendidikan Nasional No. 10',
+            'contact_person' => 'Prof. Dr. Hendriawan',
+            'contact_phone' => '+62811223344',
+        ]);
+        $reqResponse->assertStatus(201);
+        $reqId = $reqResponse->json('data.id');
+
+        // 2. Super Admin approves request
+        $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
+        $approveResponse = $this->actingAs($superAdmin)->postJson("/api/v1/university-requests/{$reqId}/approve");
+        $approveResponse->assertStatus(200)
+                        ->assertJsonPath('success', true);
     }
 }

@@ -119,3 +119,4 @@ class UserManagementController extends Controller
         return response()->json(['success' => true, 'data' => $roles]);
     }
 }
+

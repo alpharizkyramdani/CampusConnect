@@ -21,3 +21,4 @@ class AnnouncementCategory extends Model
         return $this->hasMany(Announcement::class, 'category_id');
     }
 }
+

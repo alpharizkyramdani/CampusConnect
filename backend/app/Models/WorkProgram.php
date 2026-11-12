@@ -24,3 +24,4 @@ class WorkProgram extends Model
         return $this->belongsTo(Organization::class);
     }
 }
+

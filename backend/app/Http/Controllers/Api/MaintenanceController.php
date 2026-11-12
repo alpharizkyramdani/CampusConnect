@@ -131,3 +131,4 @@ class MaintenanceController extends Controller
         ]);
     }
 }
+

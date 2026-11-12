@@ -200,3 +200,4 @@ export const UniversityRegisterPage: React.FC = () => {
     </div>
   );
 };
+

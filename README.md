@@ -227,20 +227,42 @@ Frontend web application will be live at `http://127.0.0.1:5173`.
 
 ## 9. Automated Testing & Verification
 
-The backend includes a comprehensive PHPUnit feature test suite covering critical academic workflows:
+The backend includes a comprehensive PHPUnit feature test suite covering critical academic workflows across all modules:
 
 ```bash
 cd backend
 php artisan test
 ```
 
-### Verified Test Cases:
+### Verified Test Cases (19 Suites / 66 Assertions):
 1. `test_auth_login_returns_token_and_roles`: Validates Sanctum authentication token issuance and role assignments.
 2. `test_unauthenticated_requests_are_rejected`: Confirms 401 Unauthorized protection on private endpoints.
 3. `test_public_universities_listing`: Ensures public endpoint accessibility.
 4. `test_equipment_borrowing_lifecycle`: Validates complete loan workflow (Student loan request → Department Admin approval → Pickup → Physical Return & Stock adjustment).
 5. `test_event_registration_and_qr_attendance`: Validates ticket issuance, live QR verification, and 409 Duplicate Check-in Prevention.
 6. `test_certificate_public_verification`: Confirms cryptographic SHA-256 hash and serial number authenticity verification.
+7. `test_multi_tenant_isolation_uir_and_itn`: Validates strict tenant scoping between UIR and ITN datasets.
+8. `test_user_profile_and_password_update`: Verifies name/phone editing, old password validation, and secure Bcrypt updating.
+9. `test_reset_password_endpoint`: Verifies self-service password reset via email.
+10. `test_facility_maintenance_report_lifecycle`: Validates damage ticket creation and progression to resolved status.
+11. `test_student_service_request_lifecycle`: Validates academic letter requests and admin completion.
+12. `test_discussion_forum_thread`: Validates community posts and threaded nested comments.
+13. `test_portfolio_activity_and_achievement`: Validates extracurricular activity logs and award entries.
+14. `test_campus_announcement_crud`: Validates announcement creation, public broadcasting, and deletion.
+15. `test_lost_and_found_posting_and_claim`: Validates lost/found registry and private proof-of-ownership claim submission.
+16. `test_document_repository_download_counter`: Validates download counter increments and role permissions.
+17. `test_super_admin_university_registration_approval`: Validates institutional onboarding submission and Super Admin approval.
+
+---
+
+## 10. Comprehensive Documentation Suite
+
+| Document | Purpose & Contents |
+| :--- | :--- |
+| [README.md](file:///c:/xampp/htdocs/CampusConnect/README.md) | Architectural manual, setup instructions, technology stack, and demo accounts. |
+| [CAMPUSCONNECT_TEST_GUIDE.md](file:///c:/xampp/htdocs/CampusConnect/CAMPUSCONNECT_TEST_GUIDE.md) | Step-by-step user and evaluator testing guide for all 18 modules and 7 roles. |
+| [CAMPUSCONNECT_QA_REPORT.md](file:///c:/xampp/htdocs/CampusConnect/CAMPUSCONNECT_QA_REPORT.md) | Comprehensive QA test report with module matrix, bug registry, and responsiveness audit. |
+| [.env.example](file:///c:/xampp/htdocs/CampusConnect/.env.example) | Environment template for local and production deployment. |
 
 ---
 
@@ -283,3 +305,4 @@ CampusConnect adheres to recognized Software Engineering best practices:
 ---
 
 *Developed for the Academic Community. Built with excellence for multi-campus connectivity.*
+

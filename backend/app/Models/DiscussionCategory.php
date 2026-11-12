@@ -22,3 +22,4 @@ class DiscussionCategory extends Model
         return $this->hasMany(DiscussionPost::class, 'category_id');
     }
 }
+

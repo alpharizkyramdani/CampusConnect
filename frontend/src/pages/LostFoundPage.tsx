@@ -522,3 +522,4 @@ export const LostFoundPage: React.FC = () => {
     </div>
   );
 };
+

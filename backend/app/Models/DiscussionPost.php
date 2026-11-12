@@ -48,3 +48,4 @@ class DiscussionPost extends Model
         return $this->hasMany(DiscussionComment::class, 'post_id');
     }
 }
+

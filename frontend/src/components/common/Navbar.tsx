@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationDropdown } from './NotificationDropdown';
-import { Menu, LogOut, User as UserIcon, Building2, ChevronDown, Sparkles } from 'lucide-react';
+import { Menu, LogOut, User as UserIcon, Building2, ChevronDown, Sparkles, Settings } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
@@ -100,6 +100,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                   Student Portfolio
                 </Link>
 
+                <Link
+                  to="/settings"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+                >
+                  <Settings className="w-4 h-4 text-slate-400" />
+                  Settings
+                </Link>
+
                 <div className="border-t border-slate-100 my-1" />
 
                 <button
@@ -117,3 +126,4 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     </header>
   );
 };
+

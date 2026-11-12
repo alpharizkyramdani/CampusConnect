@@ -48,3 +48,4 @@ class Facility extends Model
         return $this->hasMany(InventoryMovement::class);
     }
 }
+

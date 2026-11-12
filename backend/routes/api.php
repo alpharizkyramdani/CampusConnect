@@ -32,6 +32,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/register-student', [AuthController::class, 'registerStudent']);
     Route::post('/auth/register-lecturer', [AuthController::class, 'registerLecturer']);
     Route::post('/auth/register-university', [AuthController::class, 'registerUniversity']);
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
     // Public University & Directory
     Route::get('/universities', [UniversityController::class, 'index']);
@@ -59,6 +60,8 @@ Route::prefix('v1')->group(function () {
     // 2. AUTHENTICATED ROUTES
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
+        Route::put('/auth/password', [AuthController::class, 'updatePassword']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
 
         // Dashboard & Analytics

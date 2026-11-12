@@ -50,3 +50,4 @@ class Announcement extends Model
         return $this->hasMany(AnnouncementRead::class);
     }
 }
+

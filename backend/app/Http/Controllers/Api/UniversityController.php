@@ -111,3 +111,4 @@ class UniversityController extends Controller
         return response()->json(['success' => true, 'data' => $departments]);
     }
 }
+

@@ -20,3 +20,4 @@ class FacilityCategory extends Model
         return $this->hasMany(Facility::class, 'category_id');
     }
 }
+

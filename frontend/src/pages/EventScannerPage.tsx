@@ -200,3 +200,4 @@ export const EventScannerPage: React.FC = () => {
     </div>
   );
 };
+

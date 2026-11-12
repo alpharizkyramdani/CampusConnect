@@ -31,6 +31,7 @@ import { DocumentsPage } from '../pages/DocumentsPage';
 import { UserManagementPage } from '../pages/UserManagementPage';
 import { AuditLogsPage } from '../pages/AuditLogsPage';
 import { ProfilePage } from '../pages/ProfilePage';
+import { SettingsPage } from '../pages/SettingsPage';
 
 interface ProtectedRouteProps {
   allowedRoles?: RoleName[];
@@ -69,6 +70,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register-student" element={<RegisterPage />} />
+      <Route path="/register-lecturer" element={<RegisterPage />} />
       <Route path="/register-university" element={<UniversityRegisterPage />} />
       <Route path="/verify" element={<VerifyCertificatePage />} />
       <Route path="/verify/:hash" element={<VerifyCertificatePage />} />
@@ -118,6 +121,7 @@ export const AppRoutes: React.FC = () => {
             <Route index element={<AuditLogsPage />} />
           </Route>
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
 

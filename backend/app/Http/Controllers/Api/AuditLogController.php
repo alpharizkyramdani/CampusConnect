@@ -28,3 +28,4 @@ class AuditLogController extends Controller
         ]);
     }
 }
+

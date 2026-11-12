@@ -32,3 +32,4 @@ class Department extends Model
         return $this->hasMany(Facility::class);
     }
 }
+

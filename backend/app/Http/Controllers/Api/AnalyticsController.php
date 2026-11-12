@@ -283,3 +283,4 @@ class AnalyticsController extends Controller
         ]);
     }
 }
+

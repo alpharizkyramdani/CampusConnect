@@ -69,3 +69,4 @@ class AcademicCalendarController extends Controller
         return response()->json(['success' => true, 'message' => 'Academic event deleted']);
     }
 }
+

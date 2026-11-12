@@ -286,3 +286,4 @@ export const CertificatesPage: React.FC = () => {
     </div>
   );
 };
+

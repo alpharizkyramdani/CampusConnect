@@ -34,3 +34,4 @@ class AcademicEvent extends Model
         return $this->belongsTo(University::class);
     }
 }
+

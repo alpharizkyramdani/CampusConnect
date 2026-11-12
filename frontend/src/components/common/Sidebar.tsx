@@ -23,6 +23,7 @@ import {
   Building,
   GraduationCap,
   X,
+  Settings,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -217,6 +218,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           ))}
         </div>
 
+        {/* Quick Settings */}
+        <div className="px-3 py-2 border-t border-white/10 space-y-1">
+          <NavLink
+            to="/settings"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                isActive
+                  ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30 font-bold'
+                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
+              }`
+            }
+          >
+            <Settings className="w-4 h-4 flex-shrink-0" />
+            <span>Account Settings</span>
+          </NavLink>
+        </div>
+
         {/* Footer Tagline */}
         <div className="p-4 border-t border-white/10 text-center">
           <div className="text-[11px] text-slate-400 italic font-medium">
@@ -227,3 +246,4 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     </>
   );
 };
+

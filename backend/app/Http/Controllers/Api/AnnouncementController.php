@@ -56,6 +56,13 @@ class AnnouncementController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        if (!$request->has('university_id') && $request->user()) {
+            $univId = $request->user()->assignments()->where('status', 'active')->first()?->university_id;
+            if ($univId) {
+                $request->merge(['university_id' => $univId]);
+            }
+        }
+
         $request->validate([
             'university_id' => 'required|exists:universities,id',
             'title' => 'required|string|max:255',
@@ -110,3 +117,4 @@ class AnnouncementController extends Controller
         ]);
     }
 }
+

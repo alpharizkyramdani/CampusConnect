@@ -57,3 +57,4 @@ class MaintenanceReport extends Model
         return $this->hasMany(MaintenanceUpdate::class);
     }
 }
+

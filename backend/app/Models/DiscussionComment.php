@@ -36,3 +36,4 @@ class DiscussionComment extends Model
         return $this->hasMany(DiscussionComment::class, 'parent_id');
     }
 }
+

@@ -48,3 +48,4 @@ class Organization extends Model
         return $this->hasMany(Event::class);
     }
 }
+

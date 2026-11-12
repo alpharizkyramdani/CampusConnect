@@ -45,3 +45,4 @@ class LostFoundItem extends Model
         return $this->hasMany(ItemClaim::class);
     }
 }
+

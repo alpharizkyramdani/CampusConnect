@@ -48,3 +48,4 @@ class EventRegistration extends Model
         return $this->hasOne(EventAttendance::class, 'registration_id');
     }
 }
+

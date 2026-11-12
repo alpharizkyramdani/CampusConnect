@@ -24,3 +24,4 @@ class AnnouncementRead extends Model
         ];
     }
 }
+

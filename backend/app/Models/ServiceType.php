@@ -36,3 +36,4 @@ class ServiceType extends Model
         return $this->hasMany(ServiceRequest::class);
     }
 }
+

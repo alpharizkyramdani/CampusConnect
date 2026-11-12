@@ -26,3 +26,4 @@ class Role extends Model
         return $this->hasMany(UserRoleAssignment::class);
     }
 }
+

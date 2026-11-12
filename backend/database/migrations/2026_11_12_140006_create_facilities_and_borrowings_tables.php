@@ -85,3 +85,4 @@ return new class extends Migration
         Schema::dropIfExists('facility_categories');
     }
 };
+

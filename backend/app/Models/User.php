@@ -40,6 +40,11 @@ class User extends Authenticatable
         return $this->hasMany(UserRoleAssignment::class);
     }
 
+    public function assignments()
+    {
+        return $this->hasMany(UserRoleAssignment::class);
+    }
+
     public function activeRoleAssignments()
     {
         return $this->hasMany(UserRoleAssignment::class)->where('status', 'active')->with(['role', 'university', 'department']);

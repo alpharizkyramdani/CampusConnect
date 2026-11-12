@@ -295,4 +295,114 @@ class AuthController extends Controller
             'message' => 'Logged out successfully',
         ]);
     }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:30',
+            'avatar' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'avatar' => $request->avatar ?? $user->avatar,
+        ]);
+
+        ActivityLog::create([
+            'university_id' => $user->default_university_id,
+            'user_id' => $user->id,
+            'action' => 'auth.profile_update',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['updated_fields' => ['name', 'phone']],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully',
+            'data' => $user,
+        ]);
+    }
+
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|different:current_password',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your current password does not match our records.',
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        ActivityLog::create([
+            'university_id' => $user->default_university_id,
+            'user_id' => $user->id,
+            'action' => 'auth.password_update',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['info' => 'Password changed successfully'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password updated successfully.',
+        ]);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password has been reset successfully. You can now log in with your new password.',
+        ]);
+    }
 }
+

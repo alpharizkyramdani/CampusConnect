@@ -18,6 +18,14 @@ class FacilityController extends Controller
     public function index(Request $request): JsonResponse
     {
         $universityId = $request->query('university_id');
+        $user = $request->user();
+        if (!$universityId && $user) {
+            $isSuperAdmin = $user->assignments()->whereHas('role', fn($r) => $r->where('slug', 'super_admin'))->exists();
+            if (!$isSuperAdmin) {
+                $universityId = $user->assignments()->where('status', 'active')->first()?->university_id;
+            }
+        }
+
         $departmentId = $request->query('department_id');
         $categoryId = $request->query('category_id');
         $condition = $request->query('condition');
@@ -361,3 +369,4 @@ class FacilityController extends Controller
         return response()->json(['success' => true, 'data' => $categories]);
     }
 }
+

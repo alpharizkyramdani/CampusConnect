@@ -91,3 +91,4 @@ class CertificateController extends Controller
         ], 201);
     }
 }
+

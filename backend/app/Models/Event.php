@@ -75,3 +75,4 @@ class Event extends Model
         return $this->hasMany(Certificate::class);
     }
 }
+
