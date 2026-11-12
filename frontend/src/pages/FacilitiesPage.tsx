@@ -4,6 +4,7 @@ import api from '../services/api';
 import { Facility, FacilityCategory } from '../types';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { ImageUploadField } from '../components/ui/ImageUploadField';
 import {
   PackageCheck,
   Search,
@@ -438,16 +439,13 @@ export const FacilitiesPage: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block uppercase">Photo URL</label>
-            <input
-              type="url"
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              placeholder="https://..."
-              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
-            />
-          </div>
+          <ImageUploadField
+            label="Foto Peralatan / Fasilitas"
+            value={photoUrl}
+            onChange={setPhotoUrl}
+            placeholder="Atau tautan URL foto peralatan: https://..."
+            helperText="Unggah foto fisik peralatan atau ruangan lab dari perangkat."
+          />
 
           <div>
             <label className="font-bold text-slate-700 block uppercase">Specifications & Description</label>

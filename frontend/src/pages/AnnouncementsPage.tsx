@@ -4,6 +4,7 @@ import api from '../services/api';
 import { Announcement, AnnouncementCategory } from '../types';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { ImageUploadField } from '../components/ui/ImageUploadField';
 import { Megaphone, Search, Plus, Calendar, User, AlertCircle, CheckCircle } from 'lucide-react';
 
 export const AnnouncementsPage: React.FC = () => {
@@ -288,16 +289,13 @@ export const AnnouncementsPage: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block uppercase">Banner Image URL</label>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
-            />
-          </div>
+          <ImageUploadField
+            label="Banner / Foto Pengumuman"
+            value={imageUrl}
+            onChange={setImageUrl}
+            placeholder="Atau tautan URL gambar pengumuman: https://..."
+            helperText="Unggah gambar header pengumuman dari perangkat."
+          />
 
           <div>
             <label className="font-bold text-slate-700 block uppercase">Content</label>

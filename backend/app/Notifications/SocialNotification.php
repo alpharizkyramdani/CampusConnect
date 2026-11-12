@@ -30,3 +30,4 @@ class SocialNotification extends Notification
         ], $this->extraData);
     }
 }
+

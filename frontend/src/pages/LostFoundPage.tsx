@@ -4,6 +4,7 @@ import api from '../services/api';
 import { LostFoundItem, ItemClaim } from '../types';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { ImageUploadField } from '../components/ui/ImageUploadField';
 import {
   Search,
   Plus,
@@ -379,16 +380,13 @@ export const LostFoundPage: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block uppercase">Photo URL</label>
-            <input
-              type="url"
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              placeholder="https://..."
-              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
-            />
-          </div>
+          <ImageUploadField
+            label="Foto Barang (Lost / Found)"
+            value={photoUrl}
+            onChange={setPhotoUrl}
+            placeholder="Atau tempel tautan URL gambar barang..."
+            helperText="Unggah foto barang dari galeri HP atau laptop untuk mempermudah identifikasi."
+          />
 
           <div>
             <label className="font-bold text-slate-700 block uppercase">Detailed Description & Distinctive Marks</label>
@@ -452,16 +450,13 @@ export const LostFoundPage: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label className="font-bold text-slate-700 block uppercase">Proof Photo Link (Purchase receipt, matching box)</label>
-              <input
-                type="url"
-                value={proofPhotoUrl}
-                onChange={(e) => setProofPhotoUrl(e.target.value)}
-                placeholder="https://..."
-                className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
-              />
-            </div>
+            <ImageUploadField
+              label="Foto Bukti Kepemilikan (Struk / Kotak / Foto)"
+              value={proofPhotoUrl}
+              onChange={setProofPhotoUrl}
+              placeholder="Atau tautan URL gambar bukti..."
+              helperText="Foto bukti struk pembelian, kotak barang, atau foto lama saat memegang barang."
+            />
 
             <button
               type="submit"

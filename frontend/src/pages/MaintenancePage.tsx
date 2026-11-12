@@ -4,6 +4,7 @@ import api from '../services/api';
 import { MaintenanceReport } from '../types';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { ImageUploadField } from '../components/ui/ImageUploadField';
 import {
   Wrench,
   Plus,
@@ -287,16 +288,13 @@ export const MaintenancePage: React.FC = () => {
             />
           </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block uppercase">Photo URL</label>
-            <input
-              type="url"
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              placeholder="https://..."
-              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
-            />
-          </div>
+          <ImageUploadField
+            label="Foto Kerusakan / Kendala Fasilitas"
+            value={photoUrl}
+            onChange={setPhotoUrl}
+            placeholder="Atau tautan URL foto kerusakan: https://..."
+            helperText="Unggah foto bukti kerusakan atau kendala fasilitas dari HP atau laptop."
+          />
 
           <div>
             <label className="font-bold text-slate-700 block uppercase">Detailed Description</label>

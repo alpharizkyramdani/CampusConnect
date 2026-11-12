@@ -24,6 +24,8 @@ import {
   Calendar,
   Heart,
   Repeat2,
+  ShieldCheck,
+  Lock,
 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
@@ -184,7 +186,12 @@ export const ProfilePage: React.FC = () => {
   const currentUser = isOtherUser ? profileUser : authUser;
   const studentProf = isOtherUser ? profileUser?.student_profile : authStudentProfile;
   const lecturerProf = isOtherUser ? profileUser?.lecturer_profile : authLecturerProfile;
-  const assignments = isOtherUser ? (profileUser?.assignments || profileUser?.roles || []) : authRoleAssignments;
+  const assignments = isOtherUser ? ((profileUser as any)?.role_assignments || profileUser?.assignments || profileUser?.roles || []) : authRoleAssignments;
+
+  const isTargetSuperAdmin = assignments?.some((a: any) =>
+    (a.role?.slug || a.slug || a.name)?.toLowerCase().includes('super_admin') ||
+    (a.role?.name || '').toLowerCase().includes('super admin')
+  ) || currentUser?.email === 'superadmin@campusconnect.id';
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 font-sans">
@@ -248,6 +255,17 @@ export const ProfilePage: React.FC = () => {
               <Camera className="w-3.5 h-3.5" />
               <span>Ganti Foto Profil</span>
             </button>
+          ) : isTargetSuperAdmin ? (
+            /* Protected System Administrator Profile */
+            <div className="mt-4 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl w-full text-center space-y-1.5 shadow-2xs">
+              <div className="flex items-center justify-center gap-1.5 text-slate-800 font-extrabold text-xs">
+                <ShieldCheck className="w-4 h-4 text-brand-600" />
+                <span>Akun Administrator Terlindungi</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                Akun tata kelola platform sistem dilindungi dari komunikasi sosial langsung demi keamanan dan netralitas institusi.
+              </p>
+            </div>
           ) : (
             /* Action Buttons for Other User: Follow & Send Message */
             <div className="mt-4 flex gap-2 w-full">

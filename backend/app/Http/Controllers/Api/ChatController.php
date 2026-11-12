@@ -113,6 +113,14 @@ class ChatController extends Controller
             ], 400);
         }
 
+        // Governance Security: Non-admin users cannot initiate casual DMs to Super Admin
+        if ($receiver->isSuperAdmin() && !$sender->isSuperAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Administrator Platform diproteksi dari obrolan privat santai demi integritas dan keamanan sistem. Untuk pengaduan resmi atau bantuan universitas, silakan gunakan menu Helpdesk / Student Services.',
+            ], 403);
+        }
+
         $request->validate([
             'message' => 'required|string|max:2000',
         ]);

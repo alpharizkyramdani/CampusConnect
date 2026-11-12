@@ -166,7 +166,21 @@ export const MessagesPage: React.FC = () => {
       const res = await api.get('/users');
       if (res.data.success) {
         const userList: User[] = res.data.data.data || res.data.data || [];
-        setAvailableUsers(userList.filter((u) => u.id !== user?.id));
+        const isCurrentSuperAdmin = user?.email === 'superadmin@campusconnect.id' || (user as any)?.roleAssignments?.some((ra: any) => ra.role?.slug === 'super_admin');
+
+        const filtered = userList.filter((u: any) => {
+          if (u.id === user?.id) return false;
+          // Protect Super Admin accounts from direct chat lists for regular users
+          if (!isCurrentSuperAdmin) {
+            const isTargetAdmin = u.email === 'superadmin@campusconnect.id' ||
+              u.role_assignments?.some((ra: any) => ra.role?.slug === 'super_admin') ||
+              u.roleAssignments?.some((ra: any) => ra.role?.slug === 'super_admin');
+            if (isTargetAdmin) return false;
+          }
+          return true;
+        });
+
+        setAvailableUsers(filtered);
       }
     } catch (e) {
       console.error(e);

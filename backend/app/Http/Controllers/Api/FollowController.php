@@ -23,6 +23,14 @@ class FollowController extends Controller
             ], 400);
         }
 
+        // Governance Security: Super Admin cannot be followed publicly
+        if ($targetUser->isSuperAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Administrator Platform diproteksi untuk keamanan tata kelola sistem dan tidak dapat diikuti secara publik.',
+            ], 403);
+        }
+
         $existing = UserFollow::where('user_id', $targetUser->id)
             ->where('follower_id', $currentUser->id)
             ->first();
@@ -125,6 +133,10 @@ class FollowController extends Controller
         $alreadyFollowingIds = $user->following()->pluck('user_id')->push($user->id);
 
         $suggestions = User::whereNotIn('id', $alreadyFollowingIds)
+            ->whereDoesntHave('roleAssignments', function ($q) {
+                $q->whereHas('role', fn($rq) => $rq->where('slug', 'super_admin'))
+                  ->where('status', 'active');
+            })
             ->when($user->default_university_id, fn($q) => $q->where('default_university_id', $user->default_university_id))
             ->with(['studentProfile.department', 'lecturerProfile'])
             ->inRandomOrder()

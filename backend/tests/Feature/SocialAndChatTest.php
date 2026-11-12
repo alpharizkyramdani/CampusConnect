@@ -168,5 +168,40 @@ class SocialAndChatTest extends TestCase
         $unreadAfter = $this->actingAs($userB, 'sanctum')->getJson('/api/v1/chat/unread-count');
         $this->assertEquals(0, $unreadAfter->json('unread_count'));
     }
+
+    public function test_super_admin_is_protected_from_follow_and_casual_dm(): void
+    {
+        $student = $this->createTestUser('Student George');
+        $adminRole = \App\Models\Role::firstOrCreate(['slug' => 'super_admin'], ['name' => 'Super Administrator']);
+        $adminUser = $this->createTestUser('Root Admin');
+        
+        \App\Models\UserRoleAssignment::create([
+            'user_id' => $adminUser->id,
+            'role_id' => $adminRole->id,
+            'status' => 'active',
+        ]);
+
+        // Student tries to follow super_admin -> Expect 403 Forbidden
+        $followRes = $this->actingAs($student, 'sanctum')->postJson("/api/v1/users/{$adminUser->id}/follow");
+        $followRes->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+            ]);
+
+        // Student tries to direct message super_admin -> Expect 403 Forbidden
+        $dmRes = $this->actingAs($student, 'sanctum')->postJson("/api/v1/chat/messages/{$adminUser->id}", [
+            'message' => 'Halo min, iseng chat aja nih',
+        ]);
+        $dmRes->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+            ]);
+
+        // Follow suggestions should NOT include super_admin
+        $suggRes = $this->actingAs($student, 'sanctum')->getJson('/api/v1/users-suggestions');
+        $suggRes->assertStatus(200);
+        $suggestedIds = collect($suggRes->json('data'))->pluck('id')->toArray();
+        $this->assertNotContains($adminUser->id, $suggestedIds);
+    }
 }
 

@@ -4,6 +4,7 @@ import api from '../services/api';
 import { Event, EventCategory } from '../types';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { ImageUploadField } from '../components/ui/ImageUploadField';
 import {
   CalendarCheck2,
   Search,
@@ -406,16 +407,13 @@ export const EventsPage: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block uppercase">Banner Image URL</label>
-            <input
-              type="url"
-              value={bannerImage}
-              onChange={(e) => setBannerImage(e.target.value)}
-              placeholder="https://..."
-              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
-            />
-          </div>
+          <ImageUploadField
+            label="Banner / Poster Acara"
+            value={bannerImage}
+            onChange={setBannerImage}
+            placeholder="Atau tautan URL poster acara: https://..."
+            helperText="Unggah poster promosi acara dari galeri HP atau laptop."
+          />
 
           <div>
             <label className="font-bold text-slate-700 block uppercase">Description & Schedule</label>
