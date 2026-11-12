@@ -1,0 +1,128 @@
+import React from 'react';
+import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { RoleName } from '../types';
+import { Layout } from '../components/common/Layout';
+
+// Public Pages
+import { LandingPage } from '../pages/LandingPage';
+import { LoginPage } from '../pages/LoginPage';
+import { RegisterPage } from '../pages/RegisterPage';
+import { UniversityRegisterPage } from '../pages/UniversityRegisterPage';
+import { VerifyCertificatePage } from '../pages/VerifyCertificatePage';
+
+// Protected Pages
+import { DashboardPage } from '../pages/DashboardPage';
+import { AnnouncementsPage } from '../pages/AnnouncementsPage';
+import { EventsPage } from '../pages/EventsPage';
+import { EventScannerPage } from '../pages/EventScannerPage';
+import { AcademicCalendarPage } from '../pages/AcademicCalendarPage';
+import { FacilitiesPage } from '../pages/FacilitiesPage';
+import { BorrowingsPage } from '../pages/BorrowingsPage';
+import { MaintenancePage } from '../pages/MaintenancePage';
+import { LostFoundPage } from '../pages/LostFoundPage';
+import { OrganizationsPage } from '../pages/OrganizationsPage';
+import { StudentServicesPage } from '../pages/StudentServicesPage';
+import { CertificatesPage } from '../pages/CertificatesPage';
+import { PortfolioPage } from '../pages/PortfolioPage';
+import { DiscussionsPage } from '../pages/DiscussionsPage';
+import { DirectoryPage } from '../pages/DirectoryPage';
+import { DocumentsPage } from '../pages/DocumentsPage';
+import { UserManagementPage } from '../pages/UserManagementPage';
+import { AuditLogsPage } from '../pages/AuditLogsPage';
+import { ProfilePage } from '../pages/ProfilePage';
+
+interface ProtectedRouteProps {
+  allowedRoles?: RoleName[];
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
+  const { user, loading, activeRole } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-semibold text-slate-500">Loading CampusConnect...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles && activeRole && !allowedRoles.includes(activeRole as RoleName)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Outlet />;
+};
+
+export const AppRoutes: React.FC = () => {
+  return (
+    <Routes>
+      {/* Public Pages */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register-university" element={<UniversityRegisterPage />} />
+      <Route path="/verify" element={<VerifyCertificatePage />} />
+      <Route path="/verify/:hash" element={<VerifyCertificatePage />} />
+
+      {/* Protected App Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/analytics" element={<DashboardPage />} />
+          <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route
+            path="/scanner"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'campus_admin', 'ukm_admin', 'ormawa_admin']} />
+            }
+          >
+            <Route index element={<EventScannerPage />} />
+          </Route>
+          <Route path="/calendar" element={<AcademicCalendarPage />} />
+          <Route path="/facilities" element={<FacilitiesPage />} />
+          <Route path="/borrowings" element={<BorrowingsPage />} />
+          <Route path="/maintenance" element={<MaintenancePage />} />
+          <Route path="/lost-found" element={<LostFoundPage />} />
+          <Route path="/organizations" element={<OrganizationsPage />} />
+          <Route path="/services" element={<StudentServicesPage />} />
+          <Route path="/certificates" element={<CertificatesPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/discussions" element={<DiscussionsPage />} />
+          <Route path="/directory" element={<DirectoryPage />} />
+          <Route path="/universities-manage" element={<DirectoryPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'campus_admin']} />
+            }
+          >
+            <Route index element={<UserManagementPage />} />
+          </Route>
+          <Route
+            path="/audit-logs"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin']} />
+            }
+          >
+            <Route index element={<AuditLogsPage />} />
+          </Route>
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
+      </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
