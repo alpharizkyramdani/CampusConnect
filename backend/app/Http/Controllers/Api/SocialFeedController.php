@@ -241,3 +241,4 @@ class SocialFeedController extends Controller
         ]);
     }
 }
+

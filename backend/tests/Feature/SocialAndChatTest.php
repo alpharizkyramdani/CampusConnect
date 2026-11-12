@@ -163,3 +163,4 @@ class SocialAndChatTest extends TestCase
         $this->assertEquals(0, $unreadAfter->json('unread_count'));
     }
 }
+

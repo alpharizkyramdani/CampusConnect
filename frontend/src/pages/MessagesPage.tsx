@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import api from '../services/api';
 import { ConversationPartner, DirectMessage, User } from '../types';
 import { Modal } from '../components/ui/Modal';
@@ -342,16 +342,22 @@ export const MessagesPage: React.FC = () => {
                     <ArrowLeft className="w-5 h-5" />
                   </button>
 
-                  <img
-                    src={activePartner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activePartner.name || 'U')}&background=2563EB&color=fff`}
-                    alt={activePartner.name}
-                    className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
-                  />
+                  <Link
+                    to={`/profile/${activePartner.id}`}
+                    className="flex items-center gap-3 hover:opacity-90 transition-opacity group"
+                    title="Buka profil pengguna"
+                  >
+                    <img
+                      src={activePartner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activePartner.name || 'U')}&background=2563EB&color=fff`}
+                      alt={activePartner.name}
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0 group-hover:ring-2 group-hover:ring-brand-400 transition-all"
+                    />
 
-                  <div>
-                    <h3 className="font-bold text-navy text-xs sm:text-sm">{activePartner.name}</h3>
-                    <p className="text-[11px] text-slate-400">{activePartner.department || 'Civitas Kampus'}</p>
-                  </div>
+                    <div>
+                      <h3 className="font-bold text-navy text-xs sm:text-sm group-hover:text-brand-600 transition-colors">{activePartner.name}</h3>
+                      <p className="text-[11px] text-slate-400">{activePartner.department || 'Civitas Kampus'}</p>
+                    </div>
+                  </Link>
                 </div>
 
                 {/* Follow & Action Button */}
@@ -506,3 +512,4 @@ export const MessagesPage: React.FC = () => {
     </div>
   );
 };
+

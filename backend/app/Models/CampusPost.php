@@ -58,3 +58,4 @@ class CampusPost extends Model
         return $this->hasMany(CampusPostComment::class, 'post_id');
     }
 }
+

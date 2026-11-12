@@ -33,3 +33,4 @@ class DirectMessage extends Model
         return $this->belongsTo(User::class, 'receiver_id');
     }
 }
+

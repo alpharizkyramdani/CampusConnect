@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { CampusPost, CampusPostComment, UserSuggestion } from '../types';
@@ -471,15 +472,18 @@ export const CampusFeedPage: React.FC = () => {
                   )}
 
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                    <Link
+                      to={`/profile/${post.user_id}`}
+                      className="flex items-center gap-3 hover:opacity-90 transition-opacity group"
+                    >
                       <img
                         src={post.author.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.name || 'U')}&background=2563EB&color=fff`}
                         alt={post.author.name}
-                        className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 group-hover:ring-2 group-hover:ring-brand-400 transition-all shrink-0"
                       />
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-extrabold text-navy text-xs sm:text-sm">
+                          <span className="font-extrabold text-navy text-xs sm:text-sm group-hover:text-brand-600 transition-colors">
                             {post.author.name}
                           </span>
                           <span className="text-[11px] text-slate-400 font-mono">
@@ -490,7 +494,7 @@ export const CampusFeedPage: React.FC = () => {
                           {post.author.student_profile?.department?.name || 'Civitas Kampus'}
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {isAuthor && (
                       <button
@@ -703,19 +707,24 @@ export const CampusFeedPage: React.FC = () => {
                       key={u.id}
                       className="flex items-center justify-between gap-3 p-2 rounded-2xl hover:bg-slate-50 transition-colors"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <Link
+                        to={`/profile/${u.id}`}
+                        className="flex items-center gap-2.5 min-w-0 group hover:opacity-90"
+                      >
                         <img
                           src={u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'U')}&background=2563EB&color=fff`}
                           alt={u.name}
-                          className="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200"
+                          className="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200 group-hover:ring-2 group-hover:ring-brand-400 transition-all"
                         />
                         <div className="min-w-0">
-                          <div className="font-bold text-navy text-xs truncate">{u.name}</div>
+                          <div className="font-bold text-navy text-xs group-hover:text-brand-600 transition-colors truncate">
+                            {u.name}
+                          </div>
                           <div className="text-[10px] text-slate-400 truncate">
                             {u.student_profile?.department?.name || 'Mahasiswa'}
                           </div>
                         </div>
-                      </div>
+                      </Link>
 
                       <button
                         onClick={() => handleToggleFollow(u.id)}
@@ -759,3 +768,4 @@ export const CampusFeedPage: React.FC = () => {
     </div>
   );
 };
+

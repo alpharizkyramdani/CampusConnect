@@ -123,3 +123,4 @@ class FollowController extends Controller
         ]);
     }
 }
+

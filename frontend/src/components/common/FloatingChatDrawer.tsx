@@ -280,3 +280,4 @@ export const FloatingChatDrawer: React.FC = () => {
     </div>
   );
 };
+

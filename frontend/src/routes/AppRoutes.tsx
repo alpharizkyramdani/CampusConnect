@@ -125,6 +125,7 @@ export const AppRoutes: React.FC = () => {
             <Route index element={<AuditLogsPage />} />
           </Route>
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:id" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
