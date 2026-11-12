@@ -169,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 w-64 bg-navy-dark text-white z-50 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 w-64 bg-navy-dark text-white z-50 flex flex-col transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -198,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
         </div>
 
         {/* Navigation Sections */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 custom-dark-scrollbar">
           {sections.map((section, idx) => (
             <div key={idx}>
               <div className="px-3 mb-2 text-[10px] font-bold text-slate-400 tracking-wider uppercase">
