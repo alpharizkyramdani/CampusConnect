@@ -450,7 +450,13 @@ export const ProfilePage: React.FC = () => {
                   <span className="text-slate-400 font-bold uppercase block text-[10px]">Gelar Akademik</span>
                   <span className="text-sm font-bold text-slate-900 block mt-0.5">{lecturerProf.title || 'Dosen Pengajar'}</span>
                 </div>
-                <div className="sm:col-span-2 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-slate-400 font-bold uppercase block text-[10px]">Jurusan / Departemen</span>
+                  <span className="text-sm font-bold text-slate-900 block mt-0.5">
+                    {lecturerProf.department?.name || (lecturerProf as any).faculty?.name || 'Teknologi Informasi & Komputer'}
+                  </span>
+                </div>
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
                   <span className="text-slate-400 font-bold uppercase block text-[10px]">Bidang Keahlian / Spesialisasi</span>
                   <span className="text-sm font-bold text-slate-900 block mt-0.5">{lecturerProf.specialization || 'Ilmu Komputer & Sistem Informasi'}</span>
                 </div>

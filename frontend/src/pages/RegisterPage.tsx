@@ -34,6 +34,20 @@ export const RegisterPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const handleDepartmentChange = (deptId: string) => {
+    setDepartmentId(deptId);
+    if (deptId) {
+      const parentFaculty = faculties.find((f) =>
+        (f.departments || []).some((d) => d.id.toString() === deptId)
+      );
+      if (parentFaculty) {
+        setFacultyId(parentFaculty.id.toString());
+      }
+    } else {
+      setFacultyId('');
+    }
+  };
+
   useEffect(() => {
     api.get('/universities').then((res) => {
       if (res.data.success) {
@@ -247,30 +261,40 @@ export const RegisterPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Department
+                      Department / Jurusan
                     </label>
                     <select
                       value={departmentId}
-                      onChange={(e) => setDepartmentId(e.target.value)}
+                      onChange={(e) => handleDepartmentChange(e.target.value)}
                       className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                     >
-                      <option value="">Select Department...</option>
-                      {departments.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name}
-                        </option>
-                      ))}
+                      <option value="">Pilih Jurusan / Departemen...</option>
+                      {faculties.length > 0
+                        ? faculties.map((f) => (
+                            <optgroup key={f.id} label={f.name}>
+                              {(f.departments || []).map((d) => (
+                                <option key={d.id} value={d.id}>
+                                  {d.name} ({d.code})
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))
+                        : departments.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.name} ({d.code})
+                            </option>
+                          ))}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Study Program
+                      Study Program / Peminatan
                     </label>
                     <input
                       type="text"
                       value={studyProgram}
                       onChange={(e) => setStudyProgram(e.target.value)}
-                      placeholder="e.g. Computer Science S1"
+                      placeholder="e.g. Teknik Informatika"
                       className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                     />
                   </div>
@@ -300,23 +324,52 @@ export const RegisterPage: React.FC = () => {
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Dr., M.Kom"
+                      placeholder="e.g. Dr., S.T., M.Kom."
                       className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Specialization / Research Field
-                  </label>
-                  <input
-                    type="text"
-                    value={specialization}
-                    onChange={(e) => setSpecialization(e.target.value)}
-                    placeholder="e.g. Artificial Intelligence & Distributed Computing"
-                    className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Jurusan / Departemen Dosen
+                    </label>
+                    <select
+                      value={departmentId}
+                      onChange={(e) => handleDepartmentChange(e.target.value)}
+                      className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                    >
+                      <option value="">Pilih Jurusan / Departemen...</option>
+                      {faculties.length > 0
+                        ? faculties.map((f) => (
+                            <optgroup key={f.id} label={f.name}>
+                              {(f.departments || []).map((d) => (
+                                <option key={d.id} value={d.id}>
+                                  {d.name} ({d.code})
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))
+                        : departments.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.name} ({d.code})
+                            </option>
+                          ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Bidang Keahlian / Riset
+                    </label>
+                    <input
+                      type="text"
+                      value={specialization}
+                      onChange={(e) => setSpecialization(e.target.value)}
+                      placeholder="e.g. Rekayasa Perangkat Lunak & AI"
+                      className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                    />
+                  </div>
                 </div>
               </>
             )}
