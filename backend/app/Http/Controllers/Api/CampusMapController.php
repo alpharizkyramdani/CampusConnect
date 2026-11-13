@@ -16,11 +16,21 @@ class CampusMapController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $universityId = $request->query('university_id') ?? $user->default_university_id ?? 1;
+        
+        $university = null;
+        if ($request->query('university_id')) {
+            $university = University::find($request->query('university_id'));
+        }
+        if (!$university && $user?->default_university_id) {
+            $university = University::find($user->default_university_id);
+        }
+        if (!$university) {
+            $university = University::where('code', 'PNL')->first() ?? University::first();
+        }
+
+        $universityId = $university?->id ?? 5;
         $category = $request->query('category');
         $search = $request->query('search');
-
-        $university = University::find($universityId);
 
         $locations = CampusLocation::where('university_id', $universityId)
             ->where('is_active', true)

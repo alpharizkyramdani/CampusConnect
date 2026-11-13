@@ -17,7 +17,7 @@ class DigitalLibraryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $universityId = $request->query('university_id') ?? $user->default_university_id ?? 1;
+        $universityId = $request->query('university_id') ?? $user?->default_university_id ?? University::where('code', 'PNL')->value('id') ?? University::first()?->id ?? 5;
         $category = $request->query('category');
         $search = $request->query('search');
 

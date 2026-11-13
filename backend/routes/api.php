@@ -64,6 +64,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/announcements/{id}', [AnnouncementController::class, 'show']);
     Route::get('/announcement-categories', [AnnouncementController::class, 'categories']);
 
+    // Public Smart Campus Map Locations
+    Route::get('/campus-map/locations', [CampusMapController::class, 'index']);
+
     // Public Organizations & Academic Calendar
     Route::get('/organizations', [OrganizationController::class, 'index']);
     Route::get('/organizations/{id}', [OrganizationController::class, 'show']);
@@ -229,8 +232,7 @@ Route::prefix('v1')->group(function () {
         // 3. Academic Progress Dashboard
         Route::get('/academic-progress', [AcademicProgressController::class, 'show']);
 
-        // 4. Smart Campus Map
-        Route::get('/campus-map/locations', [CampusMapController::class, 'index']);
+        // 4. Smart Campus Map (Admin Management)
         Route::post('/campus-map/locations', [CampusMapController::class, 'store']);
         Route::put('/campus-map/locations/{id}', [CampusMapController::class, 'update']);
         Route::delete('/campus-map/locations/{id}', [CampusMapController::class, 'destroy']);
