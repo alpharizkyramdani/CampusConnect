@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
-import { User, Role, University } from '../types';
+import { User, Role, University, Department } from '../types';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import {
@@ -50,7 +50,25 @@ export const UserManagementPage: React.FC = () => {
   const [assignModalUser, setAssignModalUser] = useState<any | null>(null);
   const [roleId, setRoleId] = useState('');
   const [assignUnivId, setAssignUnivId] = useState('');
+  const [assignDeptId, setAssignDeptId] = useState('');
+  const [assignNidn, setAssignNidn] = useState('');
+  const [assignTitle, setAssignTitle] = useState('');
+  const [assignSpecialization, setAssignSpecialization] = useState('');
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [assigning, setAssigning] = useState(false);
+
+  useEffect(() => {
+    const targetUniv = assignUnivId || assignModalUser?.default_university_id || activeAssignment?.university_id;
+    if (targetUniv) {
+      api.get(`/universities/${targetUniv}/departments`).then((res) => {
+        if (res.data.success) {
+          setDepartments(res.data.data || []);
+        }
+      });
+    } else {
+      setDepartments([]);
+    }
+  }, [assignUnivId, assignModalUser, activeAssignment]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -160,7 +178,10 @@ export const UserManagementPage: React.FC = () => {
       const res = await api.post(`/users/${assignModalUser.id}/assign-role`, {
         role_id: parseInt(roleId),
         university_id: targetUniv,
-        department_id: activeAssignment?.department_id || null,
+        department_id: assignDeptId ? parseInt(assignDeptId) : (activeAssignment?.department_id || null),
+        nidn: assignNidn || undefined,
+        title: assignTitle || undefined,
+        specialization: assignSpecialization || undefined,
       });
 
       if (res.data.success) {
@@ -406,7 +427,11 @@ export const UserManagementPage: React.FC = () => {
                         onClick={() => {
                           setAssignModalUser(u);
                           setRoleId('');
-                          setAssignUnivId(u.default_university_id?.toString() || '');
+                          setAssignUnivId(u.default_university_id?.toString() || activeAssignment?.university_id?.toString() || '');
+                          setAssignDeptId(u.lecturer_profile?.department_id?.toString() || u.role_assignments?.[0]?.department_id?.toString() || '');
+                          setAssignNidn(u.lecturer_profile?.nidn || '');
+                          setAssignTitle(u.lecturer_profile?.title || 'Dosen Pengajar / Lektor');
+                          setAssignSpecialization(u.lecturer_profile?.specialization || '');
                         }}
                         className="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg transition-colors text-xs"
                       >
@@ -546,73 +571,157 @@ export const UserManagementPage: React.FC = () => {
         onClose={() => setAssignModalUser(null)}
         title={`Manage & Assign Contextual Roles: ${assignModalUser?.name}`}
       >
-        <form onSubmit={handleAssignRoleSubmit} className="space-y-4 text-xs">
-          <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 leading-relaxed">
-            Assigning additional roles enables multi-role access. The user can switch seamlessly between roles in their navbar.
-          </div>
+        {(() => {
+          const selectedAssignRole = roles.find((r) => r.id.toString() === roleId);
+          const isAssigningLecturer = selectedAssignRole?.slug === 'lecturer';
+          const isAssigningDeptScope =
+            selectedAssignRole?.slug === 'department_admin' ||
+            selectedAssignRole?.scope_level === 'department' ||
+            isAssigningLecturer ||
+            selectedAssignRole?.slug === 'student';
 
-          {assignModalUser?.role_assignments?.length > 0 && (
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <label className="font-bold text-slate-700 block uppercase text-[10px]">Current Assigned Roles</label>
-              <div className="space-y-1.5">
-                {assignModalUser.role_assignments.map((ra: any) => (
-                  <div key={ra.id} className="flex items-center justify-between text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-200">
-                    <span className="font-semibold text-slate-800">
-                      {ra.role?.name} {ra.university ? `(${ra.university.code})` : ''}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRevokeRole(assignModalUser.id, ra.id, ra.role?.name)}
-                      className="text-rose-600 hover:text-rose-800 text-[11px] font-bold flex items-center gap-1 hover:bg-rose-50 px-2 py-0.5 rounded transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>Revoke</span>
-                    </button>
-                  </div>
-                ))}
+          return (
+            <form onSubmit={handleAssignRoleSubmit} className="space-y-4 text-xs">
+              <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 leading-relaxed">
+                Assigning additional roles enables multi-role access. The user can switch seamlessly between roles in their navbar.
               </div>
-            </div>
-          )}
 
-          <div>
-            <label className="font-bold text-slate-700 block uppercase mb-1">Add Another Role</label>
-            <select
-              required
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-semibold"
-            >
-              <option value="">Select Role to Assign...</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>{r.name} ({r.scope_level})</option>
-              ))}
-            </select>
-          </div>
+              {assignModalUser?.role_assignments?.length > 0 && (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <label className="font-bold text-slate-700 block uppercase text-[10px]">Current Assigned Roles</label>
+                  <div className="space-y-1.5">
+                    {assignModalUser.role_assignments.map((ra: any) => (
+                      <div key={ra.id} className="flex items-center justify-between text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-200">
+                        <span className="font-semibold text-slate-800">
+                          {ra.role?.name} {ra.university ? `(${ra.university.code})` : ''}
+                          {ra.department ? ` • ${ra.department.name}` : ''}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRevokeRole(assignModalUser.id, ra.id, ra.role?.name)}
+                          className="text-rose-600 hover:text-rose-800 text-[11px] font-bold flex items-center gap-1 hover:bg-rose-50 px-2 py-0.5 rounded transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Revoke</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {isSuperAdmin && (
-            <div>
-              <label className="font-bold text-slate-700 block uppercase mb-1">Target University Scope</label>
-              <select
-                value={assignUnivId}
-                onChange={(e) => setAssignUnivId(e.target.value)}
-                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-semibold"
+              <div>
+                <label className="font-bold text-slate-700 block uppercase mb-1">Add Another Role</label>
+                <select
+                  required
+                  value={roleId}
+                  onChange={(e) => setRoleId(e.target.value)}
+                  className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-semibold"
+                >
+                  <option value="">Select Role to Assign...</option>
+                  {roles.map((r) => (
+                    <option key={r.id} value={r.id}>{r.name} ({r.scope_level})</option>
+                  ))}
+                </select>
+              </div>
+
+              {isSuperAdmin && (
+                <div>
+                  <label className="font-bold text-slate-700 block uppercase mb-1">Target University Scope</label>
+                  <select
+                    value={assignUnivId}
+                    onChange={(e) => setAssignUnivId(e.target.value)}
+                    className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-semibold"
+                  >
+                    <option value="">Default Campus / Unrestricted</option>
+                    {universities.map((u) => (
+                      <option key={u.id} value={u.id}>{u.code} - {u.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Target Department Scope */}
+              {isAssigningDeptScope && (
+                <div>
+                  <label className="font-bold text-slate-700 block uppercase mb-1">
+                    Target Department Scope {isAssigningLecturer ? '(Jurusan Dosen Mengajar)' : ''}
+                  </label>
+                  <select
+                    value={assignDeptId}
+                    onChange={(e) => setAssignDeptId(e.target.value)}
+                    className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-semibold focus:bg-white"
+                  >
+                    <option value="">Pilih Jurusan / Departemen...</option>
+                    {departments.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} ({d.code})
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    Menentukan homebase jurusan atau program studi spesifik untuk peran ini.
+                  </span>
+                </div>
+              )}
+
+              {/* Lecturer Specific Fields */}
+              {isAssigningLecturer && (
+                <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-3">
+                  <span className="font-bold text-amber-900 block text-[11px] uppercase tracking-wider">
+                    Kelengkapan Profil Dosen
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-700 uppercase block mb-1">
+                        NIDN / Kode Dosen
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 0012058801"
+                        value={assignNidn}
+                        onChange={(e) => setAssignNidn(e.target.value)}
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-700 uppercase block mb-1">
+                        Gelar / Jabatan
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Dr., S.T., M.T."
+                        value={assignTitle}
+                        onChange={(e) => setAssignTitle(e.target.value)}
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-700 uppercase block mb-1">
+                      Spesialisasi / Bidang Riset
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Rekayasa Perangkat Lunak & Artificial Intelligence"
+                      value={assignSpecialization}
+                      onChange={(e) => setAssignSpecialization(e.target.value)}
+                      className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={assigning}
+                className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all disabled:opacity-50"
               >
-                <option value="">Default Campus / Unrestricted</option>
-                {universities.map((u) => (
-                  <option key={u.id} value={u.id}>{u.code} - {u.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={assigning}
-            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all disabled:opacity-50"
-          >
-            {assigning ? 'Assigning...' : 'Confirm Role Assignment'}
-          </button>
-        </form>
+                {assigning ? 'Assigning...' : 'Confirm Role Assignment'}
+              </button>
+            </form>
+          );
+        })()}
       </Modal>
     </div>
   );

@@ -149,11 +149,15 @@ class UserManagementController extends Controller
             'university_id' => 'nullable|exists:universities,id',
             'department_id' => 'nullable|exists:departments,id',
             'organization_id' => 'nullable|exists:organizations,id',
+            'nidn' => 'nullable|string|max:50',
+            'title' => 'nullable|string|max:100',
+            'specialization' => 'nullable|string|max:255',
         ]);
 
         $existing = UserRoleAssignment::where('user_id', $user->id)
             ->where('role_id', $request->role_id)
             ->where('university_id', $request->university_id)
+            ->where('department_id', $request->department_id)
             ->first();
 
         if ($existing) {
@@ -174,6 +178,22 @@ class UserManagementController extends Controller
             'assigned_by' => $request->user()->id,
             'assigned_at' => now(),
         ]);
+
+        $role = Role::find($request->role_id);
+        if ($role && $role->slug === 'lecturer') {
+            $department = $request->department_id ? Department::find($request->department_id) : null;
+            LecturerProfile::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'university_id' => $request->university_id ?? $user->default_university_id,
+                    'faculty_id' => $department?->faculty_id,
+                    'department_id' => $request->department_id,
+                    'nidn' => $request->nidn ?: ($user->lecturerProfile?->nidn ?? ('00' . rand(10000000, 99999999))),
+                    'title' => $request->title ?: ($user->lecturerProfile?->title ?? 'Dosen Pengajar / Lektor'),
+                    'specialization' => $request->specialization ?: ($user->lecturerProfile?->specialization ?? ($department ? 'Dosen ' . $department->name : 'Teknologi & Komputasi')),
+                ]
+            );
+        }
 
         return response()->json([
             'success' => true,
