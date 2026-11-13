@@ -34,6 +34,13 @@ import { ProfilePage } from '../pages/ProfilePage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { CampusFeedPage } from '../pages/CampusFeedPage';
 import { MessagesPage } from '../pages/MessagesPage';
+import { ModerationDashboardPage } from '../pages/ModerationDashboardPage';
+import { AcademicProgressPage } from '../pages/AcademicProgressPage';
+import { CampusMapPage } from '../pages/CampusMapPage';
+import { CareerCenterPage } from '../pages/CareerCenterPage';
+import { DigitalLibraryPage } from '../pages/DigitalLibraryPage';
+import { GlobalSearchPage } from '../pages/GlobalSearchPage';
+import { PrivacySettingsPage } from '../pages/PrivacySettingsPage';
 
 interface ProtectedRouteProps {
   allowedRoles?: RoleName[];
@@ -127,6 +134,20 @@ export const AppRoutes: React.FC = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:id" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
+          <Route path="/academic-progress" element={<AcademicProgressPage />} />
+          <Route path="/campus-map" element={<CampusMapPage />} />
+          <Route path="/career-center" element={<CareerCenterPage />} />
+          <Route path="/digital-library" element={<DigitalLibraryPage />} />
+          <Route path="/search" element={<GlobalSearchPage />} />
+          <Route
+            path="/moderation"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'campus_admin']} />
+            }
+          >
+            <Route index element={<ModerationDashboardPage />} />
+          </Route>
         </Route>
       </Route>
 

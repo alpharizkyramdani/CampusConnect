@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { Modal } from '../components/ui/Modal';
-import { GraduationCap, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle, CheckCircle2, KeyRound } from 'lucide-react';
+import { GraduationCap, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2, KeyRound } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -62,12 +62,6 @@ export const LoginPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemoAccount = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('password');
-    setError('');
   };
 
   return (
@@ -154,89 +148,7 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Demo Credentials Fill */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-brand-600" />
-              <span>Quick Test Accounts (Click to Fill)</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-xs max-h-52 overflow-y-auto pr-1">
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('superadmin@campusconnect.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Super Admin</div>
-                <div className="text-[10px] text-slate-500 truncate">Platform Level</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('admin.uir@campusconnect.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Admin UIR</div>
-                <div className="text-[10px] text-slate-500 truncate">Univ. Islam Riau</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('admin.itn@campusconnect.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Admin ITN</div>
-                <div className="text-[10px] text-slate-500 truncate">Inst. Tek. Nasional</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('dept.ti@uir.ac.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Dept Admin</div>
-                <div className="text-[10px] text-slate-500 truncate">Informatics Lab</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('ukm.robotics@uir.ac.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">UKM Admin</div>
-                <div className="text-[10px] text-slate-500 truncate">Robotics Club</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('bem.ft@uir.ac.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Ormawa Admin</div>
-                <div className="text-[10px] text-slate-500 truncate">BEM FT</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('student.alex@uir.ac.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Alex Chandra</div>
-                <div className="text-[10px] text-slate-500 truncate">Student + UKM</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('student.budi@itn.ac.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Budi Santoso</div>
-                <div className="text-[10px] text-slate-500 truncate">Student ITN</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('lecturer.sarah@uir.ac.id')}
-                className="text-left p-2 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 border border-slate-200/80 transition-colors"
-              >
-                <div className="font-bold truncate">Dr. Sarah</div>
-                <div className="text-[10px] text-slate-500 truncate">Lecturer UIR</div>
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center text-xs text-slate-600 space-y-1.5">
+          <div className="mt-6 text-center text-xs text-slate-600 space-y-1.5 border-t border-slate-100 pt-5">
             <div>
               New student?{' '}
               <Link to="/register?type=student" className="font-bold text-brand-600 hover:text-brand-700">

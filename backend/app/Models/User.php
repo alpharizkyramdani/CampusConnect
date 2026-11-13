@@ -105,6 +105,41 @@ class User extends Authenticatable
         return $this->hasMany(DirectMessage::class, 'receiver_id');
     }
 
+    public function privacySettings()
+    {
+        return $this->hasOne(UserPrivacySetting::class);
+    }
+
+    public function blockedUsers()
+    {
+        return $this->hasMany(UserBlock::class, 'blocker_id');
+    }
+
+    public function mutedUsers()
+    {
+        return $this->hasMany(UserMute::class, 'user_id');
+    }
+
+    public function savedPosts()
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
+    public function academicSemesters()
+    {
+        return $this->hasMany(AcademicSemester::class);
+    }
+
+    public function careerApplications()
+    {
+        return $this->hasMany(CareerApplication::class);
+    }
+
+    public function libraryLoans()
+    {
+        return $this->hasMany(LibraryLoan::class);
+    }
+
     public function hasRole(string $roleSlug, ?int $universityId = null): bool
     {
         return $this->roleAssignments()

@@ -21,7 +21,7 @@ class SocialFeedController extends Controller
         $search = $request->query('search');
         $universityId = $request->query('university_id');
 
-        $query = CampusPost::with([
+        $query = CampusPost::where('is_hidden', false)->with([
             'author:id,name,avatar,default_university_id',
             'author.studentProfile.department',
             'author.lecturerProfile',
@@ -69,9 +69,15 @@ class SocialFeedController extends Controller
                 ->pluck('repost_of_id')
                 ->flip();
 
-            $posts->getCollection()->transform(function ($post) use ($likedPostIds, $repostedPostIds) {
+            $savedPostIds = \App\Models\SavedPost::whereIn('post_id', $postIds)
+                ->where('user_id', $user->id)
+                ->pluck('post_id')
+                ->flip();
+
+            $posts->getCollection()->transform(function ($post) use ($likedPostIds, $repostedPostIds, $savedPostIds) {
                 $post->is_liked_by_me = isset($likedPostIds[$post->id]);
                 $post->is_reposted_by_me = isset($repostedPostIds[$post->id]);
+                $post->is_bookmarked_by_me = isset($savedPostIds[$post->id]);
                 return $post;
             });
         }

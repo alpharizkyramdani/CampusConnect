@@ -11,7 +11,14 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $notifications = $user->notifications()->take(30)->get();
+        $type = $request->query('type');
+
+        $query = $user->notifications();
+        if ($type && $type !== 'all') {
+            $query->where('data->type', $type);
+        }
+
+        $notifications = $query->take(30)->get();
         $unreadCount = $user->unreadNotifications()->count();
 
         return response()->json([

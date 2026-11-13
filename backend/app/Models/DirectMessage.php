@@ -13,7 +13,11 @@ class DirectMessage extends Model
     protected $fillable = [
         'sender_id',
         'receiver_id',
+        'group_id',
         'message',
+        'attachment_url',
+        'attachment_type',
+        'attachment_name',
         'is_read',
         'read_at',
     ];

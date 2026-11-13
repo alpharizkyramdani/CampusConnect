@@ -20,13 +20,23 @@ class CampusPost extends Model
         'likes_count',
         'comments_count',
         'reposts_count',
+        'is_hidden',
+        'hidden_reason',
+        'edited_at',
     ];
 
     protected $casts = [
         'likes_count' => 'integer',
         'comments_count' => 'integer',
         'reposts_count' => 'integer',
+        'is_hidden' => 'boolean',
+        'edited_at' => 'datetime',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function author(): BelongsTo
     {

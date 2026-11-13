@@ -16,6 +16,12 @@ import {
   Sparkles,
   ArrowLeft,
   Users,
+  Paperclip,
+  Image as ImageIcon,
+  FileText,
+  X,
+  BellOff,
+  ShieldAlert,
 } from 'lucide-react';
 
 export const MessagesPage: React.FC = () => {
@@ -29,6 +35,16 @@ export const MessagesPage: React.FC = () => {
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
+
+  // Attachment state
+  const [attachmentUrl, setAttachmentUrl] = useState('');
+  const [attachmentName, setAttachmentName] = useState('');
+  const [attachmentType, setAttachmentType] = useState<'image' | 'document'>('image');
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+
+  // In-chat search
+  const [inChatSearchOpen, setInChatSearchOpen] = useState(false);
+  const [inChatSearchQuery, setInChatSearchQuery] = useState('');
 
   // Search in conversation list
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,17 +151,48 @@ export const MessagesPage: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  const handleUploadAttachment = async (file: File) => {
+    setUploadingAttachment(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (res.data.success && res.data.url) {
+        setAttachmentUrl(res.data.url);
+        setAttachmentName(file.name);
+        setAttachmentType(file.type.startsWith('image/') ? 'image' : 'document');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal mengunggah lampiran.');
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activePartner || !inputText.trim() || sending) return;
+    if (!activePartner || (!inputText.trim() && !attachmentUrl) || sending) return;
 
     const textToSend = inputText.trim();
+    const curAttachmentUrl = attachmentUrl;
+    const curAttachmentName = attachmentName;
+    const curAttachmentType = attachmentType;
+
     setInputText('');
+    setAttachmentUrl('');
+    setAttachmentName('');
     setSending(true);
 
     try {
       const res = await api.post(`/chat/messages/${activePartner.id}`, {
-        message: textToSend,
+        message: textToSend || (curAttachmentType === 'image' ? '[Foto Lampiran]' : '[Berkas Lampiran]'),
+        attachment_url: curAttachmentUrl || null,
+        attachment_name: curAttachmentName || null,
+        attachment_type: curAttachmentType || null,
       });
 
       if (res.data.success) {
@@ -156,6 +203,33 @@ export const MessagesPage: React.FC = () => {
       alert(err.response?.data?.message || 'Gagal mengirim pesan');
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleMutePartner = async () => {
+    if (!activePartner) return;
+    try {
+      const res = await api.post(`/users/${activePartner.id}/mute`);
+      if (res.data.success) {
+        alert(res.data.message || 'Pengguna berhasil dibisukan.');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal membisukan obrolan.');
+    }
+  };
+
+  const handleBlockPartner = async () => {
+    if (!activePartner) return;
+    if (!window.confirm(`Yakin ingin memblokir ${activePartner.name}? Pengguna ini tidak akan dapat mengirim pesan lagi kepada Anda.`)) return;
+    try {
+      const res = await api.post(`/users/${activePartner.id}/block`);
+      if (res.data.success) {
+        alert('Pengguna telah diblokir.');
+        setActivePartner(null);
+        fetchConversations();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal memblokir pengguna.');
     }
   };
 
@@ -347,56 +421,105 @@ export const MessagesPage: React.FC = () => {
           ) : (
             <>
               {/* Partner Chat Header */}
-              <div className="p-3.5 bg-white border-b border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setActivePartner(null)}
-                    className="md:hidden p-1 text-slate-400 hover:text-navy"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
+              <div className="p-3.5 bg-white border-b border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setActivePartner(null)}
+                      className="md:hidden p-1 text-slate-400 hover:text-navy"
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
 
-                  <Link
-                    to={`/profile/${activePartner.id}`}
-                    className="flex items-center gap-3 hover:opacity-90 transition-opacity group"
-                    title="Buka profil pengguna"
-                  >
-                    <img
-                      src={activePartner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activePartner.name || 'U')}&background=2563EB&color=fff`}
-                      alt={activePartner.name}
-                      className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0 group-hover:ring-2 group-hover:ring-brand-400 transition-all"
+                    <Link
+                      to={`/profile/${activePartner.id}`}
+                      className="flex items-center gap-3 hover:opacity-90 transition-opacity group"
+                      title="Buka profil pengguna"
+                    >
+                      <img
+                        src={activePartner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activePartner.name || 'U')}&background=2563EB&color=fff`}
+                        alt={activePartner.name}
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0 group-hover:ring-2 group-hover:ring-brand-400 transition-all"
+                      />
+
+                      <div>
+                        <h3 className="font-bold text-navy text-xs sm:text-sm group-hover:text-brand-600 transition-colors">{activePartner.name}</h3>
+                        <p className="text-[11px] text-slate-400">{activePartner.department || 'Civitas Kampus'}</p>
+                      </div>
+                    </Link>
+                  </div>
+
+                  {/* Actions: Search, Mute, Block, Follow */}
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <button
+                      onClick={() => setInChatSearchOpen(!inChatSearchOpen)}
+                      className={`p-1.5 rounded-xl transition-colors ${inChatSearchOpen ? 'bg-brand-50 text-brand-600' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
+                      title="Cari kata kunci dalam percakapan ini"
+                    >
+                      <Search className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={handleMutePartner}
+                      className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors"
+                      title="Bisukan notifikasi obrolan ini"
+                    >
+                      <BellOff className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={handleBlockPartner}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                      title="Blokir pengguna ini"
+                    >
+                      <ShieldAlert className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={handleToggleFollow}
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors ${
+                        partnerFollowing
+                          ? 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600'
+                          : 'bg-brand-600 text-white hover:bg-brand-700 shadow-xs'
+                      }`}
+                    >
+                      {partnerFollowing ? (
+                        <>
+                          <UserCheck className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Mengikuti</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Follow</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* In-Chat Search Bar */}
+                {inChatSearchOpen && (
+                  <div className="relative pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Cari pesan dalam obrolan..."
+                      value={inChatSearchQuery}
+                      onChange={(e) => setInChatSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-hidden"
+                      autoFocus
                     />
-
-                    <div>
-                      <h3 className="font-bold text-navy text-xs sm:text-sm group-hover:text-brand-600 transition-colors">{activePartner.name}</h3>
-                      <p className="text-[11px] text-slate-400">{activePartner.department || 'Civitas Kampus'}</p>
-                    </div>
-                  </Link>
-                </div>
-
-                {/* Follow & Action Button */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleToggleFollow}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors ${
-                      partnerFollowing
-                        ? 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600'
-                        : 'bg-brand-600 text-white hover:bg-brand-700 shadow-xs'
-                    }`}
-                  >
-                    {partnerFollowing ? (
-                      <>
-                        <UserCheck className="w-3.5 h-3.5" />
-                        <span>Mengikuti</span>
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="w-3.5 h-3.5" />
-                        <span>Follow</span>
-                      </>
+                    {inChatSearchQuery && (
+                      <button
+                        onClick={() => setInChatSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                      >
+                        ✕
+                      </button>
                     )}
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* Messages Scroll Area */}
@@ -409,7 +532,13 @@ export const MessagesPage: React.FC = () => {
                     <p className="text-[11px] text-slate-400">Kirim pesan pertama untuk memulai obrolan!</p>
                   </div>
                 ) : (
-                  messages.map((m) => {
+                  (inChatSearchQuery
+                    ? messages.filter((m) =>
+                        m.message.toLowerCase().includes(inChatSearchQuery.toLowerCase()) ||
+                        m.attachment_name?.toLowerCase().includes(inChatSearchQuery.toLowerCase())
+                      )
+                    : messages
+                  ).map((m) => {
                     const isMe = m.sender_id === user?.id;
 
                     return (
@@ -418,13 +547,38 @@ export const MessagesPage: React.FC = () => {
                         className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                       >
                         <div
-                          className={`max-w-[75%] sm:max-w-md px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-2xs ${
+                          className={`max-w-[80%] sm:max-w-md px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-2xs ${
                             isMe
                               ? 'bg-brand-600 text-white rounded-br-xs'
                               : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs'
                           }`}
                         >
                           <p className="whitespace-pre-wrap">{m.message}</p>
+
+                          {/* Image Attachment */}
+                          {m.attachment_url && (m.attachment_type === 'image' || m.attachment_url.match(/\.(jpg|jpeg|png|webp|gif)/i)) && (
+                            <img
+                              src={m.attachment_url}
+                              alt="Attachment preview"
+                              onClick={() => window.open(m.attachment_url, '_blank')}
+                              className="mt-2 rounded-xl max-h-56 object-cover cursor-pointer hover:opacity-95 transition-opacity border border-white/20"
+                            />
+                          )}
+
+                          {/* Document Attachment */}
+                          {m.attachment_url && m.attachment_type === 'document' && !m.attachment_url.match(/\.(jpg|jpeg|png|webp|gif)/i) && (
+                            <a
+                              href={m.attachment_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`mt-2 p-2 rounded-xl flex items-center gap-2 text-xs font-semibold transition-colors ${
+                                isMe ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                              }`}
+                            >
+                              <FileText className="w-4 h-4 shrink-0" />
+                              <span className="truncate">{m.attachment_name || 'Lampiran Berkas'}</span>
+                            </a>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-400 font-mono px-1">
@@ -443,8 +597,46 @@ export const MessagesPage: React.FC = () => {
               </div>
 
               {/* Chat Input Bar */}
-              <div className="p-3 bg-white border-t border-slate-200">
+              <div className="p-3 bg-white border-t border-slate-200 space-y-2">
+                {/* Attached Preview Chip */}
+                {attachmentUrl && (
+                  <div className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {attachmentType === 'image' ? (
+                        <ImageIcon className="w-4 h-4 text-brand-600 shrink-0" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+                      )}
+                      <span className="font-semibold text-slate-800 truncate">{attachmentName || attachmentUrl}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAttachmentUrl('');
+                        setAttachmentName('');
+                      }}
+                      className="p-1 text-slate-400 hover:text-rose-600 rounded-lg"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
                 <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+                  <label
+                    className={`p-2.5 rounded-2xl border border-slate-200 text-slate-500 hover:text-brand-600 hover:bg-slate-50 cursor-pointer transition-colors ${
+                      uploadingAttachment ? 'animate-pulse opacity-50' : ''
+                    }`}
+                    title="Unggah foto atau dokumen"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleUploadAttachment(e.target.files[0])}
+                    />
+                  </label>
+
                   <input
                     type="text"
                     value={inputText}
@@ -455,7 +647,7 @@ export const MessagesPage: React.FC = () => {
 
                   <button
                     type="submit"
-                    disabled={!inputText.trim() || sending}
+                    disabled={(!inputText.trim() && !attachmentUrl) || sending}
                     className="p-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-2xl transition-colors shadow-xs"
                     title="Kirim Pesan"
                   >

@@ -160,6 +160,9 @@ export interface Event {
   current_participants: number;
   status: 'draft' | 'pending_approval' | 'published' | 'registration_open' | 'registration_closed' | 'ongoing' | 'completed' | 'cancelled';
   certificate_enabled: boolean;
+  is_registered?: boolean;
+  ticket_code?: string;
+  is_waitlisted?: boolean;
   category?: EventCategory;
   organization?: Organization;
   department?: Department;
@@ -502,6 +505,9 @@ export interface CampusPost {
   repost_of?: CampusPost;
   is_liked_by_me?: boolean;
   is_reposted_by_me?: boolean;
+  is_bookmarked_by_me?: boolean;
+  edited_at?: string;
+  is_hidden?: boolean;
 }
 
 export interface CampusPostComment {
@@ -518,6 +524,9 @@ export interface DirectMessage {
   sender_id: number;
   receiver_id: number;
   message: string;
+  attachment_url?: string;
+  attachment_name?: string;
+  attachment_type?: string;
   is_read: boolean;
   read_at?: string;
   created_at: string;

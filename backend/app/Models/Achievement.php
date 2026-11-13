@@ -14,22 +14,32 @@ class Achievement extends Model
         'title',
         'level',
         'rank',
+        'organizer',
         'year',
         'certificate_url',
         'description',
         'is_verified',
+        'verified_by',
+        'verified_at',
+        'rejection_reason',
     ];
 
     protected function casts(): array
     {
         return [
             'is_verified' => 'boolean',
+            'verified_at' => 'datetime',
         ];
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }
 

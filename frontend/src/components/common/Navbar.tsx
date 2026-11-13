@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { RoleSwitcher } from './RoleSwitcher';
 import { NotificationDropdown } from './NotificationDropdown';
-import { Menu, LogOut, User as UserIcon, Building2, ChevronDown, Sparkles, Settings, MessageSquare } from 'lucide-react';
+import { Menu, LogOut, User as UserIcon, Building2, ChevronDown, Sparkles, Settings, MessageSquare, Search, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
@@ -47,8 +47,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         </div>
       </div>
 
+      {/* Center: Global Search Bar */}
+      <div className="flex-1 max-w-md mx-3 hidden md:block">
+        <button
+          onClick={() => navigate('/search')}
+          className="w-full flex items-center gap-2 px-3.5 py-2 text-xs text-slate-400 bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200 rounded-xl transition-all text-left shadow-2xs group"
+        >
+          <Search className="w-4 h-4 text-slate-400 group-hover:text-brand-600 transition-colors" />
+          <span className="flex-1 truncate">Cari civitas, event, buku, lowongan, gedung...</span>
+          <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-mono font-semibold text-slate-500 bg-white border border-slate-200 rounded-md shadow-2xs">
+            /search
+          </kbd>
+        </button>
+      </div>
+
       {/* Right Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Mobile Search Icon */}
+        <button
+          onClick={() => navigate('/search')}
+          className="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition-colors md:hidden"
+          title="Pencarian Global"
+        >
+          <Search className="w-5 h-5" />
+        </button>
+
         {/* Role Switcher */}
         <RoleSwitcher />
 
@@ -107,6 +130,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 >
                   <Sparkles className="w-4 h-4 text-brand-500" />
                   Student Portfolio
+                </Link>
+
+                <Link
+                  to="/settings/privacy"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  Privasi & Keamanan Akun
                 </Link>
 
                 <Link

@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { ImageUploadField } from '../components/ui/ImageUploadField';
 import {
   Sparkles,
   Download,
@@ -18,12 +19,19 @@ import {
   CheckCheck,
   ShieldCheck,
   GraduationCap,
+  FileCheck,
+  Eye,
+  ExternalLink,
+  XCircle,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 export const PortfolioPage: React.FC = () => {
   const { user, hasAnyRole } = useAuth();
-  const canVerify = hasAnyRole(['super_admin', 'campus_admin', 'ukm_admin', 'ormawa_admin']);
+  // Allowed to verify achievements: Super Admin, Campus Admin, Department Admin, Lecturer, UKM Admin, Ormawa Admin
+  const canVerify = hasAnyRole(['super_admin', 'campus_admin', 'department_admin', 'lecturer', 'ukm_admin', 'ormawa_admin']);
 
   const [activeTab, setActiveTab] = useState<'hall_of_fame' | 'my_portfolio'>('hall_of_fame');
   const [portfolio, setPortfolio] = useState<any>(null);
@@ -36,6 +44,15 @@ export const PortfolioPage: React.FC = () => {
   const [hallLevel, setHallLevel] = useState('');
   const [verifyingId, setVerifyingId] = useState<number | null>(null);
 
+  // Certificate Preview Modal State
+  const [previewCertificateUrl, setPreviewCertificateUrl] = useState<string | null>(null);
+
+  // Reject Modal State
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectingAchId, setRejectingAchId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [submittingReject, setSubmittingReject] = useState(false);
+
   // Add Activity Modal
   const [activityModal, setActivityModal] = useState(false);
   const [actTitle, setActTitle] = useState('');
@@ -44,6 +61,7 @@ export const PortfolioPage: React.FC = () => {
   const [actOrganizer, setActOrganizer] = useState('');
   const [actStartDate, setActStartDate] = useState('');
   const [actEndDate, setActEndDate] = useState('');
+  const [actProofUrl, setActProofUrl] = useState('');
   const [actDescription, setActDescription] = useState('');
   const [savingAct, setSavingAct] = useState(false);
 
@@ -52,7 +70,9 @@ export const PortfolioPage: React.FC = () => {
   const [achTitle, setAchTitle] = useState('');
   const [achLevel, setAchLevel] = useState('national');
   const [achRank, setAchRank] = useState('1st Place / Champion');
+  const [achOrganizer, setAchOrganizer] = useState('');
   const [achYear, setAchYear] = useState('2026');
+  const [achCertificateUrl, setAchCertificateUrl] = useState('');
   const [achDesc, setAchDesc] = useState('');
   const [savingAch, setSavingAch] = useState(false);
 
@@ -109,9 +129,36 @@ export const PortfolioPage: React.FC = () => {
         fetchPortfolio();
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Verification failed');
+      alert(err.response?.data?.message || 'Verifikasi gagal');
     } finally {
       setVerifyingId(null);
+    }
+  };
+
+  const handleOpenReject = (id: number) => {
+    setRejectingAchId(id);
+    setRejectionReason('');
+    setRejectModalOpen(true);
+  };
+
+  const handleRejectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rejectingAchId) return;
+    setSubmittingReject(true);
+    try {
+      const res = await api.put(`/achievements/${rejectingAchId}/reject`, {
+        rejection_reason: rejectionReason,
+      });
+      if (res.data.success) {
+        setRejectModalOpen(false);
+        setRejectingAchId(null);
+        fetchHallAchievements();
+        fetchPortfolio();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal menolak verifikasi prestasi.');
+    } finally {
+      setSubmittingReject(false);
     }
   };
 
@@ -127,10 +174,12 @@ export const PortfolioPage: React.FC = () => {
         start_date: actStartDate,
         end_date: actEndDate || null,
         description: actDescription,
+        proof_url: actProofUrl || null,
       });
       if (res.data.success) {
         setActivityModal(false);
         setActTitle('');
+        setActProofUrl('');
         fetchPortfolio();
       }
     } catch (e) {
@@ -148,16 +197,22 @@ export const PortfolioPage: React.FC = () => {
         title: achTitle,
         level: achLevel,
         rank: achRank,
+        organizer: achOrganizer || null,
         year: parseInt(achYear),
-        description: achDesc,
+        certificate_url: achCertificateUrl || null,
+        description: achDesc || null,
       });
       if (res.data.success) {
         setAchievementModal(false);
         setAchTitle('');
+        setAchOrganizer('');
+        setAchCertificateUrl('');
+        setAchDesc('');
         fetchPortfolio();
+        fetchHallAchievements();
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Gagal menyimpan prestasi.');
     } finally {
       setSavingAch(false);
     }
@@ -388,28 +443,80 @@ export const PortfolioPage: React.FC = () => {
                       <span>{ach.rank || 'Champion / Awardee'}</span>
                     </div>
 
+                    {ach.organizer && (
+                      <div className="text-[11px] font-medium text-slate-500 mt-1 flex items-center gap-1">
+                        <Building className="w-3 h-3 text-slate-400" />
+                        <span>Penyelenggara: {ach.organizer}</span>
+                      </div>
+                    )}
+
                     {ach.description && (
                       <p className="text-xs text-slate-500 mt-2 line-clamp-3 leading-relaxed">
                         {ach.description}
                       </p>
                     )}
+
+                    {/* Certificate Proof Button */}
+                    {ach.certificate_url ? (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewCertificateUrl(ach.certificate_url)}
+                          className="w-full py-2 px-3 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-brand-200"
+                        >
+                          <FileCheck className="w-4 h-4 text-brand-600" />
+                          <span>Lihat Bukti Sertifikat / Piagam</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-3 text-[11px] text-slate-400 italic flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Bukti sertifikat belum dilampirkan</span>
+                      </div>
+                    )}
+
+                    {/* Verifier endorsement note */}
+                    {ach.is_verified && ach.verifier && (
+                      <div className="mt-2 text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1">
+                        <CheckCheck className="w-3.5 h-3.5" />
+                        <span>Disahkan oleh: {ach.verifier.name}</span>
+                      </div>
+                    )}
+
+                    {/* Rejection note */}
+                    {!ach.is_verified && ach.rejection_reason && (
+                      <div className="mt-2 text-[10px] text-rose-700 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200">
+                        <strong>Catatan Penolakan:</strong> {ach.rejection_reason}
+                      </div>
+                    )}
                   </div>
 
                   {/* Verification Status & Admin Actions */}
                   <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <Badge variant={ach.is_verified ? 'emerald' : 'amber'} size="sm">
-                      {ach.is_verified ? 'Verified & Endorsed' : 'Pending Verification'}
+                    <Badge variant={ach.is_verified ? 'emerald' : ach.rejection_reason ? 'rose' : 'amber'} size="sm">
+                      {ach.is_verified ? 'Verified & Endorsed' : ach.rejection_reason ? 'Ditolak' : 'Pending Verification'}
                     </Badge>
 
                     {canVerify && !ach.is_verified && (
-                      <button
-                        onClick={() => handleVerify(ach.id)}
-                        disabled={verifyingId === ach.id}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs transition-all disabled:opacity-50"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>{verifyingId === ach.id ? 'Verifying...' : 'Verify'}</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleVerify(ach.id)}
+                          disabled={verifyingId === ach.id}
+                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs transition-all disabled:opacity-50"
+                          title="Setujui dan Sahkan Prestasi"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>{verifyingId === ach.id ? 'Memproses...' : 'Setujui'}</span>
+                        </button>
+                        <button
+                          onClick={() => handleOpenReject(ach.id)}
+                          className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 border border-rose-200 transition-colors"
+                          title="Tolak Prestasi"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span>Tolak</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -498,14 +605,40 @@ export const PortfolioPage: React.FC = () => {
               <div className="p-6 text-center text-xs text-slate-400">No achievements recorded yet.</div>
             ) : (
               portfolio.achievements.map((ach: any) => (
-                <div key={ach.id} className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 text-xs">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-amber-800 uppercase text-[10px]">{ach.level} Level</span>
-                    <span className="font-bold text-amber-700">{ach.year}</span>
+                <div key={ach.id} className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 text-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-amber-800 uppercase text-[10px]">{ach.level} Level</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={ach.is_verified ? 'emerald' : ach.rejection_reason ? 'rose' : 'amber'} size="sm">
+                          {ach.is_verified ? 'Verified' : ach.rejection_reason ? 'Ditolak' : 'Pending'}
+                        </Badge>
+                        <span className="font-bold text-amber-700">{ach.year}</span>
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-sm text-slate-900">{ach.title}</h4>
+                    <div className="font-bold text-amber-600 mt-0.5">{ach.rank}</div>
+                    {ach.organizer && <div className="text-[11px] text-slate-500 mt-0.5">Penyelenggara: {ach.organizer}</div>}
+                    {ach.description && <p className="text-slate-600 mt-1">{ach.description}</p>}
+                    {ach.rejection_reason && (
+                      <div className="mt-2 text-[11px] text-rose-700 bg-rose-50 p-2 rounded-lg border border-rose-200">
+                        <strong>Alasan Penolakan:</strong> {ach.rejection_reason}
+                      </div>
+                    )}
                   </div>
-                  <h4 className="font-bold text-sm text-slate-900">{ach.title}</h4>
-                  <div className="font-bold text-amber-600 mt-0.5">{ach.rank}</div>
-                  {ach.description && <p className="text-slate-600 mt-1">{ach.description}</p>}
+
+                  {ach.certificate_url && (
+                    <div className="mt-3 pt-2 border-t border-amber-200/60 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewCertificateUrl(ach.certificate_url)}
+                        className="text-brand-700 hover:text-brand-900 font-bold text-xs flex items-center gap-1"
+                      >
+                        <FileCheck className="w-3.5 h-3.5" />
+                        <span>Lihat Bukti Sertifikat</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -600,71 +733,183 @@ export const PortfolioPage: React.FC = () => {
         </div>
       )}
 
-      {/* Add Award Modal */}
+      {/* Add Award / Submit Achievement Modal */}
       <Modal
         isOpen={achievementModal}
         onClose={() => setAchievementModal(false)}
-        title="Record Competition Award"
+        title="Submit Prestasi & Penghargaan Kompetisi"
       >
         <form onSubmit={handleAddAchievement} className="space-y-4 text-xs">
           <div>
-            <label className="font-bold text-slate-700 block uppercase">Competition Title</label>
+            <label className="font-bold text-slate-700 block uppercase">Nama Kompetisi / Penghargaan <span className="text-rose-500">*</span></label>
             <input
               type="text"
               required
               value={achTitle}
               onChange={(e) => setAchTitle(e.target.value)}
-              placeholder="e.g. National Smart City Hackathon 2026"
+              placeholder="Contoh: National Smart City Hackathon 2026"
               className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Level</label>
+              <label className="font-bold text-slate-700 block uppercase">Tingkat / Level <span className="text-rose-500">*</span></label>
               <select
                 value={achLevel}
                 onChange={(e) => setAchLevel(e.target.value)}
                 className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
               >
-                <option value="campus">Campus Level</option>
-                <option value="regional">Regional / Provincial</option>
-                <option value="national">National Level</option>
-                <option value="international">International Level</option>
+                <option value="campus">Tingkat Kampus</option>
+                <option value="regional">Tingkat Regional / Provinsi</option>
+                <option value="national">Tingkat Nasional</option>
+                <option value="international">Tingkat Internasional</option>
               </select>
             </div>
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Rank / Placement</label>
+              <label className="font-bold text-slate-700 block uppercase">Peringkat / Juara <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 required
                 value={achRank}
                 onChange={(e) => setAchRank(e.target.value)}
-                placeholder="1st Place Champion / Gold Medal"
+                placeholder="Juara 1 / Gold Medal / Finalist"
                 className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
               />
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-bold text-slate-700 block uppercase">Penyelenggara Kompetisi</label>
+              <input
+                type="text"
+                value={achOrganizer}
+                onChange={(e) => setAchOrganizer(e.target.value)}
+                placeholder="Contoh: Kemdikbudristek, Google, IEEE"
+                className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block uppercase">Tahun Perolehan <span className="text-rose-500">*</span></label>
+              <input
+                type="number"
+                required
+                value={achYear}
+                onChange={(e) => setAchYear(e.target.value)}
+                className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Certificate Proof Upload from gallery or URL */}
+          <ImageUploadField
+            label="Bukti Sertifikat / Piagam Juara"
+            value={achCertificateUrl}
+            onChange={setAchCertificateUrl}
+            placeholder="Atau tempel URL sertifikat/dokumen digital: https://..."
+            helperText="Pilih foto/scan piagam juara dari galeri HP atau laptop untuk diverifikasi oleh Admin Jurusan."
+            required
+          />
+
           <div>
-            <label className="font-bold text-slate-700 block uppercase">Year</label>
-            <input
-              type="number"
-              required
-              value={achYear}
-              onChange={(e) => setAchYear(e.target.value)}
+            <label className="font-bold text-slate-700 block uppercase">Deskripsi & Catatan Prestasi</label>
+            <textarea
+              rows={3}
+              value={achDesc}
+              onChange={(e) => setAchDesc(e.target.value)}
+              placeholder="Deskripsi singkat karya, peran tim, nomor sertifikat, atau tautan publikasi berita lomba..."
               className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
             />
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-800 flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <span>
+              <strong>Pemberitahuan Verifikasi:</strong> Setiap pengajuan prestasi akan berstatus <em>Pending Verification</em> dan wajib diverifikasi oleh Admin Jurusan / Dosen Pembimbing / Kemahasiswaan sebelum disahkan ke dalam SKPI dan Hall of Fame publik.
+            </span>
           </div>
 
           <button
             type="submit"
             disabled={savingAch}
-            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all"
+            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
           >
-            {savingAch ? 'Saving...' : 'Add Award'}
+            {savingAch ? 'Mengirim Pengajuan...' : 'Submit Prestasi Mahasiswa'}
           </button>
         </form>
+      </Modal>
+
+      {/* Reject Achievement Modal */}
+      <Modal
+        isOpen={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        title="Tolak Pengajuan Prestasi Mahasiswa"
+      >
+        <form onSubmit={handleRejectSubmit} className="space-y-4 text-xs">
+          <div>
+            <label className="font-bold text-slate-700 block uppercase">Alasan Penolakan <span className="text-rose-500">*</span></label>
+            <textarea
+              required
+              rows={3}
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Contoh: Bukti sertifikat tidak terbaca / Nama peserta tidak sesuai / Mohon unggah dokumen piagam resmi yang beresolusi jelas..."
+              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setRejectModalOpen(false)}
+              className="px-4 py-2 border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={submittingReject}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-colors"
+            >
+              {submittingReject ? 'Memproses...' : 'Tolak Prestasi'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Certificate Preview Modal */}
+      <Modal
+        isOpen={!!previewCertificateUrl}
+        onClose={() => setPreviewCertificateUrl(null)}
+        title="Bukti Sertifikat / Piagam Penghargaan"
+      >
+        <div className="space-y-4 text-xs">
+          {previewCertificateUrl && (
+            <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 flex items-center justify-center min-h-[300px]">
+              <img
+                src={previewCertificateUrl}
+                alt="Sertifikat"
+                className="max-h-[500px] w-auto object-contain mx-auto"
+                onError={(e: any) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80';
+                }}
+              />
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-slate-500 text-[11px] truncate max-w-xs">{previewCertificateUrl}</span>
+            <a
+              href={previewCertificateUrl || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg font-bold flex items-center gap-1.5 text-xs transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Buka di Tab Baru</span>
+            </a>
+          </div>
+        </div>
       </Modal>
 
       {/* Add Activity Modal */}
@@ -675,7 +920,7 @@ export const PortfolioPage: React.FC = () => {
       >
         <form onSubmit={handleAddActivity} className="space-y-4 text-xs">
           <div>
-            <label className="font-bold text-slate-700 block uppercase">Activity Name</label>
+            <label className="font-bold text-slate-700 block uppercase">Activity Name <span className="text-rose-500">*</span></label>
             <input
               type="text"
               required
@@ -688,7 +933,7 @@ export const PortfolioPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Activity Type</label>
+              <label className="font-bold text-slate-700 block uppercase">Activity Type <span className="text-rose-500">*</span></label>
               <select
                 value={actType}
                 onChange={(e) => setActType(e.target.value)}
@@ -701,7 +946,7 @@ export const PortfolioPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Role Title</label>
+              <label className="font-bold text-slate-700 block uppercase">Role Title <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 required
@@ -715,7 +960,7 @@ export const PortfolioPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Start Date</label>
+              <label className="font-bold text-slate-700 block uppercase">Start Date <span className="text-rose-500">*</span></label>
               <input
                 type="date"
                 required
@@ -734,6 +979,25 @@ export const PortfolioPage: React.FC = () => {
                 className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
               />
             </div>
+          </div>
+
+          <ImageUploadField
+            label="Bukti Kegiatan (Dokumentasi/Sertifikat)"
+            value={actProofUrl}
+            onChange={setActProofUrl}
+            placeholder="Atau tempel URL bukti kegiatan..."
+            helperText="Unggah foto kegiatan dari galeri untuk melengkapi catatan portofolio."
+          />
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase">Description</label>
+            <textarea
+              rows={2}
+              value={actDescription}
+              onChange={(e) => setActDescription(e.target.value)}
+              placeholder="Brief details about your role and contributions..."
+              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+            />
           </div>
 
           <button

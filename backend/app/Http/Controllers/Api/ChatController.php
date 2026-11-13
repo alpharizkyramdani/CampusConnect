@@ -122,13 +122,28 @@ class ChatController extends Controller
         }
 
         $request->validate([
-            'message' => 'required|string|max:2000',
+            'message' => 'nullable|string|max:2000',
+            'attachment_url' => 'nullable|string',
+            'attachment_type' => 'nullable|string|in:image,document',
+            'attachment_name' => 'nullable|string|max:255',
         ]);
+
+        if (empty($request->message) && empty($request->attachment_url)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesan atau lampiran tidak boleh kosong.',
+            ], 422);
+        }
+
+        $msgText = $request->message ?? ($request->attachment_type === 'image' ? '[Foto Lampiran]' : '[Dokumen Lampiran]');
 
         $msg = DirectMessage::create([
             'sender_id' => $sender->id,
             'receiver_id' => $receiver->id,
-            'message' => $request->message,
+            'message' => $msgText,
+            'attachment_url' => $request->attachment_url,
+            'attachment_type' => $request->attachment_type,
+            'attachment_name' => $request->attachment_name,
             'is_read' => false,
         ]);
 
@@ -160,6 +175,30 @@ class ChatController extends Controller
         return response()->json([
             'success' => true,
             'unread_count' => $count,
+        ]);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+        $q = trim($request->query('q', ''));
+
+        if (empty($q)) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        $messages = DirectMessage::where(function ($query) use ($userId) {
+                $query->where('sender_id', $userId)->orWhere('receiver_id', $userId);
+            })
+            ->where('message', 'like', "%{$q}%")
+            ->with(['sender:id,name,avatar', 'receiver:id,name,avatar'])
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $messages,
         ]);
     }
 }

@@ -25,6 +25,10 @@ import {
   GraduationCap,
   X,
   Settings,
+  ShieldAlert,
+  Compass,
+  Briefcase,
+  Lock,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -44,12 +48,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Platform Administration',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Pusat Moderasi Konten', icon: ShieldAlert, path: '/moderation' },
+              { label: 'Pencarian Global', icon: Search, path: '/search' },
               { label: 'Campus Feed (Social)', icon: Sparkles, path: '/feed' },
               { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
+              { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
+              { label: 'Career & Internship Center', icon: Briefcase, path: '/career-center' },
               { label: 'Universities', icon: Building, path: '/universities-manage' },
               { label: 'User Directory', icon: UserCog, path: '/users' },
               { label: 'Platform Analytics', icon: BarChart3, path: '/analytics' },
               { label: 'System Audit Logs', icon: History, path: '/audit-logs' },
+              { label: 'Pengaturan Privasi', icon: Lock, path: '/settings/privacy' },
             ],
           },
         ];
@@ -60,6 +70,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Campus Management',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Pusat Moderasi Konten', icon: ShieldAlert, path: '/moderation' },
+              { label: 'Pencarian Global', icon: Search, path: '/search' },
+              { label: 'Progress Akademik', icon: GraduationCap, path: '/academic-progress' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
+              { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
+              { label: 'Career & Internship Center', icon: Briefcase, path: '/career-center' },
               { label: 'Campus Feed (Social)', icon: Sparkles, path: '/feed' },
               { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
               { label: 'Announcements', icon: Megaphone, path: '/announcements' },
@@ -75,6 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               { label: 'Document Center', icon: FolderLock, path: '/documents' },
               { label: 'User Management', icon: UserCog, path: '/users' },
               { label: 'Campus Analytics', icon: BarChart3, path: '/analytics' },
+              { label: 'Pengaturan Privasi', icon: Lock, path: '/settings/privacy' },
             ],
           },
         ];
@@ -85,6 +102,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Department Unit',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Pencarian Global', icon: Search, path: '/search' },
+              { label: 'Progress Akademik Jurusan', icon: GraduationCap, path: '/academic-progress' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
+              { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
               { label: 'Equipment Inventory', icon: PackageCheck, path: '/facilities' },
               { label: 'Borrowing Approvals', icon: History, path: '/borrowings' },
               { label: 'Maintenance Reports', icon: Wrench, path: '/maintenance' },
@@ -101,9 +122,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Organization Console',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Pencarian Global', icon: Search, path: '/search' },
               { label: 'My Organization', icon: Users2, path: '/organizations' },
               { label: 'Manage Events', icon: CalendarCheck2, path: '/events' },
               { label: 'QR Attendance Scanner', icon: QrCode, path: '/scanner' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
               { label: 'Announcements', icon: Megaphone, path: '/announcements' },
               { label: 'Campus Directory', icon: BookOpen, path: '/directory' },
             ],
@@ -116,6 +139,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Academic Portal',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Pencarian Global', icon: Search, path: '/search' },
+              { label: 'Bimbingan Akademik (Mahasiswa)', icon: GraduationCap, path: '/academic-progress' },
+              { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
               { label: 'Campus Feed (Timeline)', icon: Sparkles, path: '/feed' },
               { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
               { label: 'Campus Announcements', icon: Megaphone, path: '/announcements' },
@@ -123,6 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               { label: 'Campus Events', icon: CalendarCheck2, path: '/events' },
               { label: 'Campus Directory', icon: BookOpen, path: '/directory' },
               { label: 'Discussion Space', icon: MessagesSquare, path: '/discussions' },
+              { label: 'Pengaturan Privasi', icon: Lock, path: '/settings/privacy' },
             ],
           },
         ];
@@ -134,6 +162,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             title: 'Student Hub',
             items: [
               { label: 'My Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Pencarian Global', icon: Search, path: '/search' },
+              { label: 'Progress Akademik (KHS/IPK)', icon: GraduationCap, path: '/academic-progress' },
+              { label: 'Pusat Karier & Magang', icon: Briefcase, path: '/career-center' },
+              { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
               { label: 'Campus Feed (Timeline)', icon: Sparkles, path: '/feed' },
               { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
               { label: 'Campus Announcements', icon: Megaphone, path: '/announcements' },
@@ -149,6 +182,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               { label: 'Activity Portfolio', icon: Sparkles, path: '/portfolio' },
               { label: 'Discussion Space', icon: MessagesSquare, path: '/discussions' },
               { label: 'Campus Directory', icon: BookOpen, path: '/directory' },
+              { label: 'Pengaturan Privasi', icon: Lock, path: '/settings/privacy' },
             ],
           },
         ];

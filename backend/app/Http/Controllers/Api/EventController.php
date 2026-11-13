@@ -32,6 +32,28 @@ class EventController extends Controller
             ->latest('start_time')
             ->paginate(12);
 
+        $user = $request->user('sanctum');
+        if ($user) {
+            $userRegs = \App\Models\EventRegistration::where('user_id', $user->id)
+                ->whereIn('event_id', $events->pluck('id'))
+                ->where('status', 'registered')
+                ->pluck('ticket_code', 'event_id')
+                ->toArray();
+
+            $userWaitlists = \App\Models\EventWaitlist::where('user_id', $user->id)
+                ->whereIn('event_id', $events->pluck('id'))
+                ->where('status', 'waiting')
+                ->pluck('id', 'event_id')
+                ->toArray();
+
+            $events->getCollection()->transform(function ($ev) use ($userRegs, $userWaitlists) {
+                $ev->is_registered = isset($userRegs[$ev->id]);
+                $ev->ticket_code = $userRegs[$ev->id] ?? null;
+                $ev->is_waitlisted = isset($userWaitlists[$ev->id]);
+                return $ev;
+            });
+        }
+
         return response()->json([
             'success' => true,
             'data' => $events,

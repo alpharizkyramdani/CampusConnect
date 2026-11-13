@@ -1,23 +1,34 @@
 <?php
 
 use App\Http\Controllers\Api\AcademicCalendarController;
+use App\Http\Controllers\Api\AcademicProgressController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CampusMapController;
+use App\Http\Controllers\Api\CareerCenterController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\DigitalLibraryController;
 use App\Http\Controllers\Api\DiscussionController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\DocumentVersionController;
 use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\EventEnhancementController;
 use App\Http\Controllers\Api\FacilityController;
 use App\Http\Controllers\Api\FollowController;
+use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\LostFoundController;
 use App\Http\Controllers\Api\MaintenanceController;
+use App\Http\Controllers\Api\ModerationController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrganizationController;
+use App\Http\Controllers\Api\OrganizationEnhancementController;
 use App\Http\Controllers\Api\PortfolioController;
+use App\Http\Controllers\Api\PrivacyController;
 use App\Http\Controllers\Api\SocialFeedController;
+use App\Http\Controllers\Api\SocialHubEnhancementController;
 use App\Http\Controllers\Api\StudentServiceController;
 use App\Http\Controllers\Api\UniversityController;
 use App\Http\Controllers\Api\UploadController;
@@ -187,6 +198,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/portfolio/activity', [PortfolioController::class, 'storeActivity']);
         Route::post('/portfolio/achievement', [PortfolioController::class, 'storeAchievement']);
         Route::put('/achievements/{id}/verify', [PortfolioController::class, 'verifyAchievement']);
+        Route::put('/achievements/{id}/reject', [PortfolioController::class, 'rejectAchievement']);
 
         // User Management (Module 17)
         Route::get('/users', [UserManagementController::class, 'index']);
@@ -200,6 +212,70 @@ Route::prefix('v1')->group(function () {
 
         // Audit Logs (Module 18)
         Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
+        // 1. Community Safety & Content Moderation
+        Route::post('/reports', [ModerationController::class, 'report']);
+        Route::get('/moderation/reports', [ModerationController::class, 'index']);
+        Route::post('/moderation/reports/{id}/resolve', [ModerationController::class, 'resolve']);
+
+        // 2. Privacy & Account Controls
+        Route::get('/privacy/settings', [PrivacyController::class, 'getSettings']);
+        Route::put('/privacy/settings', [PrivacyController::class, 'updateSettings']);
+        Route::post('/users/{id}/block', [PrivacyController::class, 'blockUser']);
+        Route::delete('/users/{id}/block', [PrivacyController::class, 'unblockUser']);
+        Route::post('/users/{id}/mute', [PrivacyController::class, 'muteUser']);
+        Route::delete('/users/{id}/mute', [PrivacyController::class, 'unmuteUser']);
+
+        // 3. Academic Progress Dashboard
+        Route::get('/academic-progress', [AcademicProgressController::class, 'show']);
+
+        // 4. Smart Campus Map
+        Route::get('/campus-map/locations', [CampusMapController::class, 'index']);
+        Route::post('/campus-map/locations', [CampusMapController::class, 'store']);
+        Route::put('/campus-map/locations/{id}', [CampusMapController::class, 'update']);
+        Route::delete('/campus-map/locations/{id}', [CampusMapController::class, 'destroy']);
+
+        // 5. Career & Internship Center
+        Route::get('/career/opportunities', [CareerCenterController::class, 'index']);
+        Route::get('/career/opportunities/{id}', [CareerCenterController::class, 'show']);
+        Route::post('/career/opportunities', [CareerCenterController::class, 'store']);
+        Route::post('/career/opportunities/{id}/apply', [CareerCenterController::class, 'apply']);
+        Route::post('/career/opportunities/{id}/bookmark', [CareerCenterController::class, 'toggleBookmark']);
+        Route::get('/career/my-applications', [CareerCenterController::class, 'myApplications']);
+        Route::get('/career/opportunities/{id}/applicants', [CareerCenterController::class, 'listApplicants']);
+        Route::put('/career/applications/{id}/status', [CareerCenterController::class, 'updateApplicationStatus']);
+
+        // 6. Digital Library
+        Route::get('/library/items', [DigitalLibraryController::class, 'index']);
+        Route::post('/library/items', [DigitalLibraryController::class, 'store']);
+        Route::post('/library/items/{id}/borrow', [DigitalLibraryController::class, 'borrow']);
+        Route::post('/library/loans/{id}/return', [DigitalLibraryController::class, 'returnBook']);
+        Route::get('/library/my-loans', [DigitalLibraryController::class, 'myLoans']);
+
+        // 7. Global Search
+        Route::get('/search/global', [GlobalSearchController::class, 'search']);
+
+        // 8. Social Hub Enhancements (Bookmarks, Edit Post, Detail, Trending, Chat Search)
+        Route::post('/feed/{id}/bookmark', [SocialHubEnhancementController::class, 'toggleBookmark']);
+        Route::get('/feed/saved-posts', [SocialHubEnhancementController::class, 'mySavedPosts']);
+        Route::put('/feed/{id}', [SocialHubEnhancementController::class, 'updatePost']);
+        Route::get('/feed/{id}/detail', [SocialHubEnhancementController::class, 'showPost']);
+        Route::get('/feed-trending', [SocialHubEnhancementController::class, 'trending']);
+        Route::get('/chat/search', [ChatController::class, 'search']);
+
+        // 9. Event Waitlist & Cancellation
+        Route::post('/events/{id}/cancel', [EventEnhancementController::class, 'cancelRegistration']);
+        Route::post('/events/{id}/waitlist', [EventEnhancementController::class, 'joinWaitlist']);
+
+        // 10. Organization Programs & Finances
+        Route::get('/organizations/{id}/work-programs', [OrganizationEnhancementController::class, 'listWorkPrograms']);
+        Route::post('/organizations/{id}/work-programs', [OrganizationEnhancementController::class, 'storeWorkProgram']);
+        Route::get('/organizations/{id}/finances', [OrganizationEnhancementController::class, 'listFinances']);
+        Route::post('/organizations/{id}/finances', [OrganizationEnhancementController::class, 'storeFinance']);
+
+        // 11. Document Version History
+        Route::get('/documents/{id}/versions', [DocumentVersionController::class, 'index']);
+        Route::post('/documents/{id}/versions', [DocumentVersionController::class, 'store']);
 
         // University Management (Super Admin & Campus Admin)
         Route::post('/universities', [UniversityController::class, 'store']);

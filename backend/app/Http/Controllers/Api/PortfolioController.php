@@ -42,6 +42,7 @@ class PortfolioController extends Controller
 
         // 5. Achievements
         $achievements = Achievement::where('user_id', $user->id)
+            ->with(['verifier:id,name'])
             ->latest('year')
             ->get();
 
@@ -102,7 +103,8 @@ class PortfolioController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'level' => 'required|in:campus,regional,national,international',
-            'rank' => 'nullable|string',
+            'rank' => 'nullable|string|max:255',
+            'organizer' => 'nullable|string|max:255',
             'year' => 'required|integer',
             'certificate_url' => 'nullable|string',
             'description' => 'nullable|string',
@@ -113,6 +115,7 @@ class PortfolioController extends Controller
             'title' => $request->title,
             'level' => $request->level,
             'rank' => $request->rank,
+            'organizer' => $request->organizer,
             'year' => $request->year,
             'certificate_url' => $request->certificate_url,
             'description' => $request->description,
@@ -121,7 +124,7 @@ class PortfolioController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Achievement recorded successfully',
+            'message' => 'Prestasi berhasil disubmit dan menunggu verifikasi Admin Jurusan / Kemahasiswaan.',
             'data' => $achievement,
         ], 201);
     }
@@ -137,7 +140,12 @@ class PortfolioController extends Controller
             })
             ->when($level, fn($q) => $q->where('level', $level))
             ->when($search, fn($q) => $q->where(fn($sub) => $sub->where('title', 'like', "%{$search}%")->orWhere('rank', 'like', "%{$search}%")))
-            ->with(['user:id,name,email,avatar', 'user.studentProfile.university:id,name,code', 'user.studentProfile.department:id,name'])
+            ->with([
+                'user:id,name,email,avatar',
+                'user.studentProfile.university:id,name,code',
+                'user.studentProfile.department:id,name',
+                'verifier:id,name',
+            ])
             ->latest()
             ->paginate(15);
 
@@ -149,15 +157,104 @@ class PortfolioController extends Controller
 
     public function verifyAchievement(Request $request, $id): JsonResponse
     {
-        $achievement = Achievement::findOrFail($id);
+        $user = $request->user();
+        $achievement = Achievement::with(['user.studentProfile.department', 'user.studentProfile.university'])->findOrFail($id);
+
+        // Verification authorization: super_admin, campus_admin, department_admin, lecturer, ukm_admin, ormawa_admin
+        $allowedRoles = ['super_admin', 'campus_admin', 'department_admin', 'lecturer', 'ukm_admin', 'ormawa_admin'];
+        $hasPermission = false;
+        foreach ($allowedRoles as $role) {
+            if ($user->hasRole($role)) {
+                $hasPermission = true;
+                break;
+            }
+        }
+
+        if (!$hasPermission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki hak akses verifikasi prestasi. Wewenang khusus Admin Jurusan, Dosen, atau Kemahasiswaan.',
+            ], 403);
+        }
+
+        // If Department Admin: verify department boundary
+        if ($user->hasRole('department_admin')) {
+            $adminDeptId = $user->roleAssignments()->whereHas('role', fn($q) => $q->where('name', 'department_admin'))->value('department_id') 
+                ?? $user->lecturerProfile?->department_id;
+            $studentDeptId = $achievement->user?->studentProfile?->department_id;
+
+            if ($adminDeptId && $studentDeptId && (int)$adminDeptId !== (int)$studentDeptId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda hanya berwenang memverifikasi prestasi mahasiswa di jurusan/program studi Anda.',
+                ], 403);
+            }
+        }
+
         $achievement->update([
             'is_verified' => true,
+            'verified_by' => $user->id,
+            'verified_at' => now(),
+            'rejection_reason' => null,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Student achievement successfully verified and published to Hall of Fame.',
-            'data' => $achievement->fresh(['user.studentProfile.university']),
+            'message' => 'Prestasi mahasiswa berhasil diverifikasi dan disahkan untuk Portofolio & Hall of Fame.',
+            'data' => $achievement->fresh(['user.studentProfile.university', 'user.studentProfile.department', 'verifier:id,name']),
+        ]);
+    }
+
+    public function rejectAchievement(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        $achievement = Achievement::with(['user.studentProfile.department'])->findOrFail($id);
+
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
+        $allowedRoles = ['super_admin', 'campus_admin', 'department_admin', 'lecturer', 'ukm_admin', 'ormawa_admin'];
+        $hasPermission = false;
+        foreach ($allowedRoles as $role) {
+            if ($user->hasRole($role)) {
+                $hasPermission = true;
+                break;
+            }
+        }
+
+        if (!$hasPermission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki hak akses untuk menolak pengajuan prestasi.',
+            ], 403);
+        }
+
+        // Department scoping check
+        if ($user->hasRole('department_admin')) {
+            $adminDeptId = $user->roleAssignments()->whereHas('role', fn($q) => $q->where('name', 'department_admin'))->value('department_id') 
+                ?? $user->lecturerProfile?->department_id;
+            $studentDeptId = $achievement->user?->studentProfile?->department_id;
+
+            if ($adminDeptId && $studentDeptId && (int)$adminDeptId !== (int)$studentDeptId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda hanya berwenang memproses prestasi mahasiswa di jurusan/program studi Anda.',
+                ], 403);
+            }
+        }
+
+        $achievement->update([
+            'is_verified' => false,
+            'verified_by' => $user->id,
+            'verified_at' => now(),
+            'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan prestasi ditolak dengan catatan alasan untuk mahasiswa.',
+            'data' => $achievement->fresh(['user.studentProfile.university', 'verifier:id,name']),
         ]);
     }
 }

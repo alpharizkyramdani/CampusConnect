@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { CampusPost, CampusPostComment, UserSuggestion } from '../types';
+import { Modal } from '../components/ui/Modal';
 import {
   MessageSquare,
   Repeat2,
@@ -21,12 +22,16 @@ import {
   UserCheck,
   Flame,
   Globe2,
+  Bookmark,
+  Flag,
+  Edit3,
+  ShieldAlert,
 } from 'lucide-react';
 
 export const CampusFeedPage: React.FC = () => {
   const { user, activeAssignment } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'for_you' | 'following' | 'trending'>('for_you');
+  const [activeTab, setActiveTab] = useState<'for_you' | 'following' | 'trending' | 'saved'>('for_you');
   const [posts, setPosts] = useState<CampusPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,21 +49,42 @@ export const CampusFeedPage: React.FC = () => {
     loading: boolean;
   }>>({});
 
-  // Right sidebar suggestions
+  // Right sidebar suggestions & trending
   const [suggestions, setSuggestions] = useState<UserSuggestion[]>([]);
   const [followingMap, setFollowingMap] = useState<Record<number, boolean>>({});
+  const [trendingTags, setTrendingTags] = useState<{ tag: string; count: number }[]>([]);
+
+  // Edit Post Modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<CampusPost | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Report Modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportingPost, setReportingPost] = useState<CampusPost | null>(null);
+  const [reportCategory, setReportCategory] = useState('inappropriate');
+  const [reportReason, setReportReason] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   const fetchFeed = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/feed', {
-        params: {
-          feed_type: activeTab,
-          university_id: activeAssignment?.university_id,
-        },
-      });
-      if (res.data.success) {
-        setPosts(res.data.data.data || res.data.data || []);
+      if (activeTab === 'saved') {
+        const res = await api.get('/feed/saved-posts');
+        if (res.data.success) {
+          setPosts(res.data.data.data || res.data.data || []);
+        }
+      } else {
+        const res = await api.get('/feed', {
+          params: {
+            feed_type: activeTab,
+            university_id: activeAssignment?.university_id,
+          },
+        });
+        if (res.data.success) {
+          setPosts(res.data.data.data || res.data.data || []);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -78,12 +104,24 @@ export const CampusFeedPage: React.FC = () => {
     }
   };
 
+  const fetchTrendingTags = async () => {
+    try {
+      const res = await api.get('/feed-trending');
+      if (res.data.success && res.data.data) {
+        setTrendingTags(res.data.data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchFeed();
   }, [activeTab, activeAssignment]);
 
   useEffect(() => {
     fetchSuggestions();
+    fetchTrendingTags();
   }, []);
 
   const handleUploadMedia = async (file: File) => {
@@ -119,8 +157,8 @@ export const CampusFeedPage: React.FC = () => {
       if (res.data.success) {
         setContent('');
         setMediaUrl('');
-        // Add new post to top of list
         setPosts((prev) => [res.data.data, ...prev]);
+        fetchTrendingTags();
       }
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal memposting ke timeline');
@@ -150,6 +188,25 @@ export const CampusFeedPage: React.FC = () => {
     }
   };
 
+  const handleToggleBookmark = async (postId: number) => {
+    try {
+      const res = await api.post(`/feed/${postId}/bookmark`);
+      if (res.data.success) {
+        const isBookmarked = res.data.is_bookmarked;
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId ? { ...p, is_bookmarked_by_me: isBookmarked } : p
+          )
+        );
+        if (activeTab === 'saved' && !isBookmarked) {
+          setPosts((prev) => prev.filter((p) => p.id !== postId));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleToggleRepost = async (postId: number) => {
     try {
       const res = await api.post(`/feed/${postId}/repost`);
@@ -171,6 +228,74 @@ export const CampusFeedPage: React.FC = () => {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const openEditModal = (post: CampusPost) => {
+    setEditingPost(post);
+    setEditContent(post.content);
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPost || !editContent.trim()) return;
+
+    setSavingEdit(true);
+    try {
+      const res = await api.put(`/feed/${editingPost.id}`, {
+        content: editContent.trim(),
+      });
+      if (res.data.success) {
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === editingPost.id
+              ? { ...p, content: editContent.trim(), edited_at: new Date().toISOString() }
+              : p
+          )
+        );
+        setEditModalOpen(false);
+        setEditingPost(null);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal mengubah postingan');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const openReportModal = (post: CampusPost) => {
+    setReportingPost(post);
+    setReportCategory('inappropriate');
+    setReportReason('');
+    setReportModalOpen(true);
+  };
+
+  const handleSubmitReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportingPost || !reportReason.trim()) {
+      alert('Harap berikan alasan laporan.');
+      return;
+    }
+
+    setSubmittingReport(true);
+    try {
+      const res = await api.post('/reports', {
+        reportable_type: 'post',
+        reportable_id: reportingPost.id,
+        category: reportCategory,
+        reason: reportReason.trim(),
+      });
+
+      if (res.data.success) {
+        alert('Laporan Anda telah berhasil dikirim ke moderator kampus.');
+        setReportModalOpen(false);
+        setReportingPost(null);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal mengirim laporan.');
+    } finally {
+      setSubmittingReport(false);
     }
   };
 
@@ -339,6 +464,18 @@ export const CampusFeedPage: React.FC = () => {
                 <Flame className="w-4 h-4" />
                 <span>Trending Kampus 🔥</span>
               </button>
+
+              <button
+                onClick={() => setActiveTab('saved')}
+                className={`pb-3 flex items-center gap-1.5 transition-all relative ${
+                  activeTab === 'saved'
+                    ? 'text-brand-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-600'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Bookmark className="w-4 h-4" />
+                <span>Tersimpan</span>
+              </button>
             </div>
           </div>
 
@@ -489,6 +626,11 @@ export const CampusFeedPage: React.FC = () => {
                           <span className="text-[11px] text-slate-400 font-mono">
                             • {formatTimeAgo(post.created_at)}
                           </span>
+                          {post.edited_at && (
+                            <span className="text-[10px] text-slate-400 italic">
+                              (diedit)
+                            </span>
+                          )}
                         </div>
                         <div className="text-[11px] text-slate-400">
                           {post.author.student_profile?.department?.name || 'Civitas Kampus'}
@@ -496,15 +638,34 @@ export const CampusFeedPage: React.FC = () => {
                       </div>
                     </Link>
 
-                    {isAuthor && (
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        className="p-1.5 text-slate-300 hover:text-rose-600 rounded-lg transition-colors"
-                        title="Hapus postingan"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {isAuthor ? (
+                        <>
+                          <button
+                            onClick={() => openEditModal(post)}
+                            className="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg transition-colors"
+                            title="Edit postingan"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeletePost(post.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
+                            title="Hapus postingan"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => openReportModal(post)}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg transition-colors"
+                          title="Laporkan konten ini"
+                        >
+                          <Flag className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Post Content */}
@@ -576,6 +737,21 @@ export const CampusFeedPage: React.FC = () => {
                         }`}
                       />
                       <span className="font-bold">{post.likes_count || 0}</span>
+                    </button>
+
+                    {/* Bookmark */}
+                    <button
+                      onClick={() => handleToggleBookmark(post.id)}
+                      className={`flex items-center gap-1.5 p-1.5 rounded-xl transition-colors group ${
+                        post.is_bookmarked_by_me ? 'text-amber-500' : 'hover:text-amber-500'
+                      }`}
+                      title={post.is_bookmarked_by_me ? 'Hapus dari bookmark' : 'Simpan postingan'}
+                    >
+                      <Bookmark
+                        className={`w-4 h-4 group-hover:scale-110 transition-transform ${
+                          post.is_bookmarked_by_me ? 'fill-amber-500' : ''
+                        }`}
+                      />
                     </button>
 
                     {/* Share */}
@@ -660,13 +836,16 @@ export const CampusFeedPage: React.FC = () => {
               Trending Topik Kampus
             </h3>
             <div className="space-y-2.5">
-              {[
-                { tag: '#TeknikInformatika', posts: '42 Postingan' },
-                { tag: '#InfoKuliah', posts: '38 Postingan' },
-                { tag: '#PNLJuara', posts: '29 Postingan' },
-                { tag: '#Wisuda2026', posts: '24 Postingan' },
-                { tag: '#LombaRobotik', posts: '18 Postingan' },
-              ].map((item, idx) => (
+              {(trendingTags.length > 0
+                ? trendingTags.slice(0, 5).map((t) => ({ tag: t.tag, posts: `${t.count} Postingan` }))
+                : [
+                    { tag: '#TeknikInformatika', posts: '42 Postingan' },
+                    { tag: '#InfoKuliah', posts: '38 Postingan' },
+                    { tag: '#PNLJuara', posts: '29 Postingan' },
+                    { tag: '#Wisuda2026', posts: '24 Postingan' },
+                    { tag: '#LombaRobotik', posts: '18 Postingan' },
+                  ]
+              ).map((item, idx) => (
                 <div
                   key={item.tag}
                   onClick={() => setContent((prev) => (prev ? `${prev} ${item.tag}` : item.tag))}
@@ -765,6 +944,128 @@ export const CampusFeedPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal: Edit Post */}
+      <Modal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingPost(null);
+        }}
+        title="Edit Postingan Anda"
+      >
+        <form onSubmit={handleSaveEdit} className="space-y-4 text-xs font-sans">
+          <div>
+            <label className="font-bold text-slate-700 block uppercase mb-1">
+              Isi Postingan
+            </label>
+            <textarea
+              rows={4}
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-brand-500"
+              placeholder="Tulis pembaruan isi postingan..."
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEditModalOpen(false);
+                setEditingPost(null);
+              }}
+              className="px-4 py-2 font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={savingEdit || !editContent.trim()}
+              className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-xs disabled:opacity-50"
+            >
+              {savingEdit ? 'Menyimpan...' : 'Simpan Perubahan'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Report Content / Post */}
+      <Modal
+        isOpen={reportModalOpen}
+        onClose={() => {
+          setReportModalOpen(false);
+          setReportingPost(null);
+        }}
+        title="Laporkan Konten / Postingan"
+      >
+        <form onSubmit={handleSubmitReport} className="space-y-4 text-xs font-sans">
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 space-y-1">
+            <div className="font-bold flex items-center gap-1.5 text-xs">
+              <ShieldAlert className="w-4 h-4 text-amber-600" />
+              Sistem Moderasi Keamanan Kampus
+            </div>
+            <p className="text-[11px] leading-relaxed text-amber-700">
+              Laporan Anda akan dikirimkan kepada tim moderator kampus untuk ditinjau. Identitas pelapor dirahasiakan untuk perlindungan privasi.
+            </p>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase mb-1">
+              Kategori Pelanggaran <span className="text-rose-500">*</span>
+            </label>
+            <select
+              value={reportCategory}
+              onChange={(e) => setReportCategory(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-white text-xs"
+            >
+              <option value="inappropriate">Konten Tidak Pantas / Asusila</option>
+              <option value="harassment">Pelecehan / Perundungan (Harassment)</option>
+              <option value="hate_speech">Ujaran Kebencian & SARA</option>
+              <option value="spam">Spam / Penipuan Komersial</option>
+              <option value="false_information">Misinformasi / Berita Bohong</option>
+              <option value="plagiarism">Plagiarisme / Pelanggaran Hak Cipta</option>
+              <option value="other">Pelanggaran Etika Akademik Lainnya</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase mb-1">
+              Jelaskan Alasan Laporan <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              rows={3}
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Berikan konteks atau rincian mengapa postingan ini melanggar pedoman kampus..."
+              className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-brand-500"
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setReportModalOpen(false);
+                setReportingPost(null);
+              }}
+              className="px-4 py-2 font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={submittingReport || !reportReason.trim()}
+              className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Flag className="w-3.5 h-3.5" />
+              <span>{submittingReport ? 'Mengirim...' : 'Kirim Laporan'}</span>
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

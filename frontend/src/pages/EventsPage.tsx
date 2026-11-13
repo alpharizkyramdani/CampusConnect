@@ -91,6 +91,31 @@ export const EventsPage: React.FC = () => {
     }
   };
 
+  const handleCancelRegistration = async (eventId: number) => {
+    if (!window.confirm('Yakin ingin membatalkan pendaftaran tiket untuk acara ini? Kursi Anda akan dialihkan ke pendaftar lain.')) return;
+    try {
+      const res = await api.post(`/events/${eventId}/cancel`);
+      if (res.data.success) {
+        alert('Pendaftaran berhasil dibatalkan.');
+        fetchEvents();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal membatalkan tiket acara.');
+    }
+  };
+
+  const handleJoinWaitlist = async (eventId: number) => {
+    try {
+      const res = await api.post(`/events/${eventId}/waitlist`);
+      if (res.data.success) {
+        alert(res.data.message || 'Anda berhasil masuk ke antrean waitlist!');
+        fetchEvents();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal masuk daftar tunggu acara.');
+    }
+  };
+
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -256,19 +281,54 @@ export const EventsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-5 pt-0">
-                  <button
-                    onClick={() => handleRegister(ev.id)}
-                    disabled={isFull || registeringId === ev.id}
-                    className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                      isFull
-                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                        : 'bg-brand-600 hover:bg-brand-700 text-white shadow-xs'
-                    }`}
-                  >
-                    <Ticket className="w-4 h-4" />
-                    {registeringId === ev.id ? 'Registering...' : isFull ? 'Event Full' : 'Register for Ticket'}
-                  </button>
+                <div className="p-5 pt-0 space-y-2">
+                  {ev.is_registered ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                        <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          Tiket Terdaftar ({ev.ticket_code})
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setTicketModal({ ticket_code: ev.ticket_code, qr_token: ev.ticket_code })}
+                          className="text-[11px] font-bold text-brand-600 hover:underline"
+                        >
+                          Lihat QR
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleCancelRegistration(ev.id)}
+                        className="w-full py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl text-xs font-semibold transition-colors"
+                      >
+                        Batal Daftar
+                      </button>
+                    </div>
+                  ) : isFull ? (
+                    ev.is_waitlisted ? (
+                      <div className="w-full py-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center gap-2">
+                        <span>⏳ Berada di Daftar Tunggu (Waitlist)</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleJoinWaitlist(ev.id)}
+                        className="w-full py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center gap-2 shadow-xs transition-colors"
+                      >
+                        <span>Kuota Penuh — Gabung Waitlist</span>
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      onClick={() => handleRegister(ev.id)}
+                      disabled={registeringId === ev.id}
+                      className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white shadow-xs transition-all"
+                    >
+                      <Ticket className="w-4 h-4" />
+                      {registeringId === ev.id ? 'Mendaftar...' : 'Daftar Tiket Acara'}
+                    </button>
+                  )}
                 </div>
               </div>
             );
