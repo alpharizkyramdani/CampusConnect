@@ -58,9 +58,27 @@ export const LoginPage: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check credentials.');
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.code === 'ERR_NETWORK' || !err.response) {
+        setError(`Gagal terhubung ke server backend (${api.defaults.baseURL}). Pastikan koneksi internet dan server backend aktif.`);
+      } else {
+        setError('Login gagal. Periksa kembali email dan password Anda.');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [currentApiUrl, setCurrentApiUrl] = useState(() => api.defaults.baseURL || '');
+
+  const handleChangeApiUrl = () => {
+    const newUrl = window.prompt('Ubah URL Server Backend API:', currentApiUrl);
+    if (newUrl && newUrl.trim()) {
+      localStorage.setItem('campusconnect_api_url', newUrl.trim());
+      api.defaults.baseURL = newUrl.trim();
+      setCurrentApiUrl(newUrl.trim());
+      window.location.reload();
     }
   };
 
@@ -166,6 +184,18 @@ export const LoginPage: React.FC = () => {
               <Link to="/register-university" className="font-bold text-navy hover:text-brand-600">
                 Register Your University
               </Link>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+              <span>Server API:</span>
+              <button
+                type="button"
+                onClick={handleChangeApiUrl}
+                className="font-mono text-brand-600 hover:underline max-w-[220px] truncate"
+                title="Klik untuk mengubah URL server backend"
+              >
+                {currentApiUrl}
+              </button>
             </div>
           </div>
         </div>
