@@ -13,7 +13,7 @@ export const getApiBaseURL = (): string => {
     // If running on a public domain (like Vercel) and no remote env is baked,
     // automatically fallback to the active live Cloudflare tunnel
     if (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
-      return 'https://champion-architecture-comparing-nevada.trycloudflare.com/api/v1';
+      return 'https://ben-solely-planned-promptly.trycloudflare.com/api/v1';
     }
   }
 
