@@ -81,7 +81,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/register-student" element={<RegisterPage />} />
       <Route path="/register-lecturer" element={<RegisterPage />} />
-      <Route path="/register-university" element={<UniversityRegisterPage />} />
+      <Route path="/register-university" element={<Navigate to="/register" replace />} />
       <Route path="/verify" element={<VerifyCertificatePage />} />
       <Route path="/verify/:hash" element={<VerifyCertificatePage />} />
 

@@ -70,32 +70,25 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const [currentApiUrl, setCurrentApiUrl] = useState(() => api.defaults.baseURL || '');
-
-  const handleChangeApiUrl = () => {
-    const newUrl = window.prompt('Ubah URL Server Backend API:', currentApiUrl);
-    if (newUrl && newUrl.trim()) {
-      localStorage.setItem('campusconnect_api_url', newUrl.trim());
-      api.defaults.baseURL = newUrl.trim();
-      setCurrentApiUrl(newUrl.trim());
-      window.location.reload();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-canvas flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/25">
+        <Link to="/" className="inline-flex items-center gap-2.5 group">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform">
             <GraduationCap className="w-7 h-7 text-white" />
           </div>
-          <span className="font-extrabold text-2xl text-navy tracking-tight">CampusConnect</span>
+          <div className="text-left">
+            <span className="font-extrabold text-2xl text-navy tracking-tight block">PNLConnect</span>
+            <span className="text-[10px] text-brand-600 font-bold uppercase tracking-wider block -mt-1">
+              PNL DIGITAL ECOSYSTEM
+            </span>
+          </div>
         </Link>
         <h2 className="mt-4 text-xl sm:text-2xl font-extrabold text-navy">
-          Sign In to Your Campus Portal
+          Masuk ke Portal Civitas PNL
         </h2>
         <p className="mt-1 text-xs sm:text-sm text-slate-500">
-          Access your personalized university dashboard and services
+          Ekosistem Digital Terpadu Politeknik Negeri Lhokseumawe
         </p>
       </div>
 
@@ -111,7 +104,7 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Email Address
+                Alamat Email
               </label>
               <div className="mt-1.5 relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -122,7 +115,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@university.ac.id"
+                  placeholder="nama@pnl.ac.id / nama@student.pnl.ac.id"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                 />
               </div>
@@ -138,7 +131,7 @@ export const LoginPage: React.FC = () => {
                   onClick={() => { setResetModalOpen(true); setResetSuccess(''); setResetError(''); }}
                   className="text-[11px] font-semibold text-brand-600 hover:text-brand-700 hover:underline"
                 >
-                  Forgot Password?
+                  Lupa Password?
                 </button>
               </div>
               <div className="mt-1.5 relative">
@@ -161,41 +154,23 @@ export const LoginPage: React.FC = () => {
               disabled={loading}
               className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-md shadow-brand-600/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
-              {loading ? 'Authenticating...' : 'Sign In'}
+              {loading ? 'Memverifikasi...' : 'Masuk Portal Civitas'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-600 space-y-1.5 border-t border-slate-100 pt-5">
+          <div className="mt-6 text-center text-xs text-slate-600 space-y-2 border-t border-slate-100 pt-5">
             <div>
-              New student?{' '}
+              Mahasiswa Baru / Belum ada akun?{' '}
               <Link to="/register?type=student" className="font-bold text-brand-600 hover:text-brand-700">
-                Register Student Account
+                Daftar Akun Mahasiswa
               </Link>
             </div>
             <div>
-              Academic staff?{' '}
+              Dosen atau Tenaga Pendidik?{' '}
               <Link to="/register?type=lecturer" className="font-bold text-brand-600 hover:text-brand-700">
-                Register Lecturer
+                Daftar Akun Dosen PNL
               </Link>
-            </div>
-            <div className="pt-2">
-              Represent a university?{' '}
-              <Link to="/register-university" className="font-bold text-navy hover:text-brand-600">
-                Register Your University
-              </Link>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
-              <span>Server API:</span>
-              <button
-                type="button"
-                onClick={handleChangeApiUrl}
-                className="font-mono text-brand-600 hover:underline max-w-[220px] truncate"
-                title="Klik untuk mengubah URL server backend"
-              >
-                {currentApiUrl}
-              </button>
             </div>
           </div>
         </div>
@@ -233,7 +208,7 @@ export const LoginPage: React.FC = () => {
               required
               value={resetEmail}
               onChange={(e) => setResetEmail(e.target.value)}
-              placeholder="e.g. student.alex@uir.ac.id"
+              placeholder="e.g. mahasiswa@pnl.ac.id"
               className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-brand-500"
             />
           </div>
