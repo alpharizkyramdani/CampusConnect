@@ -166,8 +166,8 @@ export const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & VIBRANT BLUE TRANSPARENT OVERLAY */}
-      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-blue-900">
+      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & DARK/BLACK TRANSPARENT OVERLAY */}
+      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-slate-950">
         {/* Layer 0: Real PNL Campus Image (Uploaded by User) */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
@@ -178,13 +178,13 @@ export const LandingPage: React.FC = () => {
           }}
         />
 
-        {/* Layer 1: Vibrant Blue Transparent Layer Overlay */}
+        {/* Layer 1: Dark Cinematic / Black Transparent Layer Overlay */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundColor: 'rgba(29, 78, 216, 0.70)',
+            backgroundColor: 'rgba(0, 0, 0, 0.70)',
             backgroundImage:
-              'linear-gradient(135deg, rgba(30, 64, 175, 0.75) 0%, rgba(37, 99, 235, 0.65) 100%)',
+              'linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, rgba(15, 23, 42, 0.85) 100%)',
           }}
         />
 
@@ -193,7 +193,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex flex-col items-center">
             {/* Repeatable Staggered Item 1: Badge Pill */}
             <motion.div {...scrollAnim(0.1)} className="inline-flex">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-white text-xs font-bold mb-6 shadow-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold mb-6 shadow-sm">
                 <Sparkles className="w-4 h-4 text-cyan-300 animate-pulse" />
                 <span>Next-Generation Higher Education Digital Ecosystem</span>
               </div>
@@ -204,13 +204,13 @@ export const LandingPage: React.FC = () => {
               {...scrollAnim(0.2)}
               className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight max-w-4xl mx-auto leading-tight sm:leading-none drop-shadow-md"
             >
-              Everything Your Campus Needs, <span className="text-cyan-300">Connected.</span>
+              Everything Your Campus Needs, <span className="text-cyan-400">Connected.</span>
             </motion.h1>
 
             {/* Repeatable Staggered Item 3: Description */}
             <motion.p
               {...scrollAnim(0.3)}
-              className="mt-6 text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed drop-shadow-xs font-normal"
+              className="mt-6 text-lg sm:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-xs font-normal"
             >
               An integrated digital ecosystem that brings students, lecturers, organizations, and universities together in
               one unified platform.
@@ -223,7 +223,7 @@ export const LandingPage: React.FC = () => {
             >
               <Link
                 to="/login"
-                className="px-8 py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-950/40 flex items-center gap-2 text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                className="px-8 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-xl shadow-brand-600/30 flex items-center gap-2 text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 Explore CampusConnect
                 <ArrowRight className="w-5 h-5" />
@@ -231,11 +231,11 @@ export const LandingPage: React.FC = () => {
               <Link
                 to="/register-university"
                 style={{
-                  border: '2px solid #ffffff',
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '2px solid rgba(255, 255, 255, 0.4)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   color: '#ffffff',
                 }}
-                className="px-8 py-3.5 hover:bg-white/25 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                className="px-8 py-3.5 hover:bg-white/20 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 Register Your University
               </Link>
