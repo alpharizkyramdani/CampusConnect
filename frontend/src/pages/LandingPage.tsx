@@ -6,7 +6,6 @@ import {
   PackageCheck,
   ShieldCheck,
   Award,
-  Sparkles,
   ArrowRight,
   Users2,
   Wrench,
@@ -160,7 +159,7 @@ export const LandingPage: React.FC = () => {
       desc: 'Penerbitan e-sertifikat kegiatan ber-QR code dan hash anti-pemalsuan untuk rekaman SKPI & portfolio mahasiswa.',
     },
     {
-      icon: <Sparkles className="w-6 h-6" />,
+      icon: <Compass className="w-6 h-6" />,
       title: 'Smart Campus Map & Direktori Lokasi',
       desc: 'Peta digital interaktif Politeknik Negeri Lhokseumawe untuk mencari ruang kelas, bengkel, lab, masjid, dan kantin.',
     },
@@ -1034,10 +1033,9 @@ export const LandingPage: React.FC = () => {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2
               {...scrollAnim(0.1)}
-              className="text-xs font-bold text-brand-600 uppercase tracking-widest flex items-center justify-center gap-1.5"
+              className="text-xs font-bold text-brand-600 uppercase tracking-widest text-center"
             >
-              <Sparkles className="w-4 h-4 text-brand-600" />
-              <span>Infrastruktur Kampus Vokasi Terpadu</span>
+              Infrastruktur Kampus Vokasi Terpadu
             </motion.h2>
             <motion.p
               {...scrollAnim(0.2)}
@@ -1105,12 +1103,6 @@ export const LandingPage: React.FC = () => {
                 Arahkan cursor ke folder untuk melihat berkas prodi keluar dari map, lalu pilih salah satu prodi untuk membuka detail lengkapnya.
               </motion.p>
             </div>
-            <motion.div {...scrollAnim(0.3)} className="mt-4 md:mt-0">
-              <span className="text-xs font-bold text-slate-600 bg-white px-3.5 py-2 rounded-2xl border border-slate-200/90 shadow-2xs inline-flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-600 animate-pulse" />
-                <span>Pilih prodi untuk melihat berkas</span>
-              </span>
-            </motion.div>
           </div>
 
           {/* 6 JURUSAN FOLDER CARDS GRID */}
@@ -1466,7 +1458,7 @@ export const LandingPage: React.FC = () => {
                 {/* Lab facilities */}
                 <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-slate-600 font-bold">
-                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Building className="w-4 h-4 text-slate-400 shrink-0" />
                     <span>Lab: {selectedProdi.program.lab}</span>
                   </div>
                   <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 inline-block self-start sm:self-auto">

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { RoleName } from '../types';
 import { Layout } from '../components/common/Layout';
+import { PageTransition } from '../components/common/PageTransition';
 
 // Public Pages
 import { LandingPage } from '../pages/LandingPage';
@@ -75,15 +76,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public Pages */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/register-student" element={<RegisterPage />} />
-      <Route path="/register-lecturer" element={<RegisterPage />} />
+      {/* Public Pages with Smooth Transition */}
+      <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+      <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+      <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+      <Route path="/register-student" element={<PageTransition><RegisterPage /></PageTransition>} />
+      <Route path="/register-lecturer" element={<PageTransition><RegisterPage /></PageTransition>} />
       <Route path="/register-university" element={<Navigate to="/register" replace />} />
-      <Route path="/verify" element={<VerifyCertificatePage />} />
-      <Route path="/verify/:hash" element={<VerifyCertificatePage />} />
+      <Route path="/verify" element={<PageTransition><VerifyCertificatePage /></PageTransition>} />
+      <Route path="/verify/:hash" element={<PageTransition><VerifyCertificatePage /></PageTransition>} />
 
       {/* Protected App Routes */}
       <Route element={<ProtectedRoute />}>
