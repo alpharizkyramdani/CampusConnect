@@ -21,6 +21,7 @@ import {
   FileText,
   X,
   ChevronRight,
+  ChevronUp,
   CheckCircle2,
   ExternalLink,
   Landmark,
@@ -31,7 +32,7 @@ import {
   Flame,
   Search,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -93,6 +94,15 @@ interface OrgCategory {
 
 export const LandingPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<'hero' | 'fitur' | 'jurusan' | 'organisasi'>('hero');
+
+  // Page Scroll Progress for Smooth Landing Page Transition Bar
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   // Single Prodi Modal State (Only 1 Prodi Opens)
   const [selectedProdi, setSelectedProdi] = useState<{
@@ -109,8 +119,25 @@ export const LandingPage: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 30);
+
+      // Section scrollspy for active nav transition indicator
+      const scrollPos = window.scrollY + 220;
+      const fiturEl = document.getElementById('fitur');
+      const jurusanEl = document.getElementById('jurusan');
+      const organisasiEl = document.getElementById('organisasi');
+
+      if (organisasiEl && scrollPos >= organisasiEl.offsetTop) {
+        setActiveSection('organisasi');
+      } else if (jurusanEl && scrollPos >= jurusanEl.offsetTop) {
+        setActiveSection('jurusan');
+      } else if (fiturEl && scrollPos >= fiturEl.offsetTop) {
+        setActiveSection('fitur');
+      } else {
+        setActiveSection('hero');
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -129,13 +156,13 @@ export const LandingPage: React.FC = () => {
   // Smooth cubic-bezier transition curve
   const easeCubic: any = [0.22, 1, 0.36, 1];
 
-  // Repeatable scroll animation configuration
+  // Repeatable scroll animation configuration with smooth reveal
   const scrollAnim = (delay = 0) => ({
     initial: { opacity: 0, y: 35 },
     whileInView: { opacity: 1, y: 0 },
-    viewport: { once: false, amount: 0.15 },
+    viewport: { once: true, amount: 0.12 },
     transition: {
-      duration: 0.6,
+      duration: 0.65,
       ease: easeCubic,
       delay,
     },
@@ -791,7 +818,13 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-brand-500 selection:text-white">
-      {/* NAVIGATION BAR (TRANSPARENT WITH SOFT WHITE HIGHLIGHT HOVER) */}
+      {/* 0. TOP SCROLL PAGE TRANSITION PROGRESS BAR */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-brand-500 to-indigo-600 z-[60] origin-left shadow-xs"
+        style={{ scaleX }}
+      />
+
+      {/* NAVIGATION BAR (TRANSPARENT WITH SOFT WHITE HIGHLIGHT HOVER & ACTIVE TRANSITION) */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
@@ -832,13 +865,25 @@ export const LandingPage: React.FC = () => {
             <a
               href="#fitur"
               className={`relative py-1.5 transition-colors group ${
-                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
+                isScrolled
+                  ? activeSection === 'fitur'
+                    ? 'text-brand-600 font-extrabold'
+                    : 'text-slate-600 hover:text-brand-600'
+                  : activeSection === 'fitur'
+                  ? 'text-white font-extrabold'
+                  : 'text-white/90 hover:text-white'
               }`}
             >
               <span>Platform Features</span>
               <span
-                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
-                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'fitur'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
                 }`}
               />
             </a>
@@ -846,13 +891,25 @@ export const LandingPage: React.FC = () => {
             <a
               href="#jurusan"
               className={`relative py-1.5 transition-colors group ${
-                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
+                isScrolled
+                  ? activeSection === 'jurusan'
+                    ? 'text-brand-600 font-extrabold'
+                    : 'text-slate-600 hover:text-brand-600'
+                  : activeSection === 'jurusan'
+                  ? 'text-white font-extrabold'
+                  : 'text-white/90 hover:text-white'
               }`}
             >
               <span>Jurusan PNL</span>
               <span
-                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
-                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'jurusan'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
                 }`}
               />
             </a>
@@ -860,13 +917,25 @@ export const LandingPage: React.FC = () => {
             <a
               href="#organisasi"
               className={`relative py-1.5 transition-colors group ${
-                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
+                isScrolled
+                  ? activeSection === 'organisasi'
+                    ? 'text-brand-600 font-extrabold'
+                    : 'text-slate-600 hover:text-brand-600'
+                  : activeSection === 'organisasi'
+                  ? 'text-white font-extrabold'
+                  : 'text-white/90 hover:text-white'
               }`}
             >
               <span>Organisasi PNL</span>
               <span
-                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
-                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'organisasi'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
                 }`}
               />
             </a>
@@ -1025,10 +1094,13 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Layer 3: Smooth Seamless Gradient Transition to White Features Section */}
+        <div className="absolute bottom-0 inset-x-0 h-28 sm:h-36 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-10" />
       </section>
 
       {/* 2. PLATFORM FEATURES HIGHLIGHT */}
-      <section id="fitur" className="py-24 bg-white border-b border-slate-200/60">
+      <section id="fitur" className="py-24 bg-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2
@@ -1069,6 +1141,20 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Seamless Transition Divider: Fitur -> Jurusan */}
+      <div className="w-full overflow-hidden leading-none bg-white -mb-px">
+        <svg
+          className="relative block w-full h-8 sm:h-12 text-[#F8FBFF]"
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,0 C300,70 900,70 1200,0 L1200,120 L0,120 Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
 
       {/* ========================================================================= */}
       {/* 3. JURUSAN & 29 PRODI: 6 PHYSICAL FOLDER CARDS (HOVER RAISES PRODI SHEETS, CLICK OPENS ONLY 1 PRODI) */}
@@ -1221,12 +1307,26 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Seamless Transition Divider: Jurusan -> Organisasi */}
+      <div className="w-full overflow-hidden leading-none bg-[#F5F9FE] -mb-px">
+        <svg
+          className="relative block w-full h-8 sm:h-12 text-white"
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,0 C400,60 800,60 1200,0 L1200,120 L0,120 Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+
       {/* ========================================================================= */}
       {/* 4. ORGANISASI MAHASISWA PNL (CLICK ON ANY ORMAWA OPENS ONLY 1 ORMAWA) */}
       {/* ========================================================================= */}
       <section
         id="organisasi"
-        className="py-24 border-t border-slate-200/70"
+        className="py-24"
         style={{
           background: 'linear-gradient(180deg, #FFFFFF 0%, #F5F9FE 50%, #FFFFFF 100%)',
         }}
@@ -1611,10 +1711,24 @@ export const LandingPage: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Seamless Transition Divider: Organisasi -> Footer */}
+      <div className="w-full overflow-hidden leading-none bg-white -mb-px">
+        <svg
+          className="relative block w-full h-10 sm:h-14 text-[#0F296B]"
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+
       {/* 5. FOOTER (SOLID DEEP BLUE #0F296B + PURE WHITE #FFFFFF TEXT & LINKS) */}
       <footer
         style={{ backgroundColor: '#0F296B' }}
-        className="py-12 text-white border-t border-blue-950"
+        className="py-12 text-white"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-xs">
           <div className="flex items-center gap-2.5">
@@ -1664,6 +1778,24 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* FLOATING SCROLL-TO-TOP BUTTON WITH SMOOTH SPRING TRANSITION */}
+      <AnimatePresence>
+        {isScrolled && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-6 right-6 z-40 p-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white shadow-xl shadow-brand-600/30 border border-white/20 transition-all flex items-center justify-center cursor-pointer"
+            title="Kembali ke atas"
+          >
+            <ChevronUp className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

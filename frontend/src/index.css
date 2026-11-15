@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+
   body {
     @apply bg-canvas text-textMain antialiased font-sans;
     min-height: 100vh;
