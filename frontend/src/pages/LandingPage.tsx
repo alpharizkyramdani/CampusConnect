@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -21,6 +21,16 @@ import {
 import { motion } from 'framer-motion';
 
 export const LandingPage: React.FC = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Smooth cubic-bezier transition curve
   const easeCubic: any = [0.22, 1, 0.36, 1];
 
@@ -154,29 +164,64 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-canvas text-textMain flex flex-col font-sans">
-      {/* Top Public Header */}
-      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-borderMuted shadow-2xs">
+      {/* Top Public Header - Transparan di atas video hero, solid glassmorphism saat di-scroll */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? 'bg-white/95 backdrop-blur-md border-b border-borderMuted shadow-md'
+            : 'bg-gradient-to-b from-black/70 via-black/30 to-transparent'
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform">
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="font-extrabold text-lg sm:text-xl text-navy tracking-tight">PNLConnect</span>
-              <span className="block text-[10px] text-brand-600 font-bold uppercase tracking-wider">
+              <span
+                className={`font-extrabold text-lg sm:text-xl tracking-tight transition-colors ${
+                  isScrolled ? 'text-navy' : 'text-white'
+                }`}
+              >
+                PNLConnect
+              </span>
+              <span
+                className={`block text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                  isScrolled ? 'text-brand-600' : 'text-sky-300'
+                }`}
+              >
                 PNL DIGITAL ECOSYSTEM
               </span>
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            <a href="#features" className="hover:text-brand-600 transition-colors">
+          <div
+            className={`hidden md:flex items-center gap-8 text-sm font-semibold transition-colors ${
+              isScrolled ? 'text-slate-600' : 'text-white/90'
+            }`}
+          >
+            <a
+              href="#features"
+              className={`transition-colors ${
+                isScrolled ? 'hover:text-brand-600' : 'hover:text-white'
+              }`}
+            >
               Platform Features
             </a>
-            <a href="#jurusan" className="hover:text-brand-600 transition-colors">
+            <a
+              href="#jurusan"
+              className={`transition-colors ${
+                isScrolled ? 'hover:text-brand-600' : 'hover:text-white'
+              }`}
+            >
               Jurusan PNL
             </a>
-            <Link to="/verify" className="hover:text-brand-600 transition-colors">
+            <Link
+              to="/verify"
+              className={`transition-colors ${
+                isScrolled ? 'hover:text-brand-600' : 'hover:text-white'
+              }`}
+            >
               Verify Certificate
             </Link>
           </div>
@@ -184,13 +229,17 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Link
               to="/login"
-              className="px-4 py-2 text-sm font-bold text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-xl transition-all"
+              className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${
+                isScrolled
+                  ? 'text-brand-600 hover:text-brand-700 hover:bg-brand-50'
+                  : 'text-white hover:bg-white/15 border border-white/25 backdrop-blur-xs shadow-xs'
+              }`}
             >
               Sign In
             </Link>
             <Link
               to="/register"
-              className="hidden sm:inline-flex px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-md shadow-brand-600/25 transition-all"
+              className="hidden sm:inline-flex px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-600/30 transition-all transform hover:scale-105"
             >
               Daftar Akun
             </Link>
@@ -199,7 +248,7 @@ export const LandingPage: React.FC = () => {
       </nav>
 
       {/* 1. HERO SECTION WITH REAL PNL CAMPUS VIDEO & BALANCED DARK/BLACK TRANSPARENT OVERLAY */}
-      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-slate-950">
+      <section className="relative overflow-hidden pt-28 pb-24 sm:pt-32 lg:pt-36 lg:pb-36 bg-slate-950">
         {/* Layer 0: Real PNL Campus Video (Uploaded by User) */}
         <video
           autoPlay
