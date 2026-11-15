@@ -95,12 +95,17 @@ interface OrgCategory {
 export const LandingPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Selected Folder Modal States
-  const [selectedDeptForFolder, setSelectedDeptForFolder] = useState<DepartmentData | null>(null);
-  const [prodiFilter, setProdiFilter] = useState<string>('all');
+  // Single Prodi Modal State (Only 1 Prodi Opens)
+  const [selectedProdi, setSelectedProdi] = useState<{
+    dept: DepartmentData;
+    program: StudyProgram;
+  } | null>(null);
 
-  const [selectedOrgCategoryForFolder, setSelectedOrgCategoryForFolder] = useState<OrgCategory | null>(null);
-  const [searchOrg, setSearchOrg] = useState('');
+  // Single Org Modal State (Only 1 Org Opens)
+  const [selectedOrgItem, setSelectedOrgItem] = useState<{
+    category: OrgCategory;
+    item: OrgItem;
+  } | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -114,8 +119,8 @@ export const LandingPage: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setSelectedDeptForFolder(null);
-        setSelectedOrgCategoryForFolder(null);
+        setSelectedProdi(null);
+        setSelectedOrgItem(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -1068,7 +1073,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. JURUSAN & 29 PRODI: 6 PHYSICAL FOLDER CARDS (TIK: Ungu, Sipil: Coklat, Mesin: Biru, Kimia: Hijau, Elektro: Merah, Bisnis: Orange) */}
+      {/* 3. JURUSAN & 29 PRODI: 6 PHYSICAL FOLDER CARDS (HOVER RAISES PRODI SHEETS, CLICK OPENS ONLY 1 PRODI) */}
       {/* ========================================================================= */}
       <section
         id="jurusan"
@@ -1097,13 +1102,13 @@ export const LandingPage: React.FC = () => {
                 {...scrollAnim(0.25)}
                 className="mt-2 text-sm text-slate-600 max-w-2xl"
               >
-                Tekan pada <strong>map folder jurusan</strong> di bawah untuk membuka daftar program studi, kurikulum vokasi, dan prospek karir lulusan.
+                Arahkan cursor ke folder untuk melihat berkas prodi keluar dari map, lalu pilih salah satu prodi untuk membuka detail lengkapnya.
               </motion.p>
             </div>
             <motion.div {...scrollAnim(0.3)} className="mt-4 md:mt-0">
               <span className="text-xs font-bold text-slate-600 bg-white px-3.5 py-2 rounded-2xl border border-slate-200/90 shadow-2xs inline-flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-brand-600 animate-pulse" />
-                <span>Tekan folder untuk membuka berkas</span>
+                <span>Pilih prodi untuk melihat berkas</span>
               </span>
             </motion.div>
           </div>
@@ -1114,11 +1119,7 @@ export const LandingPage: React.FC = () => {
               <motion.div
                 key={dept.id}
                 {...scrollAnim(0.1 + (idx % 3) * 0.1)}
-                onClick={() => {
-                  setSelectedDeptForFolder(dept);
-                  setProdiFilter('all');
-                }}
-                className="relative cursor-pointer group select-none pt-8 focus:outline-hidden"
+                className="relative group select-none pt-8 focus:outline-hidden"
               >
                 {/* 1. TOP FOLDER TAB (Lekukan Map di Bagian Atas Kiri) */}
                 <div className="absolute top-0 left-4 z-20 flex items-end">
@@ -1136,10 +1137,11 @@ export const LandingPage: React.FC = () => {
                   />
                 </div>
 
-                {/* 2. PEEKING DOCUMENT PAPERS (Kertas Berkas Mengintip dari Belakang Map) */}
-                <div className="absolute inset-x-8 top-3 h-28 bg-slate-200/90 rounded-2xl rotate-[-2.5deg] transition-all duration-300 group-hover:-translate-y-3.5 group-hover:rotate-[-4deg] shadow-xs" />
-                <div className="absolute inset-x-6 top-4 h-28 bg-slate-100 rounded-2xl rotate-[2deg] transition-all duration-300 group-hover:-translate-y-4 group-hover:rotate-[3.5deg] shadow-xs border-t border-slate-300/60" />
-                <div className="absolute inset-x-4 top-5 h-28 bg-white rounded-2xl transition-all duration-300 group-hover:-translate-y-5 shadow-md border-t-2 border-brand-500/40 p-3 px-5 flex items-start justify-between">
+                {/* 2. PEEKING DOCUMENT PAPERS (Kertas Berkas Terangkat Keluar Map Saat Kursor Diarahkan) */}
+                <div className="absolute inset-x-8 top-3 h-28 bg-slate-200/90 rounded-2xl rotate-[-2.5deg] transition-all duration-300 group-hover:-translate-y-5 group-hover:rotate-[-4deg] shadow-xs pointer-events-none" />
+                <div className="absolute inset-x-6 top-4 h-28 bg-slate-100 rounded-2xl rotate-[2deg] transition-all duration-300 group-hover:-translate-y-6 group-hover:rotate-[3.5deg] shadow-xs border-t border-slate-300/60 pointer-events-none" />
+                {/* Top Sheet: Sliding up high with real prodi badge hints */}
+                <div className="absolute inset-x-4 top-5 h-28 bg-white rounded-2xl transition-all duration-300 group-hover:-translate-y-7 shadow-md border-t-2 border-brand-500/40 p-3 px-5 flex items-start justify-between pointer-events-none">
                   <span className="text-[11px] font-extrabold text-brand-600 flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5" />
                     {dept.programs.length} Berkas Program Studi
@@ -1151,7 +1153,7 @@ export const LandingPage: React.FC = () => {
 
                 {/* 3. FOLDER FRONT POCKET / COVER */}
                 <div
-                  className={`relative z-20 rounded-3xl rounded-tl-none overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 border-2 ${dept.folderBorderClass} bg-gradient-to-b ${dept.folderBgClass} p-6 sm:p-7 flex flex-col justify-between min-h-[300px]`}
+                  className={`relative z-20 rounded-3xl rounded-tl-none overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 border-2 ${dept.folderBorderClass} bg-gradient-to-b ${dept.folderBgClass} p-6 sm:p-7 flex flex-col justify-between min-h-[340px]`}
                 >
                   <div className="absolute top-0 inset-x-0 h-1.5 bg-white/60" />
 
@@ -1168,7 +1170,7 @@ export const LandingPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <h3 className="text-xl font-black text-slate-900 group-hover:text-brand-600 transition-colors leading-snug">
+                    <h3 className="text-xl font-black text-slate-900 leading-snug">
                       {dept.name}
                     </h3>
 
@@ -1180,28 +1182,44 @@ export const LandingPage: React.FC = () => {
                       {dept.description}
                     </p>
 
-                    {/* Program Studi Pills Preview */}
-                    <div className="mt-4 flex flex-wrap gap-1.5">
+                    {/* INTERACTIVE PRODI LIST (Pilih 1 Prodi untuk Membuka Detailnya) */}
+                    <div className="mt-4 space-y-2">
                       {dept.programs.map((prog, pIdx) => (
-                        <span
+                        <motion.button
                           key={pIdx}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/95 text-slate-700 border border-slate-200 shadow-2xs"
+                          type="button"
+                          whileHover={{ x: 4, scale: 1.01 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setSelectedProdi({ dept, program: prog })}
+                          className="w-full text-left p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200 hover:border-brand-400 shadow-2xs hover:shadow-md transition-all flex items-center justify-between group/p cursor-pointer"
                         >
-                          <span className="font-extrabold mr-1 text-slate-900">{prog.level}</span>
-                          {prog.name.replace(/^(D3|D4|S2)\s*(\(Sarjana Terapan\)|\(Magister Terapan\))?\s*/i, '')}
-                        </span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-black font-mono shrink-0 ${
+                                prog.level === 'D4'
+                                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                  : prog.level === 'S2'
+                                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              }`}
+                            >
+                              {prog.level}
+                            </span>
+                            <span className="text-xs font-bold text-slate-800 group-hover/p:text-brand-600 truncate">
+                              {prog.name.replace(/^(D3|D4|S2)\s*(\(Sarjana Terapan\)|\(Magister Terapan\))?\s*/i, '')}
+                            </span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover/p:text-brand-600 group-hover/p:translate-x-0.5 transition-all shrink-0" />
+                        </motion.button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Folder Bottom Indicator - NO "Buka Berkas" BUTTON */}
-                  <div className="mt-6 pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
+                  {/* Folder Bottom Indicator - NO "Buka Berkas" & NO "Klik untuk buka prodi" */}
+                  <div className="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
                     <span className="flex items-center gap-1.5 font-bold text-slate-700">
                       <FolderOpen className="w-4 h-4 text-brand-600" />
                       <span>{dept.labsCount}</span>
-                    </span>
-                    <span className="text-[11px] font-bold text-slate-400 group-hover:text-brand-600 transition-colors">
-                      Klik untuk buka prodi →
                     </span>
                   </div>
                 </div>
@@ -1212,7 +1230,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. ORGANISASI MAHASISWA PNL (3 CATEGORIES - PHYSICAL FOLDERS) */}
+      {/* 4. ORGANISASI MAHASISWA PNL (CLICK ON ANY ORMAWA OPENS ONLY 1 ORMAWA) */}
       {/* ========================================================================= */}
       <section
         id="organisasi"
@@ -1240,7 +1258,7 @@ export const LandingPage: React.FC = () => {
               {...scrollAnim(0.3)}
               className="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed"
             >
-              Terbagi dalam 3 pilar: <strong>Lembaga Eksekutif & Legislatif Kampus</strong>, <strong>Himpunan Mahasiswa Jurusan (HMJ)</strong>, dan <strong>Unit Kegiatan Mahasiswa (UKM)</strong>. Tekan folder untuk membuka berkas ormawa di dalamnya.
+              Terbagi dalam 3 pilar: <strong>Lembaga Eksekutif & Legislatif Kampus</strong>, <strong>Himpunan Mahasiswa Jurusan (HMJ)</strong>, dan <strong>Unit Kegiatan Mahasiswa (UKM)</strong>. Klik pada salah satu organisasi untuk melihat profil rincinya.
             </motion.p>
           </div>
 
@@ -1249,11 +1267,7 @@ export const LandingPage: React.FC = () => {
               <motion.div
                 key={cat.id}
                 {...scrollAnim(0.1 + idx * 0.15)}
-                onClick={() => {
-                  setSelectedOrgCategoryForFolder(cat);
-                  setSearchOrg('');
-                }}
-                className="relative cursor-pointer group select-none pt-8 focus:outline-hidden"
+                className="relative group select-none pt-8 focus:outline-hidden"
               >
                 {/* 1. TOP FOLDER TAB */}
                 <div className="absolute top-0 left-4 z-20 flex items-end">
@@ -1271,12 +1285,12 @@ export const LandingPage: React.FC = () => {
                 </div>
 
                 {/* 2. PEEKING DOCUMENT PAPERS */}
-                <div className="absolute inset-x-8 top-3 h-28 bg-slate-200/90 rounded-2xl rotate-[-2.5deg] transition-all duration-300 group-hover:-translate-y-3.5 group-hover:rotate-[-4deg] shadow-xs" />
-                <div className="absolute inset-x-6 top-4 h-28 bg-slate-100 rounded-2xl rotate-[2deg] transition-all duration-300 group-hover:-translate-y-4 group-hover:rotate-[3.5deg] shadow-xs border-t border-slate-300/60" />
-                <div className="absolute inset-x-4 top-5 h-28 bg-white rounded-2xl transition-all duration-300 group-hover:-translate-y-5 shadow-md border-t-2 border-brand-500/40 p-3 px-5 flex items-start justify-between">
+                <div className="absolute inset-x-8 top-3 h-28 bg-slate-200/90 rounded-2xl rotate-[-2.5deg] transition-all duration-300 group-hover:-translate-y-5 group-hover:rotate-[-4deg] shadow-xs pointer-events-none" />
+                <div className="absolute inset-x-6 top-4 h-28 bg-slate-100 rounded-2xl rotate-[2deg] transition-all duration-300 group-hover:-translate-y-6 group-hover:rotate-[3.5deg] shadow-xs border-t border-slate-300/60 pointer-events-none" />
+                <div className="absolute inset-x-4 top-5 h-28 bg-white rounded-2xl transition-all duration-300 group-hover:-translate-y-7 shadow-md border-t-2 border-brand-500/40 p-3 px-5 flex items-start justify-between pointer-events-none">
                   <span className="text-[11px] font-extrabold text-brand-600 flex items-center gap-1.5">
                     <Users2 className="w-3.5 h-3.5" />
-                    {cat.items.length} Berkas Unit Organisasi
+                    {cat.items.length} Unit Organisasi Resmi
                   </span>
                   <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
                     Resmi PNL
@@ -1285,7 +1299,7 @@ export const LandingPage: React.FC = () => {
 
                 {/* 3. FOLDER MAIN COVER */}
                 <div
-                  className={`relative z-20 rounded-3xl rounded-tl-none overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 border-2 ${cat.folderBorderClass} bg-gradient-to-b ${cat.folderBgClass} p-6 sm:p-7 flex flex-col justify-between min-h-[300px]`}
+                  className={`relative z-20 rounded-3xl rounded-tl-none overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 border-2 ${cat.folderBorderClass} bg-gradient-to-b ${cat.folderBgClass} p-6 sm:p-7 flex flex-col justify-between min-h-[340px]`}
                 >
                   <div className="absolute top-0 inset-x-0 h-1.5 bg-white/60" />
 
@@ -1299,7 +1313,7 @@ export const LandingPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <h3 className="text-xl font-black text-slate-900 group-hover:text-brand-600 transition-colors leading-snug">
+                    <h3 className="text-xl font-black text-slate-900 leading-snug">
                       {cat.title}
                     </h3>
 
@@ -1307,35 +1321,36 @@ export const LandingPage: React.FC = () => {
                       {cat.subtitle}
                     </p>
 
-                    {/* Preview list */}
+                    {/* Organization Items List */}
                     <div className="mt-4 space-y-2">
-                      {cat.items.slice(0, 3).map((item, iIdx) => (
-                        <div
+                      {cat.items.map((item, iIdx) => (
+                        <motion.button
                           key={iIdx}
-                          className="p-2.5 bg-white/90 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs shadow-2xs"
+                          type="button"
+                          whileHover={{ x: 4, scale: 1.01 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setSelectedOrgItem({ category: cat, item })}
+                          className="w-full text-left p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200 hover:border-brand-400 shadow-2xs hover:shadow-md transition-all flex items-center justify-between group/o cursor-pointer"
                         >
-                          <span className="font-extrabold text-slate-900">{item.abbr}</span>
-                          <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">
-                            {item.scope}
-                          </span>
-                        </div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-extrabold text-xs text-slate-900 group-hover/o:text-brand-600">
+                              {item.abbr}
+                            </span>
+                            <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md truncate">
+                              {item.scope}
+                            </span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover/o:text-brand-600 group-hover/o:translate-x-0.5 transition-all shrink-0" />
+                        </motion.button>
                       ))}
-                      {cat.items.length > 3 && (
-                        <p className="text-[11px] font-bold text-brand-600 text-center pt-1">
-                          +{cat.items.length - 3} organisasi lainnya di folder ini
-                        </p>
-                      )}
                     </div>
                   </div>
 
-                  {/* Folder Bottom Indicator - NO "Buka Berkas" BUTTON */}
-                  <div className="mt-6 pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
+                  {/* Folder Bottom Indicator - NO "Buka Berkas" & NO "Klik untuk buka..." */}
+                  <div className="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
                     <span className="flex items-center gap-1.5 font-bold text-slate-700">
                       <FolderOpen className="w-4 h-4 text-brand-600" />
-                      <span>Arsip Ormawa</span>
-                    </span>
-                    <span className="text-[11px] font-bold text-slate-400 group-hover:text-brand-600 transition-colors">
-                      Klik untuk buka berkas →
+                      <span>Arsip Ormawa PNL</span>
                     </span>
                   </div>
                 </div>
@@ -1346,10 +1361,10 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* MODAL 1: PRODI VIEW WITH SIMPLE, CLEAN & SMOOTH ANIMATION */}
+      {/* MODAL 1: SINGLE PRODI DETAIL (ONLY 1 PRODI OPENS WITH SIMPLE ANIMATION) */}
       {/* ========================================================================= */}
       <AnimatePresence>
-        {selectedDeptForFolder && (
+        {selectedProdi && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             {/* Simple Backdrop Fade */}
             <motion.div
@@ -1357,224 +1372,119 @@ export const LandingPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              onClick={() => setSelectedDeptForFolder(null)}
+              onClick={() => setSelectedProdi(null)}
               className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
             />
 
-            {/* Simple Clean Modal Entrance (Scale + Fade, Smooth Ease) */}
+            {/* Simple Clean Modal (Only this 1 prodi is shown) */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-auto text-left flex flex-col max-h-[90vh]"
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-auto text-left flex flex-col"
             >
-              {/* Header with Department Info */}
-              <div className="bg-slate-900 px-5 sm:px-7 py-4 text-white border-b border-slate-800 flex items-center justify-between gap-3">
+              {/* Top Header with Department Color */}
+              <div
+                className={`px-6 py-4.5 text-white flex items-center justify-between ${selectedProdi.dept.tabClass}`}
+              >
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-black shadow-md ${selectedDeptForFolder.tabClass}`}
-                  >
+                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center font-black shadow-xs">
                     <FolderOpen className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono font-black tracking-widest uppercase text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
-                        FOLDER ARSIP PNL
-                      </span>
-                      <span className="text-xs font-mono font-bold text-slate-400">
-                        {selectedDeptForFolder.badge}
-                      </span>
-                    </div>
-                    <h3 className="text-base sm:text-lg font-black text-white tracking-tight mt-0.5">
-                      {selectedDeptForFolder.name}
+                    <span className="text-[10px] font-mono font-black tracking-widest uppercase opacity-90 block">
+                      BERKAS PROGRAM STUDI • {selectedProdi.dept.badge}
+                    </span>
+                    <h3 className="text-sm font-bold text-white/95">
+                      {selectedProdi.dept.name}
                     </h3>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => setSelectedDeptForFolder(null)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                  onClick={() => setSelectedProdi(null)}
+                  className="p-1.5 text-white/80 hover:text-white rounded-xl hover:bg-white/20 transition-colors cursor-pointer"
                   title="Tutup (Esc)"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Quick Switcher Tabs at top of the modal */}
-              <div className="bg-slate-800 px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto border-b border-slate-700 scrollbar-none">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
-                  <Folder className="w-3.5 h-3.5" /> Ganti Folder:
-                </span>
-                {pnlDepartments.map((d) => (
-                  <button
-                    key={d.id}
-                    onClick={() => {
-                      setSelectedDeptForFolder(d);
-                      setProdiFilter('all');
-                    }}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-                      selectedDeptForFolder.id === d.id
-                        ? `${d.tabClass} shadow-xs scale-105`
-                        : 'text-slate-300 hover:text-white bg-slate-700/60 hover:bg-slate-700'
-                    }`}
-                  >
-                    <span>{d.shortName}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Subheader info & Level filters */}
-              <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              {/* Content of THIS 1 PRODI ONLY */}
+              <div className="p-6 sm:p-8 space-y-6">
                 <div>
-                  <h4 className="text-base sm:text-lg font-black text-navy">
-                    {selectedDeptForFolder.tagline}
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                    {selectedDeptForFolder.description}
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span
+                      className={`px-3 py-0.5 rounded-full text-xs font-black uppercase font-mono border ${
+                        selectedProdi.program.level === 'D4'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : selectedProdi.program.level === 'S2'
+                          ? 'bg-purple-50 text-purple-700 border-purple-200'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      }`}
+                    >
+                      {selectedProdi.program.level} • {selectedProdi.program.levelLabel}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500 font-mono">
+                      {selectedProdi.program.duration} • {selectedProdi.program.sks}
+                    </span>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 leading-snug">
+                    {selectedProdi.program.name}
+                  </h2>
+                </div>
+
+                {/* Description */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
+                    Profil & Deskripsi Kompetensi:
+                  </span>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                    {selectedProdi.program.description}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5 self-start md:self-center shrink-0 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-2xs">
-                  <button
-                    onClick={() => setProdiFilter('all')}
-                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                      prodiFilter === 'all'
-                        ? 'bg-brand-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-brand-600'
-                    }`}
-                  >
-                    Semua ({selectedDeptForFolder.programs.length})
-                  </button>
-                  <button
-                    onClick={() => setProdiFilter('D4')}
-                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                      prodiFilter === 'D4'
-                        ? 'bg-brand-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-brand-600'
-                    }`}
-                  >
-                    D4
-                  </button>
-                  <button
-                    onClick={() => setProdiFilter('D3')}
-                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                      prodiFilter === 'D3'
-                        ? 'bg-brand-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-brand-600'
-                    }`}
-                  >
-                    D3
-                  </button>
-                  {selectedDeptForFolder.programs.some((p) => p.level === 'S2') && (
-                    <button
-                      onClick={() => setProdiFilter('S2')}
-                      className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                        prodiFilter === 'S2'
-                          ? 'bg-brand-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:text-brand-600'
-                      }`}
-                    >
-                      S2
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Prodi List - SIMPLE FADE & SLIDE ANIMATION */}
-              <div className="p-5 sm:p-7 overflow-y-auto flex-1 bg-slate-50/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedDeptForFolder.programs
-                    .filter((p) => (prodiFilter === 'all' ? true : p.level === prodiFilter))
-                    .map((prog, idx) => (
-                      <motion.div
-                        key={prog.name}
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.22, delay: idx * 0.04, ease: 'easeOut' }}
-                        className="bg-white rounded-2xl border border-slate-200 hover:border-brand-300 p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                {/* Career prospects */}
+                <div>
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-500 block mb-2.5">
+                    Peluang Karir & Profesi Utama:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProdi.program.career.map((c, cIdx) => (
+                      <span
+                        key={cIdx}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs"
                       >
-                        <div>
-                          <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-dashed border-slate-200">
-                            <span className="text-[10px] font-mono font-extrabold tracking-wider uppercase text-slate-400 flex items-center gap-1.5">
-                              <FileText className="w-3.5 h-3.5 text-brand-500" />
-                              PRODI #{String(idx + 1).padStart(2, '0')}
-                            </span>
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-mono border ${
-                                prog.level === 'D4'
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                  : prog.level === 'S2'
-                                  ? 'bg-purple-50 text-purple-700 border-purple-200'
-                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              }`}
-                            >
-                              {prog.level} • {prog.levelLabel}
-                            </span>
-                          </div>
-
-                          <h4 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
-                            {prog.name}
-                          </h4>
-
-                          <div className="flex items-center gap-3 my-2 text-xs font-bold text-slate-500">
-                            <span className="flex items-center gap-1 text-brand-600">
-                              <CalendarCheck2 className="w-3.5 h-3.5" />
-                              {prog.duration}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1 text-emerald-600">
-                              <Award className="w-3.5 h-3.5" />
-                              {prog.sks}
-                            </span>
-                          </div>
-
-                          <p className="text-xs text-slate-600 leading-relaxed mt-2">
-                            {prog.description}
-                          </p>
-
-                          <div className="mt-3.5 pt-2.5 border-t border-slate-100">
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
-                              Peluang Karir:
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {prog.career.map((c, cIdx) => (
-                                <span
-                                  key={cIdx}
-                                  className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200"
-                                >
-                                  {c}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                          <span className="font-semibold text-slate-600 flex items-center gap-1.5 truncate max-w-[240px]">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                            {prog.lab}
-                          </span>
-                          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 shrink-0">
-                            Akreditasi Unggul
-                          </span>
-                        </div>
-                      </motion.div>
+                        💼 {c}
+                      </span>
                     ))}
+                  </div>
+                </div>
+
+                {/* Lab facilities */}
+                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-slate-600 font-bold">
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Lab: {selectedProdi.program.lab}</span>
+                  </div>
+                  <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 inline-block self-start sm:self-auto">
+                    Akreditasi Unggul PNL
+                  </span>
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="p-4 px-6 bg-slate-900 border-t border-slate-800 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span className="text-slate-300 text-[11px] font-medium flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  Terstandar akreditasi LAM-PT / BAN-PT Politeknik Negeri Lhokseumawe.
+              {/* Bottom bar */}
+              <div className="p-4 px-6 sm:px-8 bg-slate-900 text-white flex items-center justify-between text-xs">
+                <span className="text-slate-300 text-[11px]">
+                  Terdaftar resmi PDDIKTI & Vokasi Nasional.
                 </span>
                 <button
-                  onClick={() => setSelectedDeptForFolder(null)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition-colors border border-slate-700 cursor-pointer"
+                  onClick={() => setSelectedProdi(null)}
+                  className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition-colors border border-slate-700 cursor-pointer"
                 >
-                  Tutup
+                  Tutup Berkas
                 </button>
               </div>
             </motion.div>
@@ -1583,10 +1493,10 @@ export const LandingPage: React.FC = () => {
       </AnimatePresence>
 
       {/* ========================================================================= */}
-      {/* MODAL 2: ORMAWA VIEW WITH SIMPLE, CLEAN & SMOOTH ANIMATION */}
+      {/* MODAL 2: SINGLE ORGANISASI DETAIL (ONLY 1 ORMAWA OPENS WITH SIMPLE ANIMATION) */}
       {/* ========================================================================= */}
       <AnimatePresence>
-        {selectedOrgCategoryForFolder && (
+        {selectedOrgItem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             {/* Backdrop */}
             <motion.div
@@ -1594,159 +1504,114 @@ export const LandingPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              onClick={() => setSelectedOrgCategoryForFolder(null)}
+              onClick={() => setSelectedOrgItem(null)}
               className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
             />
 
-            {/* Simple Modal Entrance */}
+            {/* Simple Modal */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-auto text-left flex flex-col max-h-[90vh]"
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-auto text-left flex flex-col"
             >
               {/* Header */}
-              <div className="bg-slate-900 px-5 sm:px-7 py-4 text-white border-b border-slate-800 flex items-center justify-between gap-3">
+              <div
+                className={`px-6 py-4.5 text-white flex items-center justify-between ${selectedOrgItem.category.tabClass}`}
+              >
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-black shadow-md ${selectedOrgCategoryForFolder.tabClass}`}
-                  >
+                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center font-black shadow-xs">
                     <FolderOpen className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono font-black tracking-widest uppercase text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded-md border border-sky-400/20">
-                        FOLDER ORMAWA PNL
-                      </span>
-                      <span className="text-xs font-mono font-bold text-slate-400">
-                        {selectedOrgCategoryForFolder.badge}
-                      </span>
-                    </div>
-                    <h3 className="text-base sm:text-lg font-black text-white tracking-tight mt-0.5">
-                      {selectedOrgCategoryForFolder.title}
+                    <span className="text-[10px] font-mono font-black tracking-widest uppercase opacity-90 block">
+                      ARSIP ORMAWA • {selectedOrgItem.category.badge}
+                    </span>
+                    <h3 className="text-sm font-bold text-white/95">
+                      {selectedOrgItem.category.title}
                     </h3>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => setSelectedOrgCategoryForFolder(null)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                  onClick={() => setSelectedOrgItem(null)}
+                  className="p-1.5 text-white/80 hover:text-white rounded-xl hover:bg-white/20 transition-colors cursor-pointer"
                   title="Tutup (Esc)"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Subheader & Search */}
-              <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Content of THIS 1 ORMAWA ONLY */}
+              <div className="p-6 sm:p-8 space-y-6">
                 <div>
-                  <h4 className="text-base font-extrabold text-navy">
-                    {selectedOrgCategoryForFolder.subtitle}
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Memuat <strong>{selectedOrgCategoryForFolder.items.length} organisasi resmi</strong> di Politeknik Negeri Lhokseumawe.
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-3 py-0.5 rounded-full text-xs font-black font-mono bg-navy text-white uppercase">
+                      {selectedOrgItem.item.abbr}
+                    </span>
+                    <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
+                      {selectedOrgItem.item.scope}
+                    </span>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 leading-snug">
+                    {selectedOrgItem.item.name}
+                  </h2>
+                  <p className="text-xs sm:text-sm font-bold text-brand-700 mt-1">
+                    {selectedOrgItem.item.tagline}
                   </p>
                 </div>
 
-                <div className="relative w-full sm:w-72">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Cari nama organisasi..."
-                    value={searchOrg}
-                    onChange={(e) => setSearchOrg(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-hidden focus:border-brand-500 shadow-2xs"
-                  />
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
+                    Visi & Profil Kegiatan:
+                  </span>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                    {selectedOrgItem.item.description}
+                  </p>
                 </div>
-              </div>
 
-              {/* Organizations List - Simple Animation */}
-              <div className="p-5 sm:p-7 overflow-y-auto flex-1 bg-slate-50/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedOrgCategoryForFolder.items
-                    .filter((org) =>
-                      searchOrg
-                        ? org.name.toLowerCase().includes(searchOrg.toLowerCase()) ||
-                          org.description.toLowerCase().includes(searchOrg.toLowerCase()) ||
-                          org.abbr.toLowerCase().includes(searchOrg.toLowerCase())
-                        : true
-                    )
-                    .map((org, oIdx) => (
-                      <motion.div
-                        key={org.name}
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.22, delay: oIdx * 0.04, ease: 'easeOut' }}
-                        className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-brand-300 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                <div>
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-500 block mb-2.5">
+                    Fokus Utama & Bidang Pengembangan:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOrgItem.item.focus.map((f, fIdx) => (
+                      <span
+                        key={fIdx}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs"
                       >
-                        <div>
-                          <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-dashed border-slate-200">
-                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black font-mono bg-navy text-white uppercase">
-                              {org.abbr}
-                            </span>
-                            <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
-                              {org.scope}
-                            </span>
-                          </div>
-
-                          <h5 className="font-extrabold text-base text-navy leading-snug">
-                            {org.name}
-                          </h5>
-
-                          <p className="text-xs text-brand-700 font-bold mt-1">
-                            {org.tagline}
-                          </p>
-
-                          <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                            {org.description}
-                          </p>
-
-                          <div className="mt-3.5 pt-2.5 border-t border-slate-100">
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
-                              Fokus Utama:
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {org.focus.map((f, fIdx) => (
-                                <span
-                                  key={fIdx}
-                                  className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200"
-                                >
-                                  {f}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                          <span className="text-emerald-700 font-bold flex items-center gap-1.5">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                            Ormawa Resmi PNL
-                          </span>
-                          <Link
-                            to="/login"
-                            className="font-extrabold text-brand-600 hover:text-brand-800 flex items-center gap-1"
-                          >
-                            Masuk Portal Ormawa →
-                          </Link>
-                        </div>
-                      </motion.div>
+                        ✓ {f}
+                      </span>
                     ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-emerald-700 font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Ormawa Resmi PNL
+                  </span>
+                  <Link
+                    to="/login"
+                    className="font-extrabold text-brand-600 hover:text-brand-800 flex items-center gap-1"
+                  >
+                    Masuk Portal Ormawa →
+                  </Link>
                 </div>
               </div>
 
               {/* Bottom bar */}
-              <div className="p-4 px-6 bg-slate-900 border-t border-slate-800 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span className="text-slate-300 text-[11px] font-medium flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  Organisasi mahasiswa terdaftar resmi di bawah naungan Wakil Direktur Kemahasiswaan PNL.
+              <div className="p-4 px-6 sm:px-8 bg-slate-900 text-white flex items-center justify-between text-xs">
+                <span className="text-slate-300 text-[11px]">
+                  Terdaftar di bawah Wakil Direktur Kemahasiswaan PNL.
                 </span>
                 <button
-                  onClick={() => setSelectedOrgCategoryForFolder(null)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition-colors border border-slate-700 cursor-pointer"
+                  onClick={() => setSelectedOrgItem(null)}
+                  className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition-colors border border-slate-700 cursor-pointer"
                 >
-                  Tutup
+                  Tutup Berkas
                 </button>
               </div>
             </motion.div>
