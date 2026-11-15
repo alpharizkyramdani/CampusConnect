@@ -17,7 +17,7 @@ export const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [universityId, setUniversityId] = useState('');
+  const [universityId, setUniversityId] = useState('5');
   const [facultyId, setFacultyId] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [nim, setNim] = useState('');
@@ -50,11 +50,10 @@ export const RegisterPage: React.FC = () => {
 
   useEffect(() => {
     api.get('/universities').then((res) => {
-      if (res.data.success) {
+      if (res.data.success && res.data.data?.length > 0) {
         setUniversities(res.data.data);
-        if (res.data.data.length > 0) {
-          setUniversityId(res.data.data[0].id.toString());
-        }
+        const pnl = res.data.data.find((u: any) => u.code === 'PNL') || res.data.data[0];
+        setUniversityId(pnl.id.toString());
       }
     });
   }, []);
@@ -121,13 +120,13 @@ export const RegisterPage: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/25">
             <GraduationCap className="w-7 h-7 text-white" />
           </div>
-          <span className="font-extrabold text-2xl text-navy tracking-tight">CampusConnect</span>
+          <span className="font-extrabold text-2xl text-navy tracking-tight">PNLConnect</span>
         </Link>
         <h2 className="mt-3 text-2xl font-extrabold text-navy">
-          Create Your Campus Account
+          Pendaftaran Akun Civitas PNL
         </h2>
         <p className="mt-1 text-sm text-slate-500">
-          Join your university's integrated digital network
+          Ekosistem Digital Terpadu Politeknik Negeri Lhokseumawe
         </p>
 
         {/* Role Type Selector Tabs */}
@@ -139,7 +138,7 @@ export const RegisterPage: React.FC = () => {
               roleType === 'student' ? 'bg-white text-brand-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Student Registration
+            Pendaftaran Mahasiswa
           </button>
           <button
             type="button"
@@ -148,7 +147,7 @@ export const RegisterPage: React.FC = () => {
               roleType === 'lecturer' ? 'bg-white text-brand-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Lecturer / Faculty
+            Pendaftaran Dosen / Tendik
           </button>
         </div>
       </div>
@@ -166,28 +165,28 @@ export const RegisterPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Full Name
+                  Nama Lengkap
                 </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Maya Indah"
+                  placeholder="e.g. Cut Mutia / Teuku Umar"
                   className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Email Address
+                  Email Akun
                 </label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="maya@student.uir.ac.id"
+                  placeholder={roleType === 'student' ? 'nama@student.pnl.ac.id' : 'nama@pnl.ac.id'}
                   className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                 />
               </div>
@@ -203,27 +202,21 @@ export const RegisterPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimum 6 characters"
+                  placeholder="Minimal 6 karakter"
                   className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  University Campus
+                  Kampus
                 </label>
-                <select
-                  required
-                  value={universityId}
-                  onChange={(e) => setUniversityId(e.target.value)}
-                  className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                >
-                  {universities.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name} ({u.code})
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-1.5 px-3.5 py-2.5 bg-blue-50/70 border border-blue-200 rounded-xl text-sm font-semibold text-blue-900 flex items-center justify-between">
+                  <span>Politeknik Negeri Lhokseumawe</span>
+                  <span className="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold">
+                    PNL
+                  </span>
+                </div>
               </div>
             </div>
 

@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
-import { University } from '../types';
 import {
   GraduationCap,
   CalendarCheck2,
@@ -12,23 +10,17 @@ import {
   ArrowRight,
   Users2,
   Wrench,
+  BookOpen,
+  Cpu,
+  Layers,
+  FlaskConical,
+  Building,
+  Briefcase,
+  Zap,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const LandingPage: React.FC = () => {
-  const [universities, setUniversities] = useState<University[]>([]);
-
-  useEffect(() => {
-    api
-      .get('/universities')
-      .then((res) => {
-        if (res.data.success && res.data.data) {
-          setUniversities(res.data.data.slice(0, 3));
-        }
-      })
-      .catch(() => { });
-  }, []);
-
   // Smooth cubic-bezier transition curve
   const easeCubic: any = [0.22, 1, 0.36, 1];
 
@@ -44,81 +36,121 @@ export const LandingPage: React.FC = () => {
     },
   });
 
-  // Platform capabilities data
+  // Platform capabilities data tailored for PNL
   const platformFeatures = [
     {
       icon: <CalendarCheck2 className="w-6 h-6" />,
-      title: 'Event Center & QR Check-in',
-      desc: 'Full lifecycle management: participant limits, unique cryptographic ticket codes, and camera QR scanning with instant duplicate detection.',
+      title: 'Event Center & Presensi QR Code',
+      desc: 'Manajemen kegiatan ormawa dan akademik: tiket unik, kuota peserta, dan presensi scan QR camera anti-duplikasi.',
     },
     {
       icon: <PackageCheck className="w-6 h-6" />,
-      title: 'Facility & Inventory Management',
-      desc: 'Department-level catalog, concurrency-locked reservations, borrowing approvals, pickup, condition grading, and overdue tracking.',
+      title: 'Inventaris & Peminjaman Lab Jurusan',
+      desc: 'Katalog alat laboratorium tiap jurusan, reservasi ruangan, persetujuan admin jurusan, serta pelacakan pengembalian.',
     },
     {
       icon: <Award className="w-6 h-6" />,
-      title: 'Digital Certificates & Portfolio',
-      desc: 'Automated certificate generation, public hash authenticity verification, and rich student portfolios ready for job applications.',
+      title: 'Sertifikat Digital & e-Portfolio',
+      desc: 'Penerbitan e-sertifikat otomatis, verifikasi publik keaslian hash, dan rekam portofolio prestasi mahasiswa PNL.',
     },
     {
       icon: <Users2 className="w-6 h-6" />,
-      title: 'UKM & Ormawa Hub',
-      desc: 'Central directory for BEM, DPM, HIMA, and UKMs. Recruitment period portals, member governance, work program budgeting, and statistics.',
+      title: 'Sentra Ormawa & Himpunan Jurusan',
+      desc: 'Direktori BEM, MPM, Himpunan Mahasiswa Jurusan (HIMA), dan UKM. Pendaftaran anggota, rapat kerja, dan dokumentasi.',
     },
     {
       icon: <Wrench className="w-6 h-6" />,
-      title: 'Maintenance & Lost & Found',
-      desc: 'Photo damage reporting with 6-stage lifecycle, plus a community lost-and-found board featuring private proof-of-ownership verification.',
+      title: 'Lapor Fasilitas & Barang Hilang',
+      desc: 'Laporan kerusakan sarana kampus dengan foto bukti dan tracking status, serta portal komunitas penemuan barang hilang.',
     },
     {
       icon: <ShieldCheck className="w-6 h-6" />,
-      title: 'Multi-Tenant Logical Isolation',
-      desc: 'Universities operate in secure logical isolation. Users from University A cannot access private records, assets, or services of University B.',
+      title: 'Akses Peran & Jurusan Terintegrasi',
+      desc: 'Hak akses bertingkat: Super Admin (Direktorat PNL), Admin Jurusan, Dosen, Mahasiswa, dan Pengurus Ormawa dalam satu sistem.',
     },
   ];
 
-  // Guaranteed showcase universities with PNL and network partners
-  const displayUniversities =
-    universities.length >= 3
-      ? universities
-      : [
-        ...(universities.length > 0
-          ? universities
-          : [
-            {
-              id: 5,
-              name: 'Politeknik Negeri Lhokseumawe',
-              code: 'PNL',
-              description:
-                'Pusat pendidikan vokasi unggulan bidang rekayasa dan tata niaga di Buketrata, Lhokseumawe.',
-              faculties_count: 5,
-              departments_count: 11,
-              events_count: 4,
-              logo: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80',
-            },
-          ]),
-        {
-          id: 101,
-          name: 'Universitas Syiah Kuala (USK)',
-          code: 'USK',
-          description: 'Mitra kolaborasi akademik, riset terpadu, dan pertukaran mahasiswa merdeka.',
-          faculties_count: 12,
-          departments_count: 64,
-          events_count: 18,
-          logo: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80',
-        },
-        {
-          id: 102,
-          name: 'Politeknik Negeri Medan (POLMED)',
-          code: 'POLMED',
-          description: 'Aliansi konsorsium pendidikan vokasi nasional untuk sertifikasi dan magang industri.',
-          faculties_count: 6,
-          departments_count: 22,
-          events_count: 12,
-          logo: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
-        },
-      ].slice(0, 3);
+  // 6 Jurusan Resmi di Politeknik Negeri Lhokseumawe (PNL)
+  const pnlDepartments = [
+    {
+      id: 40,
+      name: 'Teknologi Informasi & Komputer',
+      code: 'JTIK',
+      badge: 'JTIK-PNL',
+      icon: <Cpu className="w-6 h-6 text-brand-600" />,
+      tagline: 'Rekayasa Perangkat Lunak, Jaringan & Multimedia Cerdas',
+      description:
+        'Pusat pendidikan vokasi keunggulan rekayasa sistem komputer, kecerdasan buatan, keamanan jaringan, dan konten multimedia digital.',
+      prodi: ['D4 Teknik Informatika', 'D4 Rekayasa Multimedia', 'D3 Teknik Informatika'],
+      stats: { prodi: '3 Prodi', labs: '6 Lab Modern' },
+      image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      id: 41,
+      name: 'Teknik Elektro',
+      code: 'JTE',
+      badge: 'JTE-PNL',
+      icon: <Zap className="w-6 h-6 text-brand-600" />,
+      tagline: 'Sistem Tenaga Listrik, Otomasi & Telekomunikasi',
+      description:
+        'Membentuk tenaga ahli terapan bidang sistem pembangkit energi listrik, kendali otomasi industri, PLC, dan telekomunikasi seluler.',
+      prodi: ['D4 Rekayasa Jaringan Telkom', 'D3 Teknik Listrik', 'D3 Teknik Elektronika'],
+      stats: { prodi: '3 Prodi', labs: '8 Lab Energi' },
+      image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      id: 43,
+      name: 'Teknik Mesin',
+      code: 'JTM',
+      badge: 'JTM-PNL',
+      icon: <Wrench className="w-6 h-6 text-brand-600" />,
+      tagline: 'Manufaktur Presisi, Fabrikasi CNC & Konversi Energi',
+      description:
+        'Pendidikan vokasi perancangan mekanikal, permesinan presisi CNC, pengelasan bersertifikat internasional, dan perawatan mesin industri.',
+      prodi: ['D4 Rekayasa Manufaktur', 'D3 Teknik Mesin', 'D3 Teknik Pengelasan'],
+      stats: { prodi: '3 Prodi', labs: '7 Bengkel & Lab' },
+      image: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      id: 42,
+      name: 'Teknik Sipil',
+      code: 'JTS',
+      badge: 'JTS-PNL',
+      icon: <Building className="w-6 h-6 text-brand-600" />,
+      tagline: 'Infrastruktur Jalan Jembatan & Konstruksi Tahan Gempa',
+      description:
+        'Keahlian perancangan struktur bangunan gedung bertingkat, rekayasa jalan raya jembatan, mekanika tanah, dan manajemen proyek konstruksi.',
+      prodi: ['D4 Manajemen Rekayasa Konstruksi', 'D3 Teknik Sipil', 'D4 Konstruksi Jalan & Jembatan'],
+      stats: { prodi: '3 Prodi', labs: '5 Lab Uji Bahan' },
+      image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      id: 45,
+      name: 'Teknik Kimia',
+      code: 'JTK',
+      badge: 'JTK-PNL',
+      icon: <FlaskConical className="w-6 h-6 text-brand-600" />,
+      tagline: 'Teknologi Rekayasa Kimia Industri & Pengolahan Migas',
+      description:
+        'Pusat keunggulan rekayasa proses kimia industri, teknologi pengolahan minyak bumi dan gas alam, bioenergi, serta keselamatan K3 industri.',
+      prodi: ['D4 Rekayasa Kimia Industri', 'D3 Teknik Kimia', 'D3 Pengolahan Migas'],
+      stats: { prodi: '3 Prodi', labs: '6 Lab Kimia' },
+      image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      id: 44,
+      name: 'Tata Niaga',
+      code: 'JTN',
+      badge: 'JTN-PNL',
+      icon: <Briefcase className="w-6 h-6 text-brand-600" />,
+      tagline: 'Akuntansi Keuangan Syariah & Bisnis Digital Terapan',
+      description:
+        'Pendidikan terapan akuntansi sektor publik, keuangan syariah, perbankan modern, perpajakan, dan administrasi bisnis terdigitalisasi.',
+      prodi: ['D4 Akuntansi Keuangan Syariah', 'D3 Administrasi Bisnis', 'D4 Manajemen Bisnis'],
+      stats: { prodi: '3 Prodi', labs: '4 Lab Komputer Bisnis' },
+      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-canvas text-textMain flex flex-col font-sans">
@@ -141,8 +173,8 @@ export const LandingPage: React.FC = () => {
             <a href="#features" className="hover:text-brand-600 transition-colors">
               Platform Features
             </a>
-            <a href="#universities" className="hover:text-brand-600 transition-colors">
-              Mou Relationship
+            <a href="#jurusan" className="hover:text-brand-600 transition-colors">
+              Jurusan PNL
             </a>
             <Link to="/verify" className="hover:text-brand-600 transition-colors">
               Verify Certificate
@@ -157,10 +189,10 @@ export const LandingPage: React.FC = () => {
               Sign In
             </Link>
             <Link
-              to="/register-university"
+              to="/register"
               className="hidden sm:inline-flex px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-md shadow-brand-600/25 transition-all"
             >
-              Sign Up
+              Daftar Akun
             </Link>
           </div>
         </div>
@@ -194,7 +226,7 @@ export const LandingPage: React.FC = () => {
             <motion.div {...scrollAnim(0.1)} className="inline-flex">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/30 text-white text-xs font-bold mb-6 shadow-md">
                 <Sparkles className="w-4 h-4 text-cyan-300" />
-                <span>Next-Generation Higher Education Digital Ecosystem</span>
+                <span>Next-Generation Higher Education Digital Ecosystem - Politeknik Negeri Lhokseumawe</span>
               </div>
             </motion.div>
 
@@ -217,8 +249,7 @@ export const LandingPage: React.FC = () => {
                 textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)',
               }}
             >
-              An integrated digital ecosystem that brings students, lecturers, organizations, and universities together in
-              one unified platform.
+              Ekosistem digital terpadu Politeknik Negeri Lhokseumawe yang menghubungkan mahasiswa, dosen, ormawa, dan 6 jurusan dalam satu platform cerdas.
             </motion.p>
 
             {/* Repeatable Staggered Item 4: CTA Buttons */}
@@ -230,11 +261,11 @@ export const LandingPage: React.FC = () => {
                 to="/login"
                 className="px-8 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-xl shadow-brand-600/30 flex items-center gap-2 text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
-                Explore CampusConnect
+                Masuk Portal Civitas
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
-                to="/register-university"
+                to="/register"
                 style={{
                   border: '2px solid rgba(255, 255, 255, 0.4)',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -242,17 +273,17 @@ export const LandingPage: React.FC = () => {
                 }}
                 className="px-8 py-3.5 hover:bg-white/20 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
-                Register Your University
+                Daftar Akun Baru
               </Link>
             </motion.div>
 
             {/* Repeatable Staggered Item 5: Quick Stats Grid (Solid Pure White Cards) */}
             <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl w-full text-left">
               {[
-                { number: '6 Department', desc: 'Connected Higher-Ed Network' },
-                { number: '5,000+ Users', desc: 'PNL Students, Lecturers & Staff' },
-                { number: '30+ Student Orgs', desc: 'Active BEM, DPM, HMJ & UKM' },
-                { number: '10k+ Certificates', desc: 'Digitally Verified in Real-Time' },
+                { number: '6 Jurusan', desc: 'Pendidikan Vokasi Unggulan' },
+                { number: '5,000+ Civitas', desc: 'Mahasiswa, Dosen & Tendik PNL' },
+                { number: '30+ Ormawa & UKM', desc: 'Aktif BEM, MPM, HMJ & UKM' },
+                { number: '10k+ Sertifikat', desc: 'Terverifikasi Digital Real-Time' },
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -289,13 +320,13 @@ export const LandingPage: React.FC = () => {
               {...scrollAnim(0.2)}
               className="mt-2 text-3xl sm:text-4xl font-extrabold text-navy"
             >
-              Comprehensive Platform Capabilities
+              Layanan Terintegrasi Kampus PNL
             </motion.p>
             <motion.p
               {...scrollAnim(0.3)}
               className="mt-3 text-slate-600 text-sm sm:text-base"
             >
-              Engineered to replace fragmented campus portals with one coherent, highly secure digital core.
+              Dirancang khusus menggantikan portal kampus terpisah menjadi satu kesatuan ekosistem digital Politeknik Negeri Lhokseumawe yang terpadu.
             </motion.p>
           </div>
 
@@ -318,9 +349,9 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. MOU RELATIONSHIP SECTION (MINIMALIST SOFT WHITE & LIGHT BLUE GRADIENT + REPEATABLE SCROLL REVEAL) */}
+      {/* 3. JURUSAN DI POLITEKNIK NEGERI LHOKSEUMAWE (6 JURUSAN RESMI) */}
       <section
-        id="universities"
+        id="jurusan"
         className="py-24 border-t border-slate-200/50"
         style={{
           background: 'linear-gradient(180deg, #F8FBFF 0%, #EBF3FD 40%, #F4F8FE 75%, #FFFFFF 100%)',
@@ -333,67 +364,84 @@ export const LandingPage: React.FC = () => {
                 {...scrollAnim(0.1)}
                 className="text-xs font-bold text-brand-600 uppercase tracking-widest"
               >
-                Network of Excellence
+                6 Jurusan Unggulan
               </motion.h2>
               <motion.p
                 {...scrollAnim(0.2)}
                 className="mt-2 text-3xl font-extrabold text-navy"
               >
-                Mou Relationship
+                Jurusan di Politeknik Negeri Lhokseumawe
+              </motion.p>
+              <motion.p
+                {...scrollAnim(0.25)}
+                className="mt-2 text-sm text-slate-600 max-w-2xl"
+              >
+                Pusat pendidikan vokasi terapan terkemuka bidang rekayasa teknologi dan tata niaga modern di Buketrata, Lhokseumawe.
               </motion.p>
             </div>
             <motion.div {...scrollAnim(0.3)}>
               <Link
-                to="/directory"
+                to="/register"
                 className="mt-4 md:mt-0 text-sm font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1 transition-colors"
               >
-                Explore All Campuses <ArrowRight className="w-4 h-4" />
+                Daftar Akun Civitas PNL <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayUniversities.map((univ, idx) => {
-              // Ensure clean campus building photo (Real PNL photo for PNL)
-              const campusThumbnail =
-                univ.code === 'PNL'
-                  ? '/images/pnl-campus-real.jpg'
-                  : univ.logo && !univ.logo.includes('bing.com')
-                    ? univ.logo
-                    : 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80';
-
-              return (
-                <motion.div
-                  key={univ.id}
-                  {...scrollAnim(0.1 + idx * 0.1)}
-                  style={{ backgroundColor: '#ffffff' }}
-                  className="border border-slate-200/70 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-brand-300 transition-all transform hover:-translate-y-1"
-                >
-                  <div className="h-44 overflow-hidden bg-slate-100 relative">
-                    <img
-                      src={campusThumbnail}
-                      alt={univ.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 backdrop-blur-xs text-navy font-mono text-xs font-bold rounded-lg shadow-xs">
-                      {univ.code}
-                    </div>
+            {pnlDepartments.map((dept, idx) => (
+              <motion.div
+                key={dept.id}
+                {...scrollAnim(0.1 + (idx % 3) * 0.1)}
+                style={{ backgroundColor: '#ffffff' }}
+                className="border border-slate-200/70 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-brand-300 transition-all transform hover:-translate-y-1 flex flex-col"
+              >
+                <div className="h-44 overflow-hidden bg-slate-100 relative">
+                  <img
+                    src={dept.image}
+                    alt={dept.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 backdrop-blur-xs text-brand-700 font-mono text-xs font-bold rounded-lg shadow-xs">
+                    {dept.badge}
                   </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-base text-navy">{univ.name}</h3>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                      {univ.description ||
-                        'Leading educational institution committed to applied technology, research, and community service.'}
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-bold text-base text-navy">{dept.name}</h3>
+                    <p className="text-xs text-brand-600 font-semibold mt-0.5">{dept.tagline}</p>
+                    <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+                      {dept.description}
                     </p>
-                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-semibold">
-                      <span>{univ.faculties_count || 5} Jurusan</span>
-                      <span>{univ.departments_count || 11} Prodi</span>
-                      <span>{univ.events_count || 4} Events</span>
+                    
+                    {/* Prodi Tags */}
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {dept.prodi.map((p, pIdx) => (
+                        <span
+                          key={pIdx}
+                          className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-medium border border-blue-100"
+                        >
+                          {p}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                </motion.div>
-              );
-            })}
+
+                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-semibold">
+                    <span>{dept.stats.prodi}</span>
+                    <span className="text-slate-400">•</span>
+                    <span>{dept.stats.labs}</span>
+                    <Link
+                      to="/login"
+                      className="text-brand-600 hover:text-brand-700 font-bold flex items-center gap-1"
+                    >
+                      Masuk <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -412,7 +460,7 @@ export const LandingPage: React.FC = () => {
               PNLConnect
             </span>
             <span style={{ color: '#FFFFFF' }} className="opacity-90 hidden sm:inline">
-              — "One Platform, Every Campus, Connected."
+              — "Satu Platform Ekosistem Digital Politeknik Negeri Lhokseumawe"
             </span>
           </div>
 
@@ -432,11 +480,11 @@ export const LandingPage: React.FC = () => {
               Portal Login
             </Link>
             <Link
-              to="/register-university"
+              to="/register"
               style={{ color: '#FFFFFF' }}
               className="hover:text-cyan-300 transition-colors"
             >
-              Sign Up
+              Daftar Akun Civitas
             </Link>
           </div>
 
