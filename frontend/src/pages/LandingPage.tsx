@@ -198,24 +198,26 @@ export const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & BALANCED DARK/BLACK TRANSPARENT OVERLAY */}
+      {/* 1. HERO SECTION WITH REAL PNL CAMPUS VIDEO & BALANCED DARK/BLACK TRANSPARENT OVERLAY */}
       <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-slate-950">
-        {/* Layer 0: Real PNL Campus Image (Uploaded by User) */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
-          style={{
-            backgroundImage: `url('/images/pnl-campus-real.jpg')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
+        {/* Layer 0: Real PNL Campus Video (Uploaded by User) */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          poster="/images/pnl-campus-real.jpg"
+        >
+          <source src="/videos/hero_campus.mp4" type="video/mp4" />
+        </video>
 
-        {/* Layer 1: Balanced Dark Transparent Layer Overlay (Photo clearly visible) */}
+        {/* Layer 1: Balanced Dark Transparent Layer Overlay (Video clearly visible) */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(15, 23, 42, 0.48) 50%, rgba(15, 23, 42, 0.60) 100%)',
+              'linear-gradient(180deg, rgba(0, 0, 0, 0.40) 0%, rgba(15, 23, 42, 0.50) 50%, rgba(15, 23, 42, 0.65) 100%)',
           }}
         />
 
