@@ -166,28 +166,29 @@ export const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* 1. HERO SECTION (WORKING UNSPLASH BACKGROUND + DARK BLUE GRADIENT OVERLAY) */}
-      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36">
-        {/* PNL Campus Image with High-Res Fallbacks */}
+      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & BLUE TRANSPARENT OVERLAY */}
+      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-slate-900">
+        {/* Layer 0: Real PNL Campus Image (Uploaded by User) */}
         <div
-          className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
           style={{
-            backgroundImage: `url('/images/pnl-hero.png'), url('/images/pnl-campus.jpg'), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1920&q=80')`,
+            backgroundImage: `url('/images/pnl-campus-real.jpg')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
         />
 
-        {/* Dark Blue Semi-Transparent Layer Overlay */}
+        {/* Layer 1: Dark Blue Semi-Transparent Layer Overlay */}
         <div
-          className="absolute inset-0 -z-10"
+          className="absolute inset-0 pointer-events-none"
           style={{
             background:
               'linear-gradient(135deg, rgba(10, 37, 95, 0.82) 0%, rgba(29, 78, 216, 0.75) 100%)',
           }}
         />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* Layer 2: Foreground Content (relative z-10) */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex flex-col items-center">
             {/* Repeatable Staggered Item 1: Badge Pill */}
             <motion.div {...scrollAnim(0.1)} className="inline-flex">
@@ -347,11 +348,13 @@ export const LandingPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayUniversities.map((univ, idx) => {
-              // Ensure clean campus building photo from Unsplash
+              // Ensure clean campus building photo (Real PNL photo for PNL)
               const campusThumbnail =
-                univ.code === 'PNL' || !univ.logo || univ.logo.includes('bing.com')
-                  ? 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80'
-                  : univ.logo;
+                univ.code === 'PNL'
+                  ? '/images/pnl-campus-real.jpg'
+                  : univ.logo && !univ.logo.includes('bing.com')
+                    ? univ.logo
+                    : 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80';
 
               return (
                 <motion.div
