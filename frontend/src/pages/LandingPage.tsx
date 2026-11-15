@@ -201,28 +201,56 @@ export const LandingPage: React.FC = () => {
             }`}
           >
             <a
-              href="#features"
-              className={`transition-colors ${
-                isScrolled ? 'hover:text-brand-600' : 'hover:text-white'
+              href="#"
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
               }`}
             >
-              Platform Features
+              <span>Beranda</span>
+              <span
+                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
+                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                }`}
+              />
+            </a>
+            <a
+              href="#features"
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
+              }`}
+            >
+              <span>Platform Features</span>
+              <span
+                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
+                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                }`}
+              />
             </a>
             <a
               href="#jurusan"
-              className={`transition-colors ${
-                isScrolled ? 'hover:text-brand-600' : 'hover:text-white'
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
               }`}
             >
-              Jurusan PNL
+              <span>Jurusan PNL</span>
+              <span
+                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
+                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                }`}
+              />
             </a>
             <Link
               to="/verify"
-              className={`transition-colors ${
-                isScrolled ? 'hover:text-brand-600' : 'hover:text-white'
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
               }`}
             >
-              Verify Certificate
+              <span>Verify Certificate</span>
+              <span
+                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
+                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                }`}
+              />
             </Link>
           </div>
 
