@@ -26,7 +26,7 @@ export const LandingPage: React.FC = () => {
           setUniversities(res.data.data.slice(0, 3));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Smooth cubic-bezier transition curve
@@ -83,42 +83,42 @@ export const LandingPage: React.FC = () => {
     universities.length >= 3
       ? universities
       : [
-          ...(universities.length > 0
-            ? universities
-            : [
-                {
-                  id: 5,
-                  name: 'Politeknik Negeri Lhokseumawe',
-                  code: 'PNL',
-                  description:
-                    'Pusat pendidikan vokasi unggulan bidang rekayasa dan tata niaga di Buketrata, Lhokseumawe.',
-                  faculties_count: 5,
-                  departments_count: 11,
-                  events_count: 4,
-                  logo: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80',
-                },
-              ]),
-          {
-            id: 101,
-            name: 'Universitas Syiah Kuala (USK)',
-            code: 'USK',
-            description: 'Mitra kolaborasi akademik, riset terpadu, dan pertukaran mahasiswa merdeka.',
-            faculties_count: 12,
-            departments_count: 64,
-            events_count: 18,
-            logo: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80',
-          },
-          {
-            id: 102,
-            name: 'Politeknik Negeri Medan (POLMED)',
-            code: 'POLMED',
-            description: 'Aliansi konsorsium pendidikan vokasi nasional untuk sertifikasi dan magang industri.',
-            faculties_count: 6,
-            departments_count: 22,
-            events_count: 12,
-            logo: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
-          },
-        ].slice(0, 3);
+        ...(universities.length > 0
+          ? universities
+          : [
+            {
+              id: 5,
+              name: 'Politeknik Negeri Lhokseumawe',
+              code: 'PNL',
+              description:
+                'Pusat pendidikan vokasi unggulan bidang rekayasa dan tata niaga di Buketrata, Lhokseumawe.',
+              faculties_count: 5,
+              departments_count: 11,
+              events_count: 4,
+              logo: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80',
+            },
+          ]),
+        {
+          id: 101,
+          name: 'Universitas Syiah Kuala (USK)',
+          code: 'USK',
+          description: 'Mitra kolaborasi akademik, riset terpadu, dan pertukaran mahasiswa merdeka.',
+          faculties_count: 12,
+          departments_count: 64,
+          events_count: 18,
+          logo: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80',
+        },
+        {
+          id: 102,
+          name: 'Politeknik Negeri Medan (POLMED)',
+          code: 'POLMED',
+          description: 'Aliansi konsorsium pendidikan vokasi nasional untuk sertifikasi dan magang industri.',
+          faculties_count: 6,
+          departments_count: 22,
+          events_count: 12,
+          logo: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+        },
+      ].slice(0, 3);
 
   return (
     <div className="min-h-screen bg-canvas text-textMain flex flex-col font-sans">
@@ -193,7 +193,7 @@ export const LandingPage: React.FC = () => {
             {/* Repeatable Staggered Item 1: Badge Pill */}
             <motion.div {...scrollAnim(0.1)} className="inline-flex">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/30 text-white text-xs font-bold mb-6 shadow-md">
-                <Sparkles className="w-4 h-4 text-cyan-300 animate-pulse" />
+                <Sparkles className="w-4 h-4 text-cyan-300" />
                 <span>Next-Generation Higher Education Digital Ecosystem</span>
               </div>
             </motion.div>
@@ -251,7 +251,7 @@ export const LandingPage: React.FC = () => {
               {[
                 { number: '6 Department', desc: 'Connected Higher-Ed Network' },
                 { number: '5,000+ Users', desc: 'PNL Students, Lecturers & Staff' },
-                { number: '30+ Student Orgs', desc: 'Active BEM, MPM, HMJ & UKM' },
+                { number: '30+ Student Orgs', desc: 'Active BEM, DPM, HMJ & UKM' },
                 { number: '10k+ Certificates', desc: 'Digitally Verified in Real-Time' },
               ].map((stat, i) => (
                 <motion.div
@@ -269,19 +269,19 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. FEATURES SECTION (BEAUTIFUL GRADIENT WHITE & BLUE + REPEATABLE SCROLL REVEAL) */}
+      {/* 2. FEATURES SECTION (MINIMALIST SOFT WHITE & LIGHT BLUE GRADIENT + REPEATABLE SCROLL REVEAL) */}
       <section
         id="features"
-        className="py-24 border-y border-blue-200/60"
+        className="py-24 border-y border-slate-200/50"
         style={{
-          background: 'linear-gradient(180deg, #FFFFFF 0%, #DCEBFF 35%, #BFDBFE 70%, #EFF6FF 100%)',
+          background: 'linear-gradient(180deg, #FFFFFF 0%, #F5F9FE 40%, #EBF3FD 75%, #F8FBFF 100%)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <motion.h2
               {...scrollAnim(0.1)}
-              className="text-xs font-bold text-brand-700 uppercase tracking-widest"
+              className="text-xs font-bold text-brand-600 uppercase tracking-widest"
             >
               Enterprise Feature Suite
             </motion.h2>
@@ -293,7 +293,7 @@ export const LandingPage: React.FC = () => {
             </motion.p>
             <motion.p
               {...scrollAnim(0.3)}
-              className="mt-3 text-slate-700 text-sm sm:text-base"
+              className="mt-3 text-slate-600 text-sm sm:text-base"
             >
               Engineered to replace fragmented campus portals with one coherent, highly secure digital core.
             </motion.p>
@@ -305,9 +305,9 @@ export const LandingPage: React.FC = () => {
                 key={idx}
                 {...scrollAnim(0.1 + (idx % 3) * 0.1)}
                 style={{ backgroundColor: '#ffffff' }}
-                className="p-7 rounded-2xl border border-blue-200/80 shadow-md hover:shadow-xl hover:border-brand-400 transition-all transform hover:-translate-y-1"
+                className="p-7 rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-xl hover:border-brand-300 transition-all transform hover:-translate-y-1"
               >
-                <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 text-brand-600 flex items-center justify-center mb-5 shadow-2xs">
+                <div className="w-12 h-12 rounded-xl bg-brand-50/80 border border-brand-100 text-brand-600 flex items-center justify-center mb-5 shadow-2xs">
                   {feat.icon}
                 </div>
                 <h3 className="text-lg font-bold text-navy">{feat.title}</h3>
@@ -318,12 +318,12 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. MOU RELATIONSHIP SECTION (BEAUTIFUL GRADIENT WHITE & BLUE + REPEATABLE SCROLL REVEAL) */}
+      {/* 3. MOU RELATIONSHIP SECTION (MINIMALIST SOFT WHITE & LIGHT BLUE GRADIENT + REPEATABLE SCROLL REVEAL) */}
       <section
         id="universities"
-        className="py-24 border-t border-blue-200/60"
+        className="py-24 border-t border-slate-200/50"
         style={{
-          background: 'linear-gradient(180deg, #EFF6FF 0%, #DCEBFF 40%, #BFDBFE 75%, #FFFFFF 100%)',
+          background: 'linear-gradient(180deg, #F8FBFF 0%, #EBF3FD 40%, #F4F8FE 75%, #FFFFFF 100%)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -331,7 +331,7 @@ export const LandingPage: React.FC = () => {
             <div>
               <motion.h2
                 {...scrollAnim(0.1)}
-                className="text-xs font-bold text-brand-700 uppercase tracking-widest"
+                className="text-xs font-bold text-brand-600 uppercase tracking-widest"
               >
                 Network of Excellence
               </motion.h2>
@@ -345,7 +345,7 @@ export const LandingPage: React.FC = () => {
             <motion.div {...scrollAnim(0.3)}>
               <Link
                 to="/directory"
-                className="mt-4 md:mt-0 text-sm font-bold text-brand-700 hover:text-brand-900 flex items-center gap-1 transition-colors"
+                className="mt-4 md:mt-0 text-sm font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1 transition-colors"
               >
                 Explore All Campuses <ArrowRight className="w-4 h-4" />
               </Link>
@@ -367,7 +367,7 @@ export const LandingPage: React.FC = () => {
                   key={univ.id}
                   {...scrollAnim(0.1 + idx * 0.1)}
                   style={{ backgroundColor: '#ffffff' }}
-                  className="border border-blue-200/80 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1"
+                  className="border border-slate-200/70 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-brand-300 transition-all transform hover:-translate-y-1"
                 >
                   <div className="h-44 overflow-hidden bg-slate-100 relative">
                     <img
