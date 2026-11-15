@@ -27,6 +27,9 @@ import {
   TrendingDown,
   Calendar,
   FileSpreadsheet,
+  Globe,
+  Mail,
+  Layers,
 } from 'lucide-react';
 
 const PRESET_LOGOS = [
@@ -73,6 +76,9 @@ export const OrganizationsPage: React.FC = () => {
   const [editOrgVision, setEditOrgVision] = useState('');
   const [editOrgMission, setEditOrgMission] = useState('');
   const [editOrgLogo, setEditOrgLogo] = useState('');
+  const [editOrgWebsite, setEditOrgWebsite] = useState('');
+  const [editOrgInstagram, setEditOrgInstagram] = useState('');
+  const [editOrgContactEmail, setEditOrgContactEmail] = useState('');
   const [editOrgRecruitment, setEditOrgRecruitment] = useState(true);
   const [savingEdit, setSavingEdit] = useState(false);
 
@@ -275,6 +281,9 @@ export const OrganizationsPage: React.FC = () => {
     setEditOrgVision(org.vision || '');
     setEditOrgMission(org.mission || '');
     setEditOrgLogo(org.logo || '');
+    setEditOrgWebsite(org.website || '');
+    setEditOrgInstagram(org.instagram || '');
+    setEditOrgContactEmail(org.contact_email || '');
     setEditOrgRecruitment(!!org.recruitment_open);
     setEditOrgModalOpen(true);
   };
@@ -292,6 +301,9 @@ export const OrganizationsPage: React.FC = () => {
         vision: editOrgVision || null,
         mission: editOrgMission || null,
         logo: editOrgLogo || null,
+        website: editOrgWebsite || null,
+        instagram: editOrgInstagram || null,
+        contact_email: editOrgContactEmail || null,
         recruitment_open: editOrgRecruitment,
       });
 
@@ -548,6 +560,22 @@ export const OrganizationsPage: React.FC = () => {
                     </div>
                     <h3 className="font-bold text-sm text-navy line-clamp-1">{org.name}</h3>
                     <p className="text-xs text-slate-500 line-clamp-2 mt-1">{org.description}</p>
+                    {(org.website || org.instagram) && (
+                      <div className="flex items-center gap-2 mt-2">
+                        {org.website && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-brand-600 font-semibold bg-brand-50 px-2 py-0.5 rounded-md border border-brand-200/60">
+                            <Globe className="w-2.5 h-2.5" />
+                            Official Web
+                          </span>
+                        )}
+                        {org.instagram && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-pink-600 font-semibold bg-pink-50 px-2 py-0.5 rounded-md border border-pink-200/60">
+                            <span>📷</span>
+                            Instagram
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -825,6 +853,44 @@ export const OrganizationsPage: React.FC = () => {
                   </span>
                   <h3 className="text-base font-bold text-navy mt-1">{selectedOrg.name}</h3>
                   <p className="text-slate-500 text-[11px] mt-0.5">{selectedOrg.description}</p>
+
+                  {(selectedOrg.website || selectedOrg.instagram || selectedOrg.contact_email) && (
+                    <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                      {selectedOrg.website && (
+                        <a
+                          href={selectedOrg.website.startsWith('http') ? selectedOrg.website : `https://${selectedOrg.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-[11px] transition-colors border border-blue-200 shadow-2xs"
+                        >
+                          <Globe className="w-3.5 h-3.5" />
+                          <span>Website Resmi</span>
+                          <ExternalLink className="w-3 h-3 opacity-60" />
+                        </a>
+                      )}
+                      {selectedOrg.instagram && (
+                        <a
+                          href={selectedOrg.instagram.startsWith('http') ? selectedOrg.instagram : `https://instagram.com/${selectedOrg.instagram.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 text-pink-700 hover:from-purple-100 hover:to-pink-100 font-bold text-[11px] transition-colors border border-pink-200 shadow-2xs"
+                        >
+                          <span className="text-xs">📸</span>
+                          <span>Instagram</span>
+                          <ExternalLink className="w-3 h-3 opacity-60" />
+                        </a>
+                      )}
+                      {selectedOrg.contact_email && (
+                        <a
+                          href={`mailto:${selectedOrg.contact_email}`}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium text-[11px] transition-colors border border-slate-200"
+                        >
+                          <Mail className="w-3 h-3 text-slate-500" />
+                          <span>{selectedOrg.contact_email}</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -918,6 +984,44 @@ export const OrganizationsPage: React.FC = () => {
                     <p className="text-slate-600 mt-1 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
                       {selectedOrg.mission}
                     </p>
+                  </div>
+                )}
+
+                {/* Departemen & Divisi Kerja */}
+                {selectedOrg.divisions && selectedOrg.divisions.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-brand-600" />
+                        Departemen & Divisi Organisasi ({selectedOrg.divisions.length})
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        Struktur divisi & departemen aktif ormawa
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {selectedOrg.divisions.map((div, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-xl bg-slate-50/80 hover:bg-white border border-slate-200 hover:border-brand-300 transition-all shadow-2xs"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="font-bold text-slate-900 text-xs">{div.name}</h4>
+                            {div.lead && (
+                              <span className="px-2 py-0.5 rounded-md font-mono text-[9px] font-bold bg-brand-50 text-brand-700 border border-brand-200 shrink-0">
+                                {div.lead}
+                              </span>
+                            )}
+                          </div>
+                          {div.desc && (
+                            <p className="text-slate-500 text-[11px] leading-relaxed mt-1">
+                              {div.desc}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -1514,6 +1618,39 @@ export const OrganizationsPage: React.FC = () => {
               onChange={(e) => setEditOrgDescription(e.target.value)}
               className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
             />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="font-bold text-slate-700 block uppercase mb-1">Website URL</label>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={editOrgWebsite}
+                onChange={(e) => setEditOrgWebsite(e.target.value)}
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block uppercase mb-1">Instagram (@ atau URL)</label>
+              <input
+                type="text"
+                placeholder="@username atau URL"
+                value={editOrgInstagram}
+                onChange={(e) => setEditOrgInstagram(e.target.value)}
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block uppercase mb-1">Contact Email</label>
+              <input
+                type="email"
+                placeholder="organisasi@pnl.ac.id"
+                value={editOrgContactEmail}
+                onChange={(e) => setEditOrgContactEmail(e.target.value)}
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white text-xs"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

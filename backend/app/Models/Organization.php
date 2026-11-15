@@ -17,10 +17,19 @@ class Organization extends Model
         'category',
         'logo',
         'description',
+        'website',
+        'instagram',
+        'contact_email',
+        'divisions',
         'vision',
         'mission',
         'status',
         'recruitment_open',
+    ];
+
+    protected $casts = [
+        'divisions' => 'array',
+        'recruitment_open' => 'boolean',
     ];
 
     public function university()

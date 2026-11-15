@@ -314,6 +314,10 @@ export interface Organization {
   category?: string;
   logo?: string;
   description?: string;
+  website?: string;
+  instagram?: string;
+  contact_email?: string;
+  divisions?: { name: string; desc?: string; lead?: string }[];
   vision?: string;
   mission?: string;
   status: 'active' | 'inactive' | 'pending_approval';
