@@ -318,13 +318,13 @@ export const UserManagementPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          {isSuperAdmin && (
+          {isSuperAdmin && universities.length > 1 && (
             <select
               value={selectedUnivFilter}
               onChange={(e) => setSelectedUnivFilter(e.target.value)}
               className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
             >
-              <option value="">All Universities</option>
+              <option value="">Semua Kampus</option>
               {universities.map((u) => (
                 <option key={u.id} value={u.id}>{u.code} - {u.name}</option>
               ))}

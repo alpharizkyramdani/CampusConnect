@@ -48,7 +48,7 @@ export const DirectoryPage: React.FC = () => {
   const { activeRole, activeAssignment } = useAuth();
   const isSuperAdmin = activeRole === 'super_admin';
 
-  const [tab, setTab] = useState<'universities' | 'faculties' | 'lecturers' | 'requests'>('universities');
+  const [tab, setTab] = useState<'universities' | 'faculties' | 'lecturers' | 'requests'>('faculties');
   const [universities, setUniversities] = useState<University[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [lecturers, setLecturers] = useState<User[]>([]);
@@ -150,11 +150,11 @@ export const DirectoryPage: React.FC = () => {
 
       if (uRes.data.success) {
         setUniversities(uRes.data.data || []);
-        if (!selectedUnivForFaculties && uRes.data.data?.length > 0) {
-          setSelectedUnivForFaculties(uRes.data.data[0].id.toString());
-        }
-        if (!newLecUnivId && uRes.data.data?.length > 0) {
-          setNewLecUnivId(uRes.data.data[0].id.toString());
+        const pnl = uRes.data.data?.find((u: any) => u.code === 'PNL') || uRes.data.data?.[0];
+        if (pnl) {
+          setSelectedUnivForFaculties(pnl.id.toString());
+          setNewLecUnivId(pnl.id.toString());
+          fetchFacultiesForUniv(pnl.id.toString());
         }
       }
       if (fRes.data.success) setFaculties(fRes.data.data || []);
@@ -610,31 +610,33 @@ export const DirectoryPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2.5">
             <BookOpen className="w-6 h-6 text-brand-600" />
-            Campus Directory & Institutions
+            Jurusan & Direktori Kampus PNL
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Explore participating universities, academic faculties, departments, and public faculty profiles
+            Kelola data 6 Jurusan, Program Studi, Dosen & Peneliti Politeknik Negeri Lhokseumawe
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
           {isSuperAdmin && (
             <button
-              onClick={() => { setAddModalOpen(true); setMessage(null); }}
+              onClick={() => { setAddFacultyModalOpen(true); setMessage(null); }}
               className="px-4 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 shadow-xs flex items-center gap-2 transition-all"
             >
               <Plus className="w-4 h-4" />
-              Add Campus Directly
+              Tambah Jurusan PNL
             </button>
           )}
 
-          <Link
-            to="/register-university"
-            className="px-4 py-2.5 bg-white text-navy border border-borderMuted hover:bg-slate-50 rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-all"
-          >
-            <Building2 className="w-4 h-4 text-brand-600" />
-            Register New Institution
-          </Link>
+          {canManageLecturers && (
+            <button
+              onClick={() => { setAddLecturerModalOpen(true); setMessage(null); }}
+              className="px-4 py-2.5 bg-white text-navy border border-borderMuted hover:bg-slate-50 rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-all"
+            >
+              <Users2 className="w-4 h-4 text-brand-600" />
+              Tambah Dosen PNL
+            </button>
+          )}
         </div>
       </div>
 
@@ -668,17 +670,6 @@ export const DirectoryPage: React.FC = () => {
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-borderMuted pb-3">
         <button
-          onClick={() => setTab('universities')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-            tab === 'universities'
-              ? 'bg-brand-600 text-white shadow-xs'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Universities ({universities.length})
-        </button>
-
-        <button
           onClick={() => setTab('faculties')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
             tab === 'faculties'
@@ -686,7 +677,7 @@ export const DirectoryPage: React.FC = () => {
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          Faculties & Departments ({faculties.length})
+          Jurusan & Program Studi ({faculties.length})
         </button>
 
         <button
@@ -697,22 +688,19 @@ export const DirectoryPage: React.FC = () => {
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          Lecturers & Researchers ({lecturers.length})
+          Dosen & Peneliti ({lecturers.length})
         </button>
 
-        {isSuperAdmin && (
-          <button
-            onClick={() => setTab('requests')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              tab === 'requests'
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Onboarding Requests ({requests.filter((r) => r.status === 'pending').length} Pending)</span>
-          </button>
-        )}
+        <button
+          onClick={() => setTab('universities')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            tab === 'universities'
+              ? 'bg-brand-600 text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Profil Kampus PNL
+        </button>
       </div>
 
       {/* Tab 1: Universities Catalog */}
@@ -832,24 +820,13 @@ export const DirectoryPage: React.FC = () => {
       {/* Tab 2: Faculties & Departments */}
       {tab === 'faculties' && (
         <div className="space-y-6">
-          {/* Controls: Campus Selector & Add Faculty */}
+          {/* Controls: Campus Badge & Add Faculty */}
           <div className="bg-white p-4 rounded-2xl border border-borderMuted shadow-xs flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              <label className="text-xs font-bold text-slate-700 whitespace-nowrap">Select Campus:</label>
-              <select
-                value={selectedUnivForFaculties}
-                onChange={(e) => {
-                  setSelectedUnivForFaculties(e.target.value);
-                  fetchFacultiesForUniv(e.target.value);
-                }}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
-              >
-                {universities.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.code} - {u.name}
-                  </option>
-                ))}
-              </select>
+              <span className="px-3.5 py-2 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl text-xs font-bold flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-brand-600" />
+                Politeknik Negeri Lhokseumawe (PNL)
+              </span>
             </div>
 
             {isSuperAdmin && (
@@ -858,7 +835,7 @@ export const DirectoryPage: React.FC = () => {
                 className="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 shadow-xs flex items-center gap-2 transition-all self-start sm:self-auto shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Add Faculty</span>
+                <span>+ Tambah Jurusan PNL</span>
               </button>
             )}
           </div>

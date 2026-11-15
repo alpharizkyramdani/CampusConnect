@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       case 'super_admin':
         return [
           {
-            title: 'Platform Administration',
+            title: 'Administrasi Kampus PNL',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
               { label: 'Pusat Moderasi Konten', icon: ShieldAlert, path: '/moderation' },
@@ -55,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
               { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
               { label: 'Career & Internship Center', icon: Briefcase, path: '/career-center' },
-              { label: 'Universities', icon: Building, path: '/universities-manage' },
+              { label: 'Jurusan & Prodi PNL', icon: Building, path: '/universities-manage' },
               { label: 'User Directory', icon: UserCog, path: '/users' },
               { label: 'Platform Analytics', icon: BarChart3, path: '/analytics' },
               { label: 'System Audit Logs', icon: History, path: '/audit-logs' },
@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       case 'campus_admin':
         return [
           {
-            title: 'Campus Management',
+            title: 'Manajemen Kampus PNL',
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
               { label: 'Pusat Moderasi Konten', icon: ShieldAlert, path: '/moderation' },
@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               { label: 'Borrowing Records', icon: History, path: '/borrowings' },
               { label: 'Maintenance Reports', icon: Wrench, path: '/maintenance' },
               { label: 'Student Services', icon: FileCheck2, path: '/services' },
-              { label: 'Campus Directory', icon: BookOpen, path: '/directory' },
+              { label: 'Jurusan & Direktori PNL', icon: BookOpen, path: '/directory' },
               { label: 'Document Center', icon: FolderLock, path: '/documents' },
               { label: 'User Management', icon: UserCog, path: '/users' },
               { label: 'Campus Analytics', icon: BarChart3, path: '/analytics' },
@@ -215,10 +215,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             </div>
             <div>
               <div className="font-bold text-sm tracking-tight text-white flex items-center gap-1">
-                CampusConnect
+                PNLConnect
               </div>
               <div className="text-[10px] text-brand-300 font-medium tracking-wide">
-                MULTI-CAMPUS SYSTEM
+                PNL DIGITAL ECOSYSTEM
               </div>
             </div>
           </NavLink>

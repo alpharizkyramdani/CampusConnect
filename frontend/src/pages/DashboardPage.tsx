@@ -99,24 +99,24 @@ export const DashboardPage: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-navy rounded-3xl p-6 sm:p-8 text-white shadow-xl">
           <div className="flex items-center gap-2 text-xs font-bold text-blue-300 uppercase tracking-widest">
             <BarChart3 className="w-4 h-4 text-blue-400" />
-            Platform Strategic Intelligence & Analytics
+            Pusat Analitik & Intelijensi Kampus PNL
           </div>
           <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Cross-Campus Network Analytics
+            Analitik Terpadu Civitas Akademika PNL
           </h1>
           <p className="mt-1 text-slate-300 text-xs sm:text-sm max-w-2xl">
-            In-depth multi-university telemetry, organizational density, user demographic distribution, and activity benchmarking across all connected campuses.
+            Pemantauan aktivitas akademik dan ormawa, statistik 6 jurusan, peminjaman alat lab, serta tren sivitas akademika Politeknik Negeri Lhokseumawe.
           </p>
         </div>
 
         {/* Top KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <StatCard title="Participating Campuses" value={stats.total_universities || 0} icon={Building2} color="blue" />
-          <StatCard title="Total Network Users" value={stats.total_users || 0} icon={Users2} color="indigo" />
+          <StatCard title="Jurusan PNL" value="6 Jurusan" icon={Building2} color="blue" />
+          <StatCard title="Total Civitas PNL" value={stats.total_users || 0} icon={Users2} color="indigo" />
           <StatCard title="Campus Events" value={stats.total_events || 0} icon={CalendarCheck2} color="purple" />
-          <StatCard title="Active Borrowings" value={stats.total_borrowings || 0} icon={PackageCheck} color="rose" />
-          <StatCard title="Approved Campuses" value={stats.active_universities || 0} icon={CheckCircle} color="emerald" />
-          <StatCard title="Registration Pipeline" value={stats.pending_requests || 0} icon={Clock} color="amber" />
+          <StatCard title="Peminjaman Lab" value={stats.total_borrowings || 0} icon={PackageCheck} color="rose" />
+          <StatCard title="Program Studi" value="14 Prodi" icon={CheckCircle} color="emerald" />
+          <StatCard title="Layanan Aktif" value={stats.total_services || 12} icon={Clock} color="amber" />
         </div>
 
         {/* Analytical Charts */}
@@ -267,28 +267,28 @@ export const DashboardPage: React.FC = () => {
               Platform Governance Console
             </div>
             <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Welcome, Platform Super Administrator
+              Selamat Datang, Super Admin PNL
             </h1>
             <p className="mt-1 text-slate-300 text-xs sm:text-sm max-w-xl">
-              Pusat kendali operasional platform: provisioning universitas, tata kelola akun administrator, dan tinjauan permohonan onboarding.
+              Pusat kendali operasional Politeknik Negeri Lhokseumawe: tata kelola 6 jurusan, program studi, manajemen civitas, dan fasilitas kampus.
             </p>
           </div>
 
           {/* Quick Operational Shortcuts */}
           <div className="flex flex-wrap gap-2.5 shrink-0">
             <Link
-              to="/universities"
+              to="/universities-manage"
               className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
             >
               <Building2 className="w-3.5 h-3.5" />
-              <span>Kelola Kampus</span>
+              <span>Kelola Jurusan PNL</span>
             </Link>
             <Link
               to="/users"
               className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl backdrop-blur-xs transition-all flex items-center gap-1.5"
             >
               <Users2 className="w-3.5 h-3.5" />
-              <span>Kelola User</span>
+              <span>Kelola Civitas</span>
             </Link>
             <Link
               to="/analytics"
@@ -300,13 +300,12 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <StatCard title="Universities" value={stats.total_universities || 0} icon={Building2} color="blue" />
-          <StatCard title="Active Campuses" value={stats.active_universities || 0} icon={CheckCircle} color="emerald" />
-          <StatCard title="Pending Requests" value={stats.pending_requests || 0} icon={Clock} color="amber" />
-          <StatCard title="Total Users" value={stats.total_users || 0} icon={Users2} color="indigo" />
-          <StatCard title="Campus Events" value={stats.total_events || 0} icon={CalendarCheck2} color="purple" />
-          <StatCard title="Equipment Loans" value={stats.total_borrowings || 0} icon={PackageCheck} color="rose" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <StatCard title="Jurusan PNL" value="6 Jurusan" icon={Building2} color="blue" />
+          <StatCard title="Program Studi" value="14 Prodi" icon={CheckCircle} color="emerald" />
+          <StatCard title="Total Civitas PNL" value={stats.total_users || 0} icon={Users2} color="indigo" />
+          <StatCard title="Kegiatan & Event" value={stats.total_events || 0} icon={CalendarCheck2} color="purple" />
+          <StatCard title="Peminjaman Alat Lab" value={stats.total_borrowings || 0} icon={PackageCheck} color="rose" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -557,7 +556,7 @@ export const DashboardPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-brand-200 uppercase tracking-widest">
             <GraduationCap className="w-4 h-4 text-brand-300" />
-            {activeAssignment?.university?.name || 'CampusConnect Student Portal'}
+            {activeAssignment?.university?.name || 'Politeknik Negeri Lhokseumawe (PNL)'}
           </div>
           <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome back, {user?.name}!

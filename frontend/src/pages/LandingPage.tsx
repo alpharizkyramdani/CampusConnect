@@ -109,7 +109,7 @@ export const LandingPage: React.FC = () => {
         'Pendidikan vokasi perancangan mekanikal, permesinan presisi CNC, pengelasan bersertifikat internasional, dan perawatan mesin industri.',
       prodi: ['D4 Rekayasa Manufaktur', 'D3 Teknik Mesin', 'D3 Teknik Pengelasan'],
       stats: { prodi: '3 Prodi', labs: '7 Bengkel & Lab' },
-      image: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
     },
     {
       id: 42,
@@ -122,7 +122,7 @@ export const LandingPage: React.FC = () => {
         'Keahlian perancangan struktur bangunan gedung bertingkat, rekayasa jalan raya jembatan, mekanika tanah, dan manajemen proyek konstruksi.',
       prodi: ['D4 Manajemen Rekayasa Konstruksi', 'D3 Teknik Sipil', 'D4 Konstruksi Jalan & Jembatan'],
       stats: { prodi: '3 Prodi', labs: '5 Lab Uji Bahan' },
-      image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80',
     },
     {
       id: 45,
@@ -225,7 +225,6 @@ export const LandingPage: React.FC = () => {
             {/* Repeatable Staggered Item 1: Badge Pill */}
             <motion.div {...scrollAnim(0.1)} className="inline-flex">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/30 text-white text-xs font-bold mb-6 shadow-md">
-                <Sparkles className="w-4 h-4 text-cyan-300" />
                 <span>Next-Generation Higher Education Digital Ecosystem - Politeknik Negeri Lhokseumawe</span>
               </div>
             </motion.div>
@@ -414,7 +413,7 @@ export const LandingPage: React.FC = () => {
                     <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
                       {dept.description}
                     </p>
-                    
+
                     {/* Prodi Tags */}
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {dept.prodi.map((p, pIdx) => (
@@ -432,12 +431,9 @@ export const LandingPage: React.FC = () => {
                     <span>{dept.stats.prodi}</span>
                     <span className="text-slate-400">•</span>
                     <span>{dept.stats.labs}</span>
-                    <Link
-                      to="/login"
-                      className="text-brand-600 hover:text-brand-700 font-bold flex items-center gap-1"
-                    >
-                      Masuk <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100">
+                      Vokasi PNL
+                    </span>
                   </div>
                 </div>
               </motion.div>

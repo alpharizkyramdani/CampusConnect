@@ -19,8 +19,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     navigate('/login');
   };
 
-  const universityName = activeAssignment?.university?.name || 'Platform View';
-  const universityCode = activeAssignment?.university?.code;
+  const universityName = activeAssignment?.university?.name || 'Politeknik Negeri Lhokseumawe';
+  const universityCode = activeAssignment?.university?.code || 'PNL';
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-borderMuted h-16 px-4 sm:px-6 flex items-center justify-between shadow-xs">
