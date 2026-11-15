@@ -166,7 +166,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & DARK/BLACK TRANSPARENT OVERLAY */}
+      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & BALANCED DARK/BLACK TRANSPARENT OVERLAY */}
       <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-slate-950">
         {/* Layer 0: Real PNL Campus Image (Uploaded by User) */}
         <div
@@ -178,13 +178,12 @@ export const LandingPage: React.FC = () => {
           }}
         />
 
-        {/* Layer 1: Dark Cinematic / Black Transparent Layer Overlay */}
+        {/* Layer 1: Balanced Dark Transparent Layer Overlay (Photo clearly visible) */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.70)',
-            backgroundImage:
-              'linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, rgba(15, 23, 42, 0.85) 100%)',
+            background:
+              'linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(15, 23, 42, 0.48) 50%, rgba(15, 23, 42, 0.60) 100%)',
           }}
         />
 
@@ -193,7 +192,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex flex-col items-center">
             {/* Repeatable Staggered Item 1: Badge Pill */}
             <motion.div {...scrollAnim(0.1)} className="inline-flex">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold mb-6 shadow-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/30 text-white text-xs font-bold mb-6 shadow-md">
                 <Sparkles className="w-4 h-4 text-cyan-300 animate-pulse" />
                 <span>Next-Generation Higher Education Digital Ecosystem</span>
               </div>
@@ -202,7 +201,10 @@ export const LandingPage: React.FC = () => {
             {/* Repeatable Staggered Item 2: Main Headline */}
             <motion.h1
               {...scrollAnim(0.2)}
-              className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight max-w-4xl mx-auto leading-tight sm:leading-none drop-shadow-md"
+              className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight max-w-4xl mx-auto leading-tight sm:leading-none"
+              style={{
+                textShadow: '0 4px 20px rgba(0, 0, 0, 0.75), 0 2px 4px rgba(0, 0, 0, 0.9)',
+              }}
             >
               Everything Your Campus Needs, <span className="text-cyan-400">Connected.</span>
             </motion.h1>
@@ -210,7 +212,10 @@ export const LandingPage: React.FC = () => {
             {/* Repeatable Staggered Item 3: Description */}
             <motion.p
               {...scrollAnim(0.3)}
-              className="mt-6 text-lg sm:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-xs font-normal"
+              className="mt-6 text-lg sm:text-xl text-white max-w-2xl mx-auto leading-relaxed font-medium"
+              style={{
+                textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)',
+              }}
             >
               An integrated digital ecosystem that brings students, lecturers, organizations, and universities together in
               one unified platform.
