@@ -355,7 +355,7 @@ export const LandingPage: React.FC = () => {
               </Link>
             </motion.div>
 
-            {/* Repeatable Staggered Item 5: Quick Stats Grid (Solid Pure White Cards) */}
+            {/* Repeatable Staggered Item 5: Quick Stats Grid (Soft Semi-Transparent Glassmorphism) */}
             <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl w-full text-left">
               {[
                 { number: '6 Jurusan', desc: 'Pendidikan Vokasi Unggulan' },
@@ -366,11 +366,17 @@ export const LandingPage: React.FC = () => {
                 <motion.div
                   key={i}
                   {...scrollAnim(0.1 + i * 0.1)}
-                  style={{ backgroundColor: '#ffffff' }}
-                  className="p-5 rounded-2xl border border-slate-100 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255, 255, 255, 0.35)',
+                    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25)',
+                  }}
+                  className="p-5 rounded-2xl shadow-xl hover:bg-white/25 transition-all transform hover:-translate-y-1"
                 >
-                  <div className="text-3xl font-extrabold text-brand-600">{stat.number}</div>
-                  <div className="text-xs text-slate-600 font-semibold mt-1">{stat.desc}</div>
+                  <div className="text-3xl font-extrabold text-cyan-300 drop-shadow-sm">{stat.number}</div>
+                  <div className="text-xs text-white/90 font-medium mt-1 leading-snug">{stat.desc}</div>
                 </motion.div>
               ))}
             </div>
