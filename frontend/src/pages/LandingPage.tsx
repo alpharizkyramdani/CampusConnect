@@ -56,7 +56,7 @@ interface DepartmentData {
   badge: string;
   colorName: string;
   tabClass: string;
-  tabInactiveClass: string;
+  tabCornerClass: string;
   folderBorderClass: string;
   folderBgClass: string;
   iconBoxClass: string;
@@ -84,6 +84,7 @@ interface OrgCategory {
   subtitle: string;
   badge: string;
   tabClass: string;
+  tabCornerClass: string;
   folderBorderClass: string;
   folderBgClass: string;
   iconBoxClass: string;
@@ -94,11 +95,11 @@ interface OrgCategory {
 export const LandingPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Single Active Folder States (Tabs Selection at top)
-  const [activeDeptId, setActiveDeptId] = useState<number>(1);
+  // Selected Folder Modal States
+  const [selectedDeptForFolder, setSelectedDeptForFolder] = useState<DepartmentData | null>(null);
   const [prodiFilter, setProdiFilter] = useState<string>('all');
 
-  const [activeOrgCatId, setActiveOrgCatId] = useState<string>('eksekutif-legislatif');
+  const [selectedOrgCategoryForFolder, setSelectedOrgCategoryForFolder] = useState<OrgCategory | null>(null);
   const [searchOrg, setSearchOrg] = useState('');
 
   useEffect(() => {
@@ -107,6 +108,18 @@ export const LandingPage: React.FC = () => {
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Keyboard shortcut to close modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedDeptForFolder(null);
+        setSelectedOrgCategoryForFolder(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Smooth cubic-bezier transition curve
@@ -159,7 +172,7 @@ export const LandingPage: React.FC = () => {
   ];
 
   // ==========================================
-  // DATA 6 JURUSAN DENGAN WARNA SESUAI PERMINTAAN:
+  // DATA 6 JURUSAN RESMI PNL DENGAN WARNA KHAS:
   // 1. TIK: UNGU
   // 2. TEKNIK SIPIL: COKLAT
   // 3. TEKNIK MESIN: BIRU
@@ -175,13 +188,13 @@ export const LandingPage: React.FC = () => {
       code: 'TIK',
       badge: 'TIK-PNL',
       colorName: 'Ungu',
-      tabClass: 'bg-gradient-to-r from-purple-600 to-indigo-700 text-white shadow-lg shadow-purple-500/25',
-      tabInactiveClass: 'hover:text-purple-600 hover:border-purple-300',
-      folderBorderClass: 'border-purple-300',
+      tabClass: 'bg-gradient-to-r from-purple-600 to-indigo-700 text-white',
+      tabCornerClass: 'bg-indigo-700',
+      folderBorderClass: 'border-purple-300 hover:border-purple-500',
       folderBgClass: 'from-purple-50/70 via-white to-violet-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-purple-600 to-indigo-700',
+      iconBoxClass: 'bg-gradient-to-tr from-purple-600 to-indigo-700 text-white',
       headerAccent: 'text-purple-700',
-      icon: <Cpu className="w-6 h-6 text-white" />,
+      icon: <Cpu className="w-6 h-6" />,
       tagline: 'Rekayasa Perangkat Lunak, Jaringan Cerdas & Multimedia',
       description:
         'Pusat pendidikan vokasi keunggulan rekayasa sistem perangkat lunak, infrastruktur cloud & cyber security, kecerdasan buatan, dan konten multimedia interaktif.',
@@ -236,13 +249,13 @@ export const LandingPage: React.FC = () => {
       code: 'SIPIL',
       badge: 'SIPIL-PNL',
       colorName: 'Coklat',
-      tabClass: 'bg-gradient-to-r from-[#8B4513] to-[#5C2E0B] text-white shadow-lg shadow-amber-950/25',
-      tabInactiveClass: 'hover:text-[#8B4513] hover:border-amber-700/40',
-      folderBorderClass: 'border-amber-700/40',
+      tabClass: 'bg-gradient-to-r from-[#8B4513] to-[#5C2E0B] text-white',
+      tabCornerClass: 'bg-[#5C2E0B]',
+      folderBorderClass: 'border-amber-700/40 hover:border-amber-800',
       folderBgClass: 'from-[#FAF5F0] via-white to-[#FDF8F3]',
-      iconBoxClass: 'bg-gradient-to-tr from-[#8B4513] to-[#5C2E0B]',
+      iconBoxClass: 'bg-gradient-to-tr from-[#8B4513] to-[#5C2E0B] text-white',
       headerAccent: 'text-[#7A3E1D]',
-      icon: <Building className="w-6 h-6 text-white" />,
+      icon: <Building className="w-6 h-6" />,
       tagline: 'Infrastruktur Jalan Jembatan, Keairan & Gedung Tahan Gempa',
       description:
         'Keahlian perancangan dan manajemen struktur bangunan gedung bertingkat, rekayasa jalan raya jembatan, bendungan keairan, serta teknologi Building Information Modeling (BIM).',
@@ -307,13 +320,13 @@ export const LandingPage: React.FC = () => {
       code: 'MESIN',
       badge: 'MESIN-PNL',
       colorName: 'Biru',
-      tabClass: 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg shadow-blue-500/25',
-      tabInactiveClass: 'hover:text-blue-600 hover:border-blue-300',
-      folderBorderClass: 'border-blue-300',
+      tabClass: 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white',
+      tabCornerClass: 'bg-indigo-700',
+      folderBorderClass: 'border-blue-300 hover:border-blue-500',
       folderBgClass: 'from-blue-50/70 via-white to-indigo-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-blue-600 to-indigo-700',
+      iconBoxClass: 'bg-gradient-to-tr from-blue-600 to-indigo-700 text-white',
       headerAccent: 'text-blue-700',
-      icon: <Wrench className="w-6 h-6 text-white" />,
+      icon: <Wrench className="w-6 h-6" />,
       tagline: 'Manufaktur Presisi CNC, Pengelasan Bersertifikat & Konversi Energi',
       description:
         'Pendidikan vokasi mekanikal terkemuka: permesinan presisi CNC, pengelasan bersertifikasi internasional (AWS/CSWIP), fabrikasi logam, dan otomasi perawatan mesin industri.',
@@ -368,13 +381,13 @@ export const LandingPage: React.FC = () => {
       code: 'KIMIA',
       badge: 'KIMIA-PNL',
       colorName: 'Hijau',
-      tabClass: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg shadow-emerald-500/25',
-      tabInactiveClass: 'hover:text-emerald-600 hover:border-emerald-300',
-      folderBorderClass: 'border-emerald-300',
+      tabClass: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white',
+      tabCornerClass: 'bg-teal-700',
+      folderBorderClass: 'border-emerald-300 hover:border-emerald-500',
       folderBgClass: 'from-emerald-50/70 via-white to-teal-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-emerald-600 to-teal-700',
+      iconBoxClass: 'bg-gradient-to-tr from-emerald-600 to-teal-700 text-white',
       headerAccent: 'text-emerald-700',
-      icon: <FlaskConical className="w-6 h-6 text-white" />,
+      icon: <FlaskConical className="w-6 h-6" />,
       tagline: 'Rekayasa Kimia Industri, Pengolahan Migas & Bioenergi',
       description:
         'Pusat keunggulan rekayasa proses kimia, kilang pengolahan minyak dan gas bumi, bioteknologi terapan, pengelolaan limbah ramah lingkungan, dan K3 proses industri.',
@@ -419,13 +432,13 @@ export const LandingPage: React.FC = () => {
       code: 'ELEKTRO',
       badge: 'ELEKTRO-PNL',
       colorName: 'Merah',
-      tabClass: 'bg-gradient-to-r from-red-600 to-rose-700 text-white shadow-lg shadow-red-500/25',
-      tabInactiveClass: 'hover:text-red-600 hover:border-red-300',
-      folderBorderClass: 'border-red-300',
+      tabClass: 'bg-gradient-to-r from-red-600 to-rose-700 text-white',
+      tabCornerClass: 'bg-rose-700',
+      folderBorderClass: 'border-red-300 hover:border-red-500',
       folderBgClass: 'from-red-50/70 via-white to-rose-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-red-600 to-rose-700',
+      iconBoxClass: 'bg-gradient-to-tr from-red-600 to-rose-700 text-white',
       headerAccent: 'text-red-700',
-      icon: <Zap className="w-6 h-6 text-white" />,
+      icon: <Zap className="w-6 h-6" />,
       tagline: 'Pembangkit Energi, Jaringan Telekomunikasi & Otomasi Mekatronika',
       description:
         'Membentuk tenaga ahli terapan dalam sistem transmisi pembangkit energi listrik, jaringan telekomunikasi pita lebar 5G, instrumentasi kendali PLC SCADA, dan robotika mekatronika.',
@@ -510,13 +523,13 @@ export const LandingPage: React.FC = () => {
       code: 'BISNIS',
       badge: 'BISNIS-PNL',
       colorName: 'Orange',
-      tabClass: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/25',
-      tabInactiveClass: 'hover:text-orange-600 hover:border-orange-300',
-      folderBorderClass: 'border-orange-300',
+      tabClass: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white',
+      tabCornerClass: 'bg-amber-600',
+      folderBorderClass: 'border-orange-300 hover:border-orange-500',
       folderBgClass: 'from-orange-50/70 via-white to-amber-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-orange-500 to-amber-600',
+      iconBoxClass: 'bg-gradient-to-tr from-orange-500 to-amber-600 text-white',
       headerAccent: 'text-orange-700',
-      icon: <Briefcase className="w-6 h-6 text-white" />,
+      icon: <Briefcase className="w-6 h-6" />,
       tagline: 'Akuntansi Syariah, Keuangan Publik & Bisnis Digital Terapan',
       description:
         'Pendidikan terapan akuntansi sektor publik, perbankan syariah modern, manajemen investasi, perpajakan, dan administrasi bisnis terdigitalisasi.',
@@ -586,9 +599,6 @@ export const LandingPage: React.FC = () => {
     },
   ];
 
-  // Active Department Object
-  const currentDept = pnlDepartments.find((d) => d.id === activeDeptId) || pnlDepartments[0];
-
   // ==========================================
   // DATA 3 KATEGORI ORGANISASI MAHASISWA PNL
   // ==========================================
@@ -599,11 +609,12 @@ export const LandingPage: React.FC = () => {
       shortTitle: 'Eksekutif & Legislatif',
       subtitle: 'Pemerintahan Mahasiswa Tingkat Politeknik Negeri Lhokseumawe',
       badge: 'Pemerintahan Kampus',
-      tabClass: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25',
-      folderBorderClass: 'border-amber-300',
+      tabClass: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white',
+      tabCornerClass: 'bg-orange-600',
+      folderBorderClass: 'border-amber-300 hover:border-amber-500',
       folderBgClass: 'from-amber-50/70 via-white to-orange-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-amber-500 to-orange-600',
-      icon: <Landmark className="w-6 h-6 text-white" />,
+      iconBoxClass: 'bg-gradient-to-tr from-amber-500 to-orange-600 text-white',
+      icon: <Landmark className="w-6 h-6" />,
       items: [
         {
           name: 'Dewan Perwakilan Mahasiswa (DPM PNL)',
@@ -628,14 +639,15 @@ export const LandingPage: React.FC = () => {
     {
       id: 'himpunan-jurusan',
       title: 'Himpunan Mahasiswa Jurusan (HMJ)',
-      shortTitle: '6 Himpunan Jurusan (HMJ)',
+      shortTitle: 'Himpunan Jurusan (HMJ)',
       subtitle: 'Wadah Aspirasi, Soliditas & Keilmuan di Tingkat Jurusan',
       badge: '6 Himpunan Jurusan',
-      tabClass: 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg shadow-blue-500/25',
-      folderBorderClass: 'border-blue-300',
+      tabClass: 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white',
+      tabCornerClass: 'bg-indigo-700',
+      folderBorderClass: 'border-blue-300 hover:border-blue-500',
       folderBgClass: 'from-blue-50/70 via-white to-indigo-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-blue-600 to-indigo-700',
-      icon: <Layers className="w-6 h-6 text-white" />,
+      iconBoxClass: 'bg-gradient-to-tr from-blue-600 to-indigo-700 text-white',
+      icon: <Layers className="w-6 h-6" />,
       items: [
         {
           name: 'HIMATIK (Himpunan Mahasiswa Teknologi Informasi dan Komputer)',
@@ -696,14 +708,15 @@ export const LandingPage: React.FC = () => {
     {
       id: 'unit-kegiatan-mahasiswa',
       title: 'Unit Kegiatan Mahasiswa (UKM)',
-      shortTitle: '7 Klaster UKM Minat & Bakat',
+      shortTitle: 'Unit Kegiatan Mahasiswa (UKM)',
       subtitle: 'Pengembangan Minat, Bakat, Riset, Seni & Olahraga Lintas Jurusan',
       badge: '7 Klaster UKM',
-      tabClass: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg shadow-emerald-500/25',
-      folderBorderClass: 'border-emerald-300',
+      tabClass: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white',
+      tabCornerClass: 'bg-teal-700',
+      folderBorderClass: 'border-emerald-300 hover:border-emerald-500',
       folderBgClass: 'from-emerald-50/70 via-white to-teal-50/30',
-      iconBoxClass: 'bg-gradient-to-tr from-emerald-600 to-teal-700',
-      icon: <Trophy className="w-6 h-6 text-white" />,
+      iconBoxClass: 'bg-gradient-to-tr from-emerald-600 to-teal-700 text-white',
+      icon: <Trophy className="w-6 h-6" />,
       items: [
         {
           name: 'POLICY (Polytechnic Linux Community)',
@@ -771,8 +784,6 @@ export const LandingPage: React.FC = () => {
       ],
     },
   ];
-
-  const currentOrgCat = pnlOrgCategories.find((c) => c.id === activeOrgCatId) || pnlOrgCategories[0];
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-brand-500 selection:text-white">
@@ -894,7 +905,7 @@ export const LandingPage: React.FC = () => {
 
       {/* 1. HERO SECTION WITH REAL PNL CAMPUS VIDEO & BALANCED DARK/BLACK TRANSPARENT OVERLAY */}
       <section className="relative overflow-hidden pt-28 pb-24 sm:pt-32 lg:pt-36 lg:pb-36 bg-slate-950">
-        {/* Layer 0: Real PNL Campus Video (Uploaded by User) */}
+        {/* Layer 0: Real PNL Campus Video */}
         <video
           autoPlay
           loop
@@ -965,7 +976,7 @@ export const LandingPage: React.FC = () => {
                 className="px-8 py-3.5 hover:bg-white/20 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
               >
                 <FolderOpen className="w-5 h-5" />
-                Jelajahi Folder 6 Jurusan
+                Jelajahi 6 Jurusan & 29 Prodi
               </a>
             </motion.div>
 
@@ -1057,7 +1068,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. JURUSAN & 29 PRODI: SINGLE OPEN FOLDER WITH SCROLLABLE TABS AT TOP */}
+      {/* 3. JURUSAN & 29 PRODI: 6 PHYSICAL FOLDER CARDS (TIK: Ungu, Sipil: Coklat, Mesin: Biru, Kimia: Hijau, Elektro: Merah, Bisnis: Orange) */}
       {/* ========================================================================= */}
       <section
         id="jurusan"
@@ -1067,289 +1078,141 @@ export const LandingPage: React.FC = () => {
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <motion.h2
-              {...scrollAnim(0.1)}
-              className="text-xs font-bold text-brand-600 uppercase tracking-widest flex items-center justify-center gap-1.5"
-            >
-              <Folder className="w-4 h-4 text-brand-600" />
-              <span>Arsip 6 Jurusan & 29 Program Studi Unggulan PNL</span>
-            </motion.h2>
-            <motion.p
-              {...scrollAnim(0.2)}
-              className="mt-2 text-3xl sm:text-4xl font-extrabold text-navy"
-            >
-              Folder Program Studi Politeknik Negeri Lhokseumawe
-            </motion.p>
-            <motion.p
-              {...scrollAnim(0.25)}
-              className="mt-2 text-sm text-slate-600"
-            >
-              Geser atau pilih <strong>tab map jurusan di bagian atas</strong> untuk membuka berkas program studi, kurikulum vokasi, dan prospek karir lulusan.
-            </motion.p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-14">
+            <div>
+              <motion.h2
+                {...scrollAnim(0.1)}
+                className="text-xs font-bold text-brand-600 uppercase tracking-widest flex items-center gap-1.5"
+              >
+                <Folder className="w-4 h-4 text-brand-600" />
+                <span>Arsip 6 Jurusan & 29 Program Studi Unggulan PNL</span>
+              </motion.h2>
+              <motion.p
+                {...scrollAnim(0.2)}
+                className="mt-2 text-3xl sm:text-4xl font-extrabold text-navy"
+              >
+                Folder Jurusan & Program Studi
+              </motion.p>
+              <motion.p
+                {...scrollAnim(0.25)}
+                className="mt-2 text-sm text-slate-600 max-w-2xl"
+              >
+                Tekan pada <strong>map folder jurusan</strong> di bawah untuk membuka daftar program studi, kurikulum vokasi, dan prospek karir lulusan.
+              </motion.p>
+            </div>
+            <motion.div {...scrollAnim(0.3)} className="mt-4 md:mt-0">
+              <span className="text-xs font-bold text-slate-600 bg-white px-3.5 py-2 rounded-2xl border border-slate-200/90 shadow-2xs inline-flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-brand-600 animate-pulse" />
+                <span>Tekan folder untuk membuka berkas</span>
+              </span>
+            </motion.div>
           </div>
 
-          {/* ===================================================================== */}
-          {/* THE SINGLE FOLDER STAGE: TOP SCROLLABLE TABS + OPEN FOLDER INTERIOR */}
-          {/* ===================================================================== */}
-          <div className="relative max-w-5xl mx-auto pt-4">
-            {/* 1. HORIZONTAL SCROLLABLE FOLDER TABS BAR AT TOP */}
-            <div className="relative flex items-end gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none px-2 sm:px-4 pb-0 z-20">
-              {pnlDepartments.map((dept) => {
-                const isActive = activeDeptId === dept.id;
-                return (
-                  <button
-                    key={dept.id}
-                    onClick={() => {
-                      setActiveDeptId(dept.id);
-                      setProdiFilter('all');
-                    }}
-                    className={`shrink-0 transition-all duration-300 font-extrabold text-xs sm:text-sm flex items-center gap-2 px-4 sm:px-6 py-3 rounded-t-2xl border-t-2 border-x-2 select-none cursor-pointer ${
-                      isActive
-                        ? `${dept.tabClass} border-transparent translate-y-[2px] z-30 scale-100 sm:scale-105`
-                        : `bg-white hover:bg-slate-50 text-slate-600 border-slate-200/90 z-10 ${dept.tabInactiveClass}`
-                    }`}
-                  >
-                    <Folder className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                    <span className="font-mono">{dept.code}</span>
-                    <span className="hidden md:inline font-sans font-bold text-xs opacity-90">
-                      • {dept.shortName}
-                    </span>
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {dept.programs.length}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* 2. THE MAIN OPEN FOLDER BODY */}
-            <div
-              className={`relative z-20 rounded-3xl overflow-hidden shadow-2xl border-2 ${currentDept.folderBorderClass} bg-gradient-to-b ${currentDept.folderBgClass} transition-colors duration-500`}
-            >
-              {/* Folder Top Rim Highlight */}
-              <div className="h-2 w-full bg-white/70" />
-
-              {/* Department Header Inside the Open Folder */}
-              <div className="p-6 sm:p-8 border-b border-slate-200/80 bg-white/70 backdrop-blur-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-                <div className="flex items-start gap-4">
+          {/* 6 JURUSAN FOLDER CARDS GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {pnlDepartments.map((dept, idx) => (
+              <motion.div
+                key={dept.id}
+                {...scrollAnim(0.1 + (idx % 3) * 0.1)}
+                onClick={() => {
+                  setSelectedDeptForFolder(dept);
+                  setProdiFilter('all');
+                }}
+                className="relative cursor-pointer group select-none pt-8 focus:outline-hidden"
+              >
+                {/* 1. TOP FOLDER TAB (Lekukan Map di Bagian Atas Kiri) */}
+                <div className="absolute top-0 left-4 z-20 flex items-end">
                   <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${currentDept.iconBoxClass} shrink-0`}
+                    className={`h-9 px-5 rounded-t-2xl font-black text-xs tracking-wider flex items-center gap-2 shadow-sm ${dept.tabClass}`}
                   >
-                    {currentDept.icon}
+                    <Folder className="w-3.5 h-3.5 text-white" />
+                    <span className="text-white drop-shadow-xs font-mono">{dept.code}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                    <span className="text-white/90 text-[10px] font-sans font-bold">{dept.badge}</span>
                   </div>
+                  {/* Folder Tab Corner Angle */}
+                  <div
+                    className={`w-5 h-9 ${dept.tabCornerClass} [clip-path:polygon(0_0,0_100%,100%_100%)] opacity-90`}
+                  />
+                </div>
+
+                {/* 2. PEEKING DOCUMENT PAPERS (Kertas Berkas Mengintip dari Belakang Map) */}
+                <div className="absolute inset-x-8 top-3 h-28 bg-slate-200/90 rounded-2xl rotate-[-2.5deg] transition-all duration-300 group-hover:-translate-y-3.5 group-hover:rotate-[-4deg] shadow-xs" />
+                <div className="absolute inset-x-6 top-4 h-28 bg-slate-100 rounded-2xl rotate-[2deg] transition-all duration-300 group-hover:-translate-y-4 group-hover:rotate-[3.5deg] shadow-xs border-t border-slate-300/60" />
+                <div className="absolute inset-x-4 top-5 h-28 bg-white rounded-2xl transition-all duration-300 group-hover:-translate-y-5 shadow-md border-t-2 border-brand-500/40 p-3 px-5 flex items-start justify-between">
+                  <span className="text-[11px] font-extrabold text-brand-600 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5" />
+                    {dept.programs.length} Berkas Program Studi
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                    {dept.labsCount}
+                  </span>
+                </div>
+
+                {/* 3. FOLDER FRONT POCKET / COVER */}
+                <div
+                  className={`relative z-20 rounded-3xl rounded-tl-none overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 border-2 ${dept.folderBorderClass} bg-gradient-to-b ${dept.folderBgClass} p-6 sm:p-7 flex flex-col justify-between min-h-[300px]`}
+                >
+                  <div className="absolute top-0 inset-x-0 h-1.5 bg-white/60" />
+
                   <div>
-                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <span className="px-3 py-0.5 rounded-md text-[11px] font-black font-mono bg-navy text-white uppercase">
-                        {currentDept.badge}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs">
-                        Warna: {currentDept.colorName}
-                      </span>
-                      <span className="text-xs text-slate-500 font-bold">
-                        • {currentDept.labsCount}
-                      </span>
+                    {/* Folder Header */}
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md ${dept.iconBoxClass}`}>
+                        {dept.icon}
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-block text-[10px] font-extrabold font-mono tracking-wider uppercase text-slate-700 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full border border-slate-200/90 shadow-2xs">
+                          {dept.programs.length} PRODI TERDAFTAR
+                        </span>
+                      </div>
                     </div>
 
-                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      {currentDept.name}
+                    <h3 className="text-xl font-black text-slate-900 group-hover:text-brand-600 transition-colors leading-snug">
+                      {dept.name}
                     </h3>
-                    <p className={`text-xs sm:text-sm font-bold ${currentDept.headerAccent} mt-0.5`}>
-                      {currentDept.tagline}
+
+                    <p className={`text-xs font-bold ${dept.headerAccent} mt-1 line-clamp-1`}>
+                      {dept.tagline}
                     </p>
-                    <p className="text-xs text-slate-600 mt-2 max-w-3xl leading-relaxed">
-                      {currentDept.description}
+
+                    <p className="text-xs text-slate-600 mt-2.5 line-clamp-2 leading-relaxed">
+                      {dept.description}
                     </p>
+
+                    {/* Program Studi Pills Preview */}
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {dept.programs.map((prog, pIdx) => (
+                        <span
+                          key={pIdx}
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/95 text-slate-700 border border-slate-200 shadow-2xs"
+                        >
+                          <span className="font-extrabold mr-1 text-slate-900">{prog.level}</span>
+                          {prog.name.replace(/^(D3|D4|S2)\s*(\(Sarjana Terapan\)|\(Magister Terapan\))?\s*/i, '')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Folder Bottom Indicator - NO "Buka Berkas" BUTTON */}
+                  <div className="mt-6 pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
+                    <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                      <FolderOpen className="w-4 h-4 text-brand-600" />
+                      <span>{dept.labsCount}</span>
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 group-hover:text-brand-600 transition-colors">
+                      Klik untuk buka prodi →
+                    </span>
                   </div>
                 </div>
-
-                {/* Level Filter Tabs Inside the Active Folder */}
-                <div className="flex flex-wrap sm:flex-nowrap gap-1.5 self-start md:self-center shrink-0 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs">
-                  <button
-                    onClick={() => setProdiFilter('all')}
-                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                      prodiFilter === 'all'
-                        ? 'bg-brand-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-brand-600'
-                    }`}
-                  >
-                    Semua ({currentDept.programs.length})
-                  </button>
-                  <button
-                    onClick={() => setProdiFilter('D4')}
-                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                      prodiFilter === 'D4'
-                        ? 'bg-brand-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-brand-600'
-                    }`}
-                  >
-                    D4 Sarjana Terapan
-                  </button>
-                  <button
-                    onClick={() => setProdiFilter('D3')}
-                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                      prodiFilter === 'D3'
-                        ? 'bg-brand-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-brand-600'
-                    }`}
-                  >
-                    D3 Ahli Madya
-                  </button>
-                  {currentDept.programs.some((p) => p.level === 'S2') && (
-                    <button
-                      onClick={() => setProdiFilter('S2')}
-                      className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                        prodiFilter === 'S2'
-                          ? 'bg-brand-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:text-brand-600'
-                      }`}
-                    >
-                      S2 Magister
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* 3. PROGRAM STUDI DOSSIER SHEETS (EMERGING OUT OF FOLDER ANIMATION) */}
-              <div className="p-6 sm:p-8">
-                <div className="mb-4 flex items-center justify-between text-xs font-bold text-slate-500">
-                  <span className="flex items-center gap-1.5 text-brand-600 font-extrabold">
-                    <FileText className="w-4 h-4" />
-                    Berkas Program Studi Aktif di Map {currentDept.shortName}:
-                  </span>
-                  <span>
-                    {
-                      currentDept.programs.filter((p) => prodiFilter === 'all' || p.level === prodiFilter)
-                        .length
-                    }{' '}
-                    Berkas Ditampilkan
-                  </span>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentDept.id + '-' + prodiFilter}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-5"
-                  >
-                    {currentDept.programs
-                      .filter((p) => (prodiFilter === 'all' ? true : p.level === prodiFilter))
-                      .map((prog, idx) => (
-                        <motion.div
-                          key={prog.name}
-                          initial={{ y: 80, opacity: 0, scale: 0.94, rotateX: 12 }}
-                          animate={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 280,
-                            damping: 24,
-                            delay: idx * 0.07, // Staggered emerging out of folder
-                          }}
-                          style={{ transformPerspective: 1000 }}
-                          className="relative bg-white rounded-2xl border-2 border-slate-200/90 hover:border-brand-400 p-6 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between"
-                        >
-                          <div>
-                            {/* Sheet Header */}
-                            <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-dashed border-slate-200">
-                              <span className="text-[10px] font-mono font-extrabold tracking-wider uppercase text-slate-400 flex items-center gap-1.5">
-                                <FileText className="w-3.5 h-3.5 text-brand-500" />
-                                BERKAS RESMI #{String(idx + 1).padStart(2, '0')}
-                              </span>
-                              <span
-                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-mono border ${
-                                  prog.level === 'D4'
-                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                    : prog.level === 'S2'
-                                    ? 'bg-purple-50 text-purple-700 border-purple-200'
-                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                }`}
-                              >
-                                {prog.level} • {prog.levelLabel}
-                              </span>
-                            </div>
-
-                            <h4 className="text-lg font-black text-slate-900 leading-snug">
-                              {prog.name}
-                            </h4>
-
-                            <div className="flex items-center gap-3 my-2 text-xs font-bold text-slate-500">
-                              <span className="flex items-center gap-1 text-brand-600">
-                                <CalendarCheck2 className="w-3.5 h-3.5" />
-                                {prog.duration}
-                              </span>
-                              <span>•</span>
-                              <span className="flex items-center gap-1 text-emerald-600">
-                                <Award className="w-3.5 h-3.5" />
-                                {prog.sks}
-                              </span>
-                            </div>
-
-                            <p className="text-xs text-slate-600 leading-relaxed mt-2.5">
-                              {prog.description}
-                            </p>
-
-                            {/* Prospek Karir Utama */}
-                            <div className="mt-4 pt-3 border-t border-slate-100">
-                              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5">
-                                Profil & Prospek Karir Lulusan:
-                              </span>
-                              <div className="flex flex-wrap gap-1.5">
-                                {prog.career.map((c, cIdx) => (
-                                  <span
-                                    key={cIdx}
-                                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200"
-                                  >
-                                    {c}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Lab Praktikum & Akreditasi (NO BUKA BERKAS BUTTON) */}
-                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                            <span className="font-semibold text-slate-600 flex items-center gap-1.5 truncate max-w-[240px]">
-                              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                              {prog.lab}
-                            </span>
-                            <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 shrink-0">
-                              Akreditasi Unggul PNL
-                            </span>
-                          </div>
-                        </motion.div>
-                      ))}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Bottom Folder Rim & Action */}
-              <div className="p-4 px-6 sm:px-8 bg-slate-900 border-t border-slate-800 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span className="text-slate-300 text-[11px] font-medium flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  Semua program studi terdaftar resmi pada PDDIKTI & terstandar akreditasi LAM-PT / BAN-PT.
-                </span>
-                <Link
-                  to="/register?type=student"
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition-colors shadow-xs flex items-center gap-1.5 shrink-0"
-                >
-                  Daftar Mahasiswa Baru
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. ORGANISASI MAHASISWA PNL: SINGLE OPEN FOLDER WITH TOP TABS */}
+      {/* 4. ORGANISASI MAHASISWA PNL (3 CATEGORIES - PHYSICAL FOLDERS) */}
       {/* ========================================================================= */}
       <section
         id="organisasi"
@@ -1359,7 +1222,7 @@ export const LandingPage: React.FC = () => {
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2
               {...scrollAnim(0.1)}
               className="text-xs font-bold text-brand-600 uppercase tracking-widest flex items-center justify-center gap-1.5"
@@ -1377,74 +1240,420 @@ export const LandingPage: React.FC = () => {
               {...scrollAnim(0.3)}
               className="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed"
             >
-              Pilih tab di atas untuk melihat berkas ormawa: <strong>Lembaga Eksekutif & Legislatif Kampus</strong>, <strong>Himpunan Mahasiswa Jurusan (HMJ)</strong>, dan <strong>Unit Kegiatan Mahasiswa (UKM)</strong>.
+              Terbagi dalam 3 pilar: <strong>Lembaga Eksekutif & Legislatif Kampus</strong>, <strong>Himpunan Mahasiswa Jurusan (HMJ)</strong>, dan <strong>Unit Kegiatan Mahasiswa (UKM)</strong>. Tekan folder untuk membuka berkas ormawa di dalamnya.
             </motion.p>
           </div>
 
-          <div className="relative max-w-5xl mx-auto pt-4">
-            {/* 1. HORIZONTAL TABS AT TOP */}
-            <div className="relative flex items-end gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none px-2 sm:px-4 pb-0 z-20">
-              {pnlOrgCategories.map((cat) => {
-                const isActive = activeOrgCatId === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      setActiveOrgCatId(cat.id);
-                      setSearchOrg('');
-                    }}
-                    className={`shrink-0 transition-all duration-300 font-extrabold text-xs sm:text-sm flex items-center gap-2 px-4 sm:px-6 py-3 rounded-t-2xl border-t-2 border-x-2 select-none cursor-pointer ${
-                      isActive
-                        ? `${cat.tabClass} border-transparent translate-y-[2px] z-30 scale-100 sm:scale-105`
-                        : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200/90 z-10'
-                    }`}
-                  >
-                    <Folder className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                    <span>{cat.shortTitle}</span>
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {cat.items.length}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* 2. MAIN OPEN FOLDER BODY FOR ORMAWA */}
-            <div
-              className={`relative z-20 rounded-3xl overflow-hidden shadow-2xl border-2 ${currentOrgCat.folderBorderClass} bg-gradient-to-b ${currentOrgCat.folderBgClass} transition-colors duration-500`}
-            >
-              <div className="h-2 w-full bg-white/70" />
-
-              <div className="p-6 sm:p-8 border-b border-slate-200/80 bg-white/70 backdrop-blur-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-                <div className="flex items-start gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {pnlOrgCategories.map((cat, idx) => (
+              <motion.div
+                key={cat.id}
+                {...scrollAnim(0.1 + idx * 0.15)}
+                onClick={() => {
+                  setSelectedOrgCategoryForFolder(cat);
+                  setSearchOrg('');
+                }}
+                className="relative cursor-pointer group select-none pt-8 focus:outline-hidden"
+              >
+                {/* 1. TOP FOLDER TAB */}
+                <div className="absolute top-0 left-4 z-20 flex items-end">
                   <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${currentOrgCat.iconBoxClass} shrink-0`}
+                    className={`h-9 px-5 rounded-t-2xl font-black text-xs tracking-wider flex items-center gap-2 shadow-sm ${cat.tabClass}`}
                   >
-                    {currentOrgCat.icon}
+                    <Folder className="w-3.5 h-3.5 text-white" />
+                    <span className="text-white drop-shadow-xs font-mono">FOLDER #{idx + 1}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                    <span className="text-white/90 text-[10px] font-sans font-bold">{cat.badge}</span>
+                  </div>
+                  <div
+                    className={`w-5 h-9 ${cat.tabCornerClass} [clip-path:polygon(0_0,0_100%,100%_100%)] opacity-90`}
+                  />
+                </div>
+
+                {/* 2. PEEKING DOCUMENT PAPERS */}
+                <div className="absolute inset-x-8 top-3 h-28 bg-slate-200/90 rounded-2xl rotate-[-2.5deg] transition-all duration-300 group-hover:-translate-y-3.5 group-hover:rotate-[-4deg] shadow-xs" />
+                <div className="absolute inset-x-6 top-4 h-28 bg-slate-100 rounded-2xl rotate-[2deg] transition-all duration-300 group-hover:-translate-y-4 group-hover:rotate-[3.5deg] shadow-xs border-t border-slate-300/60" />
+                <div className="absolute inset-x-4 top-5 h-28 bg-white rounded-2xl transition-all duration-300 group-hover:-translate-y-5 shadow-md border-t-2 border-brand-500/40 p-3 px-5 flex items-start justify-between">
+                  <span className="text-[11px] font-extrabold text-brand-600 flex items-center gap-1.5">
+                    <Users2 className="w-3.5 h-3.5" />
+                    {cat.items.length} Berkas Unit Organisasi
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                    Resmi PNL
+                  </span>
+                </div>
+
+                {/* 3. FOLDER MAIN COVER */}
+                <div
+                  className={`relative z-20 rounded-3xl rounded-tl-none overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 border-2 ${cat.folderBorderClass} bg-gradient-to-b ${cat.folderBgClass} p-6 sm:p-7 flex flex-col justify-between min-h-[300px]`}
+                >
+                  <div className="absolute top-0 inset-x-0 h-1.5 bg-white/60" />
+
+                  <div>
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md ${cat.iconBoxClass}`}>
+                        {cat.icon}
+                      </div>
+                      <span className="inline-block text-[10px] font-extrabold font-mono tracking-wider uppercase text-slate-700 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full border border-slate-200/90 shadow-2xs">
+                        {cat.items.length} ORGANISASI
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-black text-slate-900 group-hover:text-brand-600 transition-colors leading-snug">
+                      {cat.title}
+                    </h3>
+
+                    <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                      {cat.subtitle}
+                    </p>
+
+                    {/* Preview list */}
+                    <div className="mt-4 space-y-2">
+                      {cat.items.slice(0, 3).map((item, iIdx) => (
+                        <div
+                          key={iIdx}
+                          className="p-2.5 bg-white/90 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs shadow-2xs"
+                        >
+                          <span className="font-extrabold text-slate-900">{item.abbr}</span>
+                          <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">
+                            {item.scope}
+                          </span>
+                        </div>
+                      ))}
+                      {cat.items.length > 3 && (
+                        <p className="text-[11px] font-bold text-brand-600 text-center pt-1">
+                          +{cat.items.length - 3} organisasi lainnya di folder ini
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Folder Bottom Indicator - NO "Buka Berkas" BUTTON */}
+                  <div className="mt-6 pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
+                    <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                      <FolderOpen className="w-4 h-4 text-brand-600" />
+                      <span>Arsip Ormawa</span>
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 group-hover:text-brand-600 transition-colors">
+                      Klik untuk buka berkas →
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* MODAL 1: PRODI VIEW WITH SIMPLE, CLEAN & SMOOTH ANIMATION */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {selectedDeptForFolder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            {/* Simple Backdrop Fade */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setSelectedDeptForFolder(null)}
+              className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
+            />
+
+            {/* Simple Clean Modal Entrance (Scale + Fade, Smooth Ease) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-auto text-left flex flex-col max-h-[90vh]"
+            >
+              {/* Header with Department Info */}
+              <div className="bg-slate-900 px-5 sm:px-7 py-4 text-white border-b border-slate-800 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-black shadow-md ${selectedDeptForFolder.tabClass}`}
+                  >
+                    <FolderOpen className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <span className="px-3 py-0.5 rounded-md text-[11px] font-black font-mono bg-navy text-white uppercase inline-block mb-1">
-                      {currentOrgCat.badge}
-                    </span>
-                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      {currentOrgCat.title}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-black tracking-widest uppercase text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                        FOLDER ARSIP PNL
+                      </span>
+                      <span className="text-xs font-mono font-bold text-slate-400">
+                        {selectedDeptForFolder.badge}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-white tracking-tight mt-0.5">
+                      {selectedDeptForFolder.name}
                     </h3>
-                    <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                      {currentOrgCat.subtitle}
-                    </p>
                   </div>
                 </div>
 
-                {/* Live Search Input */}
-                <div className="relative w-full md:w-72 shrink-0">
+                <button
+                  onClick={() => setSelectedDeptForFolder(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                  title="Tutup (Esc)"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Quick Switcher Tabs at top of the modal */}
+              <div className="bg-slate-800 px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto border-b border-slate-700 scrollbar-none">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+                  <Folder className="w-3.5 h-3.5" /> Ganti Folder:
+                </span>
+                {pnlDepartments.map((d) => (
+                  <button
+                    key={d.id}
+                    onClick={() => {
+                      setSelectedDeptForFolder(d);
+                      setProdiFilter('all');
+                    }}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                      selectedDeptForFolder.id === d.id
+                        ? `${d.tabClass} shadow-xs scale-105`
+                        : 'text-slate-300 hover:text-white bg-slate-700/60 hover:bg-slate-700'
+                    }`}
+                  >
+                    <span>{d.shortName}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Subheader info & Level filters */}
+              <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-base sm:text-lg font-black text-navy">
+                    {selectedDeptForFolder.tagline}
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                    {selectedDeptForFolder.description}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 self-start md:self-center shrink-0 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-2xs">
+                  <button
+                    onClick={() => setProdiFilter('all')}
+                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                      prodiFilter === 'all'
+                        ? 'bg-brand-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-brand-600'
+                    }`}
+                  >
+                    Semua ({selectedDeptForFolder.programs.length})
+                  </button>
+                  <button
+                    onClick={() => setProdiFilter('D4')}
+                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                      prodiFilter === 'D4'
+                        ? 'bg-brand-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-brand-600'
+                    }`}
+                  >
+                    D4
+                  </button>
+                  <button
+                    onClick={() => setProdiFilter('D3')}
+                    className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                      prodiFilter === 'D3'
+                        ? 'bg-brand-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-brand-600'
+                    }`}
+                  >
+                    D3
+                  </button>
+                  {selectedDeptForFolder.programs.some((p) => p.level === 'S2') && (
+                    <button
+                      onClick={() => setProdiFilter('S2')}
+                      className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                        prodiFilter === 'S2'
+                          ? 'bg-brand-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-brand-600'
+                      }`}
+                    >
+                      S2
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Prodi List - SIMPLE FADE & SLIDE ANIMATION */}
+              <div className="p-5 sm:p-7 overflow-y-auto flex-1 bg-slate-50/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedDeptForFolder.programs
+                    .filter((p) => (prodiFilter === 'all' ? true : p.level === prodiFilter))
+                    .map((prog, idx) => (
+                      <motion.div
+                        key={prog.name}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.22, delay: idx * 0.04, ease: 'easeOut' }}
+                        className="bg-white rounded-2xl border border-slate-200 hover:border-brand-300 p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-dashed border-slate-200">
+                            <span className="text-[10px] font-mono font-extrabold tracking-wider uppercase text-slate-400 flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-brand-500" />
+                              PRODI #{String(idx + 1).padStart(2, '0')}
+                            </span>
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-mono border ${
+                                prog.level === 'D4'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : prog.level === 'S2'
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              }`}
+                            >
+                              {prog.level} • {prog.levelLabel}
+                            </span>
+                          </div>
+
+                          <h4 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
+                            {prog.name}
+                          </h4>
+
+                          <div className="flex items-center gap-3 my-2 text-xs font-bold text-slate-500">
+                            <span className="flex items-center gap-1 text-brand-600">
+                              <CalendarCheck2 className="w-3.5 h-3.5" />
+                              {prog.duration}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-emerald-600">
+                              <Award className="w-3.5 h-3.5" />
+                              {prog.sks}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-slate-600 leading-relaxed mt-2">
+                            {prog.description}
+                          </p>
+
+                          <div className="mt-3.5 pt-2.5 border-t border-slate-100">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
+                              Peluang Karir:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {prog.career.map((c, cIdx) => (
+                                <span
+                                  key={cIdx}
+                                  className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200"
+                                >
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                          <span className="font-semibold text-slate-600 flex items-center gap-1.5 truncate max-w-[240px]">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            {prog.lab}
+                          </span>
+                          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 shrink-0">
+                            Akreditasi Unggul
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 px-6 bg-slate-900 border-t border-slate-800 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <span className="text-slate-300 text-[11px] font-medium flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  Terstandar akreditasi LAM-PT / BAN-PT Politeknik Negeri Lhokseumawe.
+                </span>
+                <button
+                  onClick={() => setSelectedDeptForFolder(null)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition-colors border border-slate-700 cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL 2: ORMAWA VIEW WITH SIMPLE, CLEAN & SMOOTH ANIMATION */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {selectedOrgCategoryForFolder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setSelectedOrgCategoryForFolder(null)}
+              className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
+            />
+
+            {/* Simple Modal Entrance */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-auto text-left flex flex-col max-h-[90vh]"
+            >
+              {/* Header */}
+              <div className="bg-slate-900 px-5 sm:px-7 py-4 text-white border-b border-slate-800 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-black shadow-md ${selectedOrgCategoryForFolder.tabClass}`}
+                  >
+                    <FolderOpen className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-black tracking-widest uppercase text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded-md border border-sky-400/20">
+                        FOLDER ORMAWA PNL
+                      </span>
+                      <span className="text-xs font-mono font-bold text-slate-400">
+                        {selectedOrgCategoryForFolder.badge}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-white tracking-tight mt-0.5">
+                      {selectedOrgCategoryForFolder.title}
+                    </h3>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setSelectedOrgCategoryForFolder(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                  title="Tutup (Esc)"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Subheader & Search */}
+              <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-base font-extrabold text-navy">
+                    {selectedOrgCategoryForFolder.subtitle}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Memuat <strong>{selectedOrgCategoryForFolder.items.length} organisasi resmi</strong> di Politeknik Negeri Lhokseumawe.
+                  </p>
+                </div>
+
+                <div className="relative w-full sm:w-72">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Cari organisasi..."
+                    placeholder="Cari nama organisasi..."
                     value={searchOrg}
                     onChange={(e) => setSearchOrg(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-hidden focus:border-brand-500 shadow-2xs"
@@ -1452,113 +1661,98 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 3. ORGANIZATIONS LIST (NO BUKA BERKAS BUTTON) */}
-              <div className="p-6 sm:p-8">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentOrgCat.id + '-' + searchOrg}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-5"
-                  >
-                    {currentOrgCat.items
-                      .filter((org) =>
-                        searchOrg
-                          ? org.name.toLowerCase().includes(searchOrg.toLowerCase()) ||
-                            org.description.toLowerCase().includes(searchOrg.toLowerCase()) ||
-                            org.abbr.toLowerCase().includes(searchOrg.toLowerCase())
-                          : true
-                      )
-                      .map((org, oIdx) => (
-                        <motion.div
-                          key={org.name}
-                          initial={{ y: 80, opacity: 0, scale: 0.94, rotateX: 12 }}
-                          animate={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 280,
-                            damping: 24,
-                            delay: oIdx * 0.07,
-                          }}
-                          style={{ transformPerspective: 1000 }}
-                          className="p-6 rounded-2xl bg-white border-2 border-slate-200/90 hover:border-brand-400 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-dashed border-slate-200">
-                              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black font-mono bg-navy text-white uppercase">
-                                {org.abbr}
-                              </span>
-                              <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
-                                {org.scope}
-                              </span>
-                            </div>
-
-                            <h5 className="font-extrabold text-base text-navy leading-snug">
-                              {org.name}
-                            </h5>
-
-                            <p className="text-xs text-brand-700 font-bold mt-1">
-                              {org.tagline}
-                            </p>
-
-                            <p className="text-xs text-slate-600 mt-2.5 leading-relaxed">
-                              {org.description}
-                            </p>
-
-                            <div className="mt-4 pt-3 border-t border-slate-100">
-                              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5">
-                                Fokus Utama & Bidang Pengembangan:
-                              </span>
-                              <div className="flex flex-wrap gap-1.5">
-                                {org.focus.map((f, fIdx) => (
-                                  <span
-                                    key={fIdx}
-                                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200"
-                                  >
-                                    {f}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                            <span className="text-emerald-700 font-bold flex items-center gap-1.5">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                              Ormawa Resmi PNL
+              {/* Organizations List - Simple Animation */}
+              <div className="p-5 sm:p-7 overflow-y-auto flex-1 bg-slate-50/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedOrgCategoryForFolder.items
+                    .filter((org) =>
+                      searchOrg
+                        ? org.name.toLowerCase().includes(searchOrg.toLowerCase()) ||
+                          org.description.toLowerCase().includes(searchOrg.toLowerCase()) ||
+                          org.abbr.toLowerCase().includes(searchOrg.toLowerCase())
+                        : true
+                    )
+                    .map((org, oIdx) => (
+                      <motion.div
+                        key={org.name}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.22, delay: oIdx * 0.04, ease: 'easeOut' }}
+                        className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-brand-300 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-dashed border-slate-200">
+                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black font-mono bg-navy text-white uppercase">
+                              {org.abbr}
                             </span>
-                            <Link
-                              to="/login"
-                              className="font-extrabold text-brand-600 hover:text-brand-800 flex items-center gap-1"
-                            >
-                              Masuk Portal Ormawa →
-                            </Link>
+                            <span className="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
+                              {org.scope}
+                            </span>
                           </div>
-                        </motion.div>
-                      ))}
-                  </motion.div>
-                </AnimatePresence>
+
+                          <h5 className="font-extrabold text-base text-navy leading-snug">
+                            {org.name}
+                          </h5>
+
+                          <p className="text-xs text-brand-700 font-bold mt-1">
+                            {org.tagline}
+                          </p>
+
+                          <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                            {org.description}
+                          </p>
+
+                          <div className="mt-3.5 pt-2.5 border-t border-slate-100">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
+                              Fokus Utama:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {org.focus.map((f, fIdx) => (
+                                <span
+                                  key={fIdx}
+                                  className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200"
+                                >
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                          <span className="text-emerald-700 font-bold flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            Ormawa Resmi PNL
+                          </span>
+                          <Link
+                            to="/login"
+                            className="font-extrabold text-brand-600 hover:text-brand-800 flex items-center gap-1"
+                          >
+                            Masuk Portal Ormawa →
+                          </Link>
+                        </div>
+                      </motion.div>
+                    ))}
+                </div>
               </div>
 
-              <div className="p-4 px-6 sm:px-8 bg-slate-900 border-t border-slate-800 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              {/* Bottom bar */}
+              <div className="p-4 px-6 bg-slate-900 border-t border-slate-800 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
                 <span className="text-slate-300 text-[11px] font-medium flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  Organisasi mahasiswa terdaftar resmi di bawah naungan Wakil Direktur Bidang Kemahasiswaan & Kerjasama PNL.
+                  Organisasi mahasiswa terdaftar resmi di bawah naungan Wakil Direktur Kemahasiswaan PNL.
                 </span>
-                <Link
-                  to="/login"
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition-colors shadow-xs flex items-center gap-1.5 shrink-0"
+                <button
+                  onClick={() => setSelectedOrgCategoryForFolder(null)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition-colors border border-slate-700 cursor-pointer"
                 >
-                  Portal Kegiatan Ormawa
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                  Tutup
+                </button>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        )}
+      </AnimatePresence>
 
       {/* 5. FOOTER (SOLID DEEP BLUE #0F296B + PURE WHITE #FFFFFF TEXT & LINKS) */}
       <footer
