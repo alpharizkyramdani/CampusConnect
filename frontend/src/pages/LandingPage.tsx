@@ -168,22 +168,22 @@ export const LandingPage: React.FC = () => {
 
       {/* 1. HERO SECTION (WORKING UNSPLASH BACKGROUND + DARK BLUE GRADIENT OVERLAY) */}
       <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36">
-        {/* Working Unsplash University Campus Image Background */}
+        {/* PNL Campus Image with High-Res Fallbacks */}
         <div
           className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1920&q=80')`,
+            backgroundImage: `url('/images/pnl-hero.png'), url('/images/pnl-campus.jpg'), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1920&q=80')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
         />
 
-        {/* Dark Blue Semi-Transparent Gradient Overlay */}
+        {/* Dark Blue Semi-Transparent Layer Overlay */}
         <div
           className="absolute inset-0 -z-10"
           style={{
             background:
-              'linear-gradient(135deg, rgba(10, 30, 80, 0.85) 0%, rgba(29, 78, 216, 0.75) 100%)',
+              'linear-gradient(135deg, rgba(10, 37, 95, 0.82) 0%, rgba(29, 78, 216, 0.75) 100%)',
           }}
         />
 
@@ -262,12 +262,12 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. FEATURES SECTION (RICHER BLUE GRADIENT + REPEATABLE SCROLL REVEAL) */}
+      {/* 2. FEATURES SECTION (BEAUTIFUL GRADIENT WHITE & BLUE + REPEATABLE SCROLL REVEAL) */}
       <section
         id="features"
         className="py-24 border-y border-blue-200/60"
         style={{
-          background: 'linear-gradient(180deg, #DBEAFE 0%, #93C5FD 50%, #EFF6FF 100%)',
+          background: 'linear-gradient(180deg, #FFFFFF 0%, #DCEBFF 35%, #BFDBFE 70%, #EFF6FF 100%)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -311,12 +311,12 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. MOU RELATIONSHIP SECTION (RICHER BLUE GRADIENT + REPEATABLE SCROLL REVEAL) */}
+      {/* 3. MOU RELATIONSHIP SECTION (BEAUTIFUL GRADIENT WHITE & BLUE + REPEATABLE SCROLL REVEAL) */}
       <section
         id="universities"
         className="py-24 border-t border-blue-200/60"
         style={{
-          background: 'linear-gradient(180deg, #DBEAFE 0%, #93C5FD 50%, #EFF6FF 100%)',
+          background: 'linear-gradient(180deg, #EFF6FF 0%, #DCEBFF 40%, #BFDBFE 75%, #FFFFFF 100%)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
