@@ -166,8 +166,8 @@ export const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & BLUE TRANSPARENT OVERLAY */}
-      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-slate-900">
+      {/* 1. HERO SECTION WITH REAL PNL CAMPUS PHOTO & VIBRANT BLUE TRANSPARENT OVERLAY */}
+      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-36 bg-blue-900">
         {/* Layer 0: Real PNL Campus Image (Uploaded by User) */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
@@ -178,12 +178,13 @@ export const LandingPage: React.FC = () => {
           }}
         />
 
-        {/* Layer 1: Dark Blue Semi-Transparent Layer Overlay */}
+        {/* Layer 1: Vibrant Blue Transparent Layer Overlay */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background:
-              'linear-gradient(135deg, rgba(10, 37, 95, 0.82) 0%, rgba(29, 78, 216, 0.75) 100%)',
+            backgroundColor: 'rgba(29, 78, 216, 0.70)',
+            backgroundImage:
+              'linear-gradient(135deg, rgba(30, 64, 175, 0.75) 0%, rgba(37, 99, 235, 0.65) 100%)',
           }}
         />
 
