@@ -95,24 +95,6 @@ export const LandingPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<'hero' | 'fitur' | 'jurusan' | 'organisasi'>('hero');
 
-  // Initial Landing Entry Logo Intro Animation
-  const [introPhase, setIntroPhase] = useState<'center' | 'gliding' | 'done'>('center');
-
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setIntroPhase('gliding');
-    }, 1400);
-
-    const timer2 = setTimeout(() => {
-      setIntroPhase('done');
-    }, 2350);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
-
   // Page Scroll Progress for Smooth Landing Page Transition Bar
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -835,120 +817,6 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-brand-500 selection:text-white">
-      {/* INITIAL VISITOR LOGO INTRO ANIMATION (GLIDES FROM CENTER TO NAVBAR/HEADER) */}
-      <AnimatePresence>
-        {introPhase !== 'done' && (
-          <motion.div
-            key="splash-overlay"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: introPhase === 'gliding' ? 0 : 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.85, ease: 'easeInOut' }}
-            onClick={() => setIntroPhase('done')}
-            className={`fixed inset-0 z-[100] cursor-pointer flex items-center justify-center ${
-              introPhase === 'gliding' ? 'pointer-events-none' : ''
-            }`}
-            style={{
-              background: 'radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 60%, #EEF2F6 100%)',
-            }}
-          >
-            {/* Ambient Background Aura */}
-            <div className="absolute inset-0 bg-radial from-indigo-50/70 via-transparent to-transparent pointer-events-none" />
-
-            {/* Morphing / Gliding Logo & Brand Container */}
-            <motion.div
-              initial={{
-                top: '50%',
-                left: '50%',
-                x: '-50%',
-                y: '-50%',
-                scale: 1,
-              }}
-              animate={
-                introPhase === 'gliding'
-                  ? {
-                      top: '20px',
-                      left: 'clamp(1rem, calc((100vw - 80rem) / 2 + 2rem), 4rem)',
-                      x: '0%',
-                      y: '0%',
-                      scale: 0.85,
-                    }
-                  : {
-                      top: '50%',
-                      left: '50%',
-                      x: '-50%',
-                      y: '-50%',
-                      scale: 1,
-                    }
-              }
-              transition={{
-                duration: 0.85,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="absolute flex items-center gap-4 sm:gap-5 select-none"
-            >
-              {/* Emblem with Ambient Glow Halo (Matching Image 2 Reference) */}
-              <div className="relative flex items-center justify-center">
-                {/* Outer Glow Halo Rings */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.25, 1],
-                    opacity: [0.65, 0.25, 0.65],
-                  }}
-                  transition={{
-                    duration: 1.8,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  className="absolute -inset-6 rounded-full bg-indigo-500/20 blur-xl pointer-events-none"
-                />
-                <motion.div
-                  animate={{
-                    scale: [1, 1.15, 1],
-                    opacity: [0.8, 0.35, 0.8],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  className="absolute -inset-3 rounded-full bg-cyan-400/25 blur-md pointer-events-none"
-                />
-
-                {/* Circular Badge Holder */}
-                <motion.div
-                  initial={{ scale: 0.7, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white shadow-2xl shadow-indigo-500/20 border-2 border-indigo-100 flex items-center justify-center p-3 relative z-10"
-                >
-                  <img
-                    src="/images/pnl-logo.png"
-                    alt="Politeknik Negeri Lhokseumawe"
-                    className="w-full h-full object-contain filter drop-shadow-md"
-                  />
-                </motion.div>
-              </div>
-
-              {/* Text: PNLConnect & POLITEKNIK NEGERI LHOKSEUMAWE */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.65, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col text-left"
-              >
-                <span className="font-black text-2xl sm:text-3xl text-navy tracking-tight leading-none">
-                  PNL<span className="text-brand-600">Connect</span>
-                </span>
-                <span className="text-xs sm:text-sm font-extrabold text-slate-600 uppercase tracking-widest mt-1">
-                  Politeknik Negeri Lhokseumawe
-                </span>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* 0. TOP SCROLL PAGE TRANSITION PROGRESS BAR */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-brand-500 to-indigo-600 z-[60] origin-left shadow-xs"
@@ -966,17 +834,13 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
             <div
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center p-1.5 transition-all ${
+              className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
                 isScrolled
-                  ? 'bg-white shadow-md border border-slate-200'
-                  : 'bg-white/20 backdrop-blur-md border border-white/30 shadow-xs'
+                  ? 'bg-brand-600 text-white shadow-md'
+                  : 'bg-white/20 backdrop-blur-md text-white border border-white/30'
               }`}
             >
-              <img
-                src="/images/pnl-logo.png"
-                alt="Politeknik Negeri Lhokseumawe"
-                className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform"
-              />
+              <GraduationCap className="w-6 h-6 transform group-hover:scale-110 transition-transform" />
             </div>
             <div>
               <span
@@ -1816,8 +1680,8 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-xs">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shadow-xs p-1">
-              <img src="/images/pnl-logo.png" alt="PNL" className="w-full h-full object-contain filter drop-shadow-sm" />
+            <div className="w-8 h-8 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shadow-xs">
+              <GraduationCap className="w-5 h-5 text-white" />
             </div>
             <span style={{ color: '#FFFFFF' }} className="font-extrabold text-base tracking-tight">
               PNLConnect

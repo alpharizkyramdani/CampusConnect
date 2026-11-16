@@ -35,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
         {/* University Tenant Badge */}
         <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-800 rounded-xl transition-all cursor-pointer">
-          <img src="/images/pnl-logo.png" alt="PNL" className="w-5 h-5 object-contain" />
+          <Building2 className="w-4 h-4 text-brand-600" />
           <div className="text-xs font-bold leading-tight flex items-center gap-1.5">
             <span className="truncate max-w-[140px] sm:max-w-[220px]">{universityName}</span>
             {universityCode && (

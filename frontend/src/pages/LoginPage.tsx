@@ -73,14 +73,14 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-canvas flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-3 group">
-          <div className="w-13 h-13 rounded-2xl bg-white p-1.5 flex items-center justify-center shadow-lg border border-slate-200/80 group-hover:scale-105 transition-transform">
-            <img src="/images/pnl-logo.png" alt="PNL" className="w-full h-full object-contain filter drop-shadow-sm" />
+        <Link to="/" className="inline-flex items-center gap-2.5 group">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform">
+            <GraduationCap className="w-7 h-7 text-white" />
           </div>
           <div className="text-left">
             <span className="font-extrabold text-2xl text-navy tracking-tight block">PNLConnect</span>
-            <span className="text-[10px] text-brand-600 font-bold uppercase tracking-wider block -mt-0.5">
-              Politeknik Negeri Lhokseumawe
+            <span className="text-[10px] text-brand-600 font-bold uppercase tracking-wider block -mt-1">
+              PNL DIGITAL ECOSYSTEM
             </span>
           </div>
         </Link>
