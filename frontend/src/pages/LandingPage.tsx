@@ -95,6 +95,35 @@ interface OrgCategory {
 export const LandingPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<'hero' | 'fitur' | 'jurusan' | 'organisasi'>('hero');
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [isBeamTransitioning, setIsBeamTransitioning] = useState<boolean>(false);
+
+  // Navigation Items
+  const navItems = [
+    { id: 'fitur', label: 'Platform Features', isSection: true, target: 'fitur' },
+    { id: 'jurusan', label: 'Jurusan PNL', isSection: true, target: 'jurusan' },
+    { id: 'organisasi', label: 'Organisasi PNL', isSection: true, target: 'organisasi' },
+    { id: 'verify', label: 'Verify Certificate', isSection: false, target: '/verify' },
+  ];
+
+  // Trigger a sleek futuristic light streak beam on section transition
+  const scrollToSectionWithBeam = (e: React.MouseEvent, targetId: string) => {
+    e.preventDefault();
+    setIsBeamTransitioning(true);
+    const el = document.getElementById(targetId);
+    if (el) {
+      const navOffset = 70;
+      const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+    setTimeout(() => {
+      setIsBeamTransitioning(false);
+    }, 600);
+  };
 
   // Page Scroll Progress for Smooth Landing Page Transition Bar
   const { scrollYProgress } = useScroll();
@@ -221,7 +250,7 @@ export const LandingPage: React.FC = () => {
       colorName: 'Ungu',
       tabClass: 'bg-gradient-to-r from-purple-600 to-indigo-700 text-white',
       tabCornerClass: 'bg-indigo-700',
-      folderBorderClass: 'border-purple-300 hover:border-purple-500',
+      folderBorderClass: 'border-purple-300 hover:border-purple-500 hover:shadow-[0_20px_45px_rgba(147,51,234,0.22)]',
       folderBgClass: 'from-purple-50/70 via-white to-violet-50/30',
       iconBoxClass: 'bg-gradient-to-tr from-purple-600 to-indigo-700 text-white',
       headerAccent: 'text-purple-700',
@@ -282,7 +311,7 @@ export const LandingPage: React.FC = () => {
       colorName: 'Coklat',
       tabClass: 'bg-gradient-to-r from-[#8B4513] to-[#5C2E0B] text-white',
       tabCornerClass: 'bg-[#5C2E0B]',
-      folderBorderClass: 'border-amber-700/40 hover:border-amber-800',
+      folderBorderClass: 'border-amber-700/40 hover:border-amber-800 hover:shadow-[0_20px_45px_rgba(139,69,19,0.22)]',
       folderBgClass: 'from-[#FAF5F0] via-white to-[#FDF8F3]',
       iconBoxClass: 'bg-gradient-to-tr from-[#8B4513] to-[#5C2E0B] text-white',
       headerAccent: 'text-[#7A3E1D]',
@@ -353,7 +382,7 @@ export const LandingPage: React.FC = () => {
       colorName: 'Biru',
       tabClass: 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white',
       tabCornerClass: 'bg-indigo-700',
-      folderBorderClass: 'border-blue-300 hover:border-blue-500',
+      folderBorderClass: 'border-blue-300 hover:border-blue-500 hover:shadow-[0_20px_45px_rgba(37,99,235,0.22)]',
       folderBgClass: 'from-blue-50/70 via-white to-indigo-50/30',
       iconBoxClass: 'bg-gradient-to-tr from-blue-600 to-indigo-700 text-white',
       headerAccent: 'text-blue-700',
@@ -414,7 +443,7 @@ export const LandingPage: React.FC = () => {
       colorName: 'Hijau',
       tabClass: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white',
       tabCornerClass: 'bg-teal-700',
-      folderBorderClass: 'border-emerald-300 hover:border-emerald-500',
+      folderBorderClass: 'border-emerald-300 hover:border-emerald-500 hover:shadow-[0_20px_45px_rgba(16,185,129,0.22)]',
       folderBgClass: 'from-emerald-50/70 via-white to-teal-50/30',
       iconBoxClass: 'bg-gradient-to-tr from-emerald-600 to-teal-700 text-white',
       headerAccent: 'text-emerald-700',
@@ -465,7 +494,7 @@ export const LandingPage: React.FC = () => {
       colorName: 'Merah',
       tabClass: 'bg-gradient-to-r from-red-600 to-rose-700 text-white',
       tabCornerClass: 'bg-rose-700',
-      folderBorderClass: 'border-red-300 hover:border-red-500',
+      folderBorderClass: 'border-red-300 hover:border-red-500 hover:shadow-[0_20px_45px_rgba(239,68,68,0.22)]',
       folderBgClass: 'from-red-50/70 via-white to-rose-50/30',
       iconBoxClass: 'bg-gradient-to-tr from-red-600 to-rose-700 text-white',
       headerAccent: 'text-red-700',
@@ -556,7 +585,7 @@ export const LandingPage: React.FC = () => {
       colorName: 'Orange',
       tabClass: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white',
       tabCornerClass: 'bg-amber-600',
-      folderBorderClass: 'border-orange-300 hover:border-orange-500',
+      folderBorderClass: 'border-orange-300 hover:border-orange-500 hover:shadow-[0_20px_45px_rgba(249,115,22,0.22)]',
       folderBgClass: 'from-orange-50/70 via-white to-amber-50/30',
       iconBoxClass: 'bg-gradient-to-tr from-orange-500 to-amber-600 text-white',
       headerAccent: 'text-orange-700',
@@ -861,98 +890,83 @@ export const LandingPage: React.FC = () => {
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-bold">
-            <a
-              href="#fitur"
-              className={`relative py-1.5 transition-colors group ${
-                isScrolled
-                  ? activeSection === 'fitur'
-                    ? 'text-brand-600 font-extrabold'
-                    : 'text-slate-600 hover:text-brand-600'
-                  : activeSection === 'fitur'
-                  ? 'text-white font-extrabold'
-                  : 'text-white/90 hover:text-white'
-              }`}
-            >
-              <span>Platform Features</span>
-              <span
-                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
-                  activeSection === 'fitur'
-                    ? 'w-full'
-                    : 'w-0 group-hover:w-full'
-                } ${
-                  isScrolled
-                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
-                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
-                }`}
-              />
-            </a>
+          <div
+            className="hidden md:flex items-center gap-8 text-sm font-bold"
+            onMouseLeave={() => setHoveredNav(null)}
+          >
+            {navItems.map((item) => {
+              const isCurrent =
+                hoveredNav === item.id || (!hoveredNav && activeSection === item.id);
 
-            <a
-              href="#jurusan"
-              className={`relative py-1.5 transition-colors group ${
-                isScrolled
-                  ? activeSection === 'jurusan'
-                    ? 'text-brand-600 font-extrabold'
-                    : 'text-slate-600 hover:text-brand-600'
-                  : activeSection === 'jurusan'
-                  ? 'text-white font-extrabold'
-                  : 'text-white/90 hover:text-white'
-              }`}
-            >
-              <span>Jurusan PNL</span>
-              <span
-                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
-                  activeSection === 'jurusan'
-                    ? 'w-full'
-                    : 'w-0 group-hover:w-full'
-                } ${
-                  isScrolled
-                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
-                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
-                }`}
-              />
-            </a>
+              return item.isSection ? (
+                <a
+                  key={item.id}
+                  href={`#${item.target}`}
+                  onMouseEnter={() => setHoveredNav(item.id)}
+                  onClick={(e) => scrollToSectionWithBeam(e, item.target)}
+                  className={`relative py-1.5 transition-colors cursor-pointer select-none ${
+                    isScrolled
+                      ? isCurrent
+                        ? 'text-brand-600 font-extrabold'
+                        : 'text-slate-600 hover:text-brand-600'
+                      : isCurrent
+                      ? 'text-white font-extrabold'
+                      : 'text-white/85 hover:text-white'
+                  }`}
+                >
+                  <span>{item.label}</span>
 
-            <a
-              href="#organisasi"
-              className={`relative py-1.5 transition-colors group ${
-                isScrolled
-                  ? activeSection === 'organisasi'
-                    ? 'text-brand-600 font-extrabold'
-                    : 'text-slate-600 hover:text-brand-600'
-                  : activeSection === 'organisasi'
-                  ? 'text-white font-extrabold'
-                  : 'text-white/90 hover:text-white'
-              }`}
-            >
-              <span>Organisasi PNL</span>
-              <span
-                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
-                  activeSection === 'organisasi'
-                    ? 'w-full'
-                    : 'w-0 group-hover:w-full'
-                } ${
-                  isScrolled
-                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
-                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
-                }`}
-              />
-            </a>
-
-            <Link
-              to="/verify"
-              className={`relative py-1.5 transition-colors group ${
-                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
-              }`}
-            >
-              <span>Verify Certificate</span>
-              <span
-                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
-                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
-                }`}
-              />
-            </Link>
+                  {/* Morphing Gliding Indicator: Only ONE line ever exists! */}
+                  {isCurrent && (
+                    <motion.span
+                      layoutId="navbarGlidingIndicator"
+                      className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${
+                        isScrolled
+                          ? 'bg-brand-600 shadow-[0_0_10px_rgba(37,99,235,0.6)]'
+                          : 'bg-white shadow-[0_0_12px_rgba(255,255,255,0.95)]'
+                      }`}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 32,
+                      }}
+                    />
+                  )}
+                </a>
+              ) : (
+                <Link
+                  key={item.id}
+                  to={item.target}
+                  onMouseEnter={() => setHoveredNav(item.id)}
+                  className={`relative py-1.5 transition-colors cursor-pointer select-none ${
+                    isScrolled
+                      ? isCurrent
+                        ? 'text-brand-600 font-extrabold'
+                        : 'text-slate-600 hover:text-brand-600'
+                      : isCurrent
+                      ? 'text-white font-extrabold'
+                      : 'text-white/85 hover:text-white'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {isCurrent && (
+                    <motion.span
+                      layoutId="navbarGlidingIndicator"
+                      className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${
+                        isScrolled
+                          ? 'bg-brand-600 shadow-[0_0_10px_rgba(37,99,235,0.6)]'
+                          : 'bg-white shadow-[0_0_12px_rgba(255,255,255,0.95)]'
+                      }`}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 32,
+                      }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
           <div className="flex items-center gap-3">
@@ -975,6 +989,65 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      {/* FUTURISTIC SCANNING LIGHT BEAM TRANSITION (NON-BLOCKING LUMINOUS STREAK) */}
+      <AnimatePresence>
+        {isBeamTransitioning && (
+          <motion.div
+            initial={{ opacity: 0, top: '-15%' }}
+            animate={{ opacity: [0, 1, 1, 0], top: '115%' }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-x-0 h-44 pointer-events-none z-[80] bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent flex items-center justify-center"
+          >
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_30px_rgba(6,182,212,1)]" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FLOATING RIGHT-SIDE HUD / MINI-NAVIGATOR CAPSULE */}
+      <div className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-end gap-3 pointer-events-auto">
+        <div className="p-2 rounded-2xl bg-white/85 backdrop-blur-md border border-slate-200/90 shadow-xl flex flex-col gap-1.5">
+          {[
+            { id: 'hero', num: '01', label: 'Beranda' },
+            { id: 'fitur', num: '02', label: 'Fitur' },
+            { id: 'jurusan', num: '03', label: '6 Jurusan' },
+            { id: 'organisasi', num: '04', label: 'Ormawa' },
+          ].map((sec) => {
+            const isActive = activeSection === sec.id;
+            return (
+              <button
+                key={sec.id}
+                onClick={(e) => {
+                  if (sec.id === 'hero') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else {
+                    scrollToSectionWithBeam(e, sec.id);
+                  }
+                }}
+                className={`group flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30'
+                    : 'text-slate-500 hover:text-brand-600 hover:bg-slate-100/80'
+                }`}
+                title={sec.label}
+              >
+                <span className="text-[10px] opacity-75">{sec.num}</span>
+                <span className={`text-[11px] font-sans ${isActive ? 'inline' : 'hidden group-hover:inline'}`}>
+                  {sec.label}
+                </span>
+                <span
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    isActive
+                      ? 'bg-cyan-300 ring-4 ring-brand-400/40 animate-pulse'
+                      : 'bg-slate-300 group-hover:bg-brand-400'
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 1. HERO SECTION WITH REAL PNL CAMPUS VIDEO & BALANCED DARK/BLACK TRANSPARENT OVERLAY */}
       <section className="relative overflow-hidden pt-28 pb-24 sm:pt-32 lg:pt-36 lg:pb-36 bg-slate-950">
@@ -1041,12 +1114,13 @@ export const LandingPage: React.FC = () => {
               </Link>
               <a
                 href="#jurusan"
+                onClick={(e) => scrollToSectionWithBeam(e, 'jurusan')}
                 style={{
                   border: '2px solid rgba(255, 255, 255, 0.4)',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   color: '#ffffff',
                 }}
-                className="px-8 py-3.5 hover:bg-white/20 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+                className="px-8 py-3.5 hover:bg-white/20 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer"
               >
                 <FolderOpen className="w-5 h-5" />
                 Jelajahi 6 Jurusan & 29 Prodi
@@ -1097,7 +1171,9 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 2. PLATFORM FEATURES HIGHLIGHT */}
-      <section id="fitur" className="py-24 bg-white border-b border-slate-200/60">
+      <section id="fitur" className="py-24 bg-white border-b border-slate-200/60 relative overflow-hidden">
+        {/* Ambient Subtle Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2
@@ -1144,12 +1220,16 @@ export const LandingPage: React.FC = () => {
       {/* ========================================================================= */}
       <section
         id="jurusan"
-        className="py-24"
+        className="py-24 relative overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, #F8FBFF 0%, #FFFFFF 50%, #F5F9FE 100%)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Ambient Soft Mesh Glows */}
+        <div className="absolute top-12 left-12 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-12 right-12 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-14">
             <div>
               <motion.h2
@@ -1289,12 +1369,15 @@ export const LandingPage: React.FC = () => {
       {/* ========================================================================= */}
       <section
         id="organisasi"
-        className="py-24 border-t border-slate-200/70"
+        className="py-24 border-t border-slate-200/70 relative overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, #FFFFFF 0%, #F5F9FE 50%, #FFFFFF 100%)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Ambient Soft Mesh Glow */}
+        <div className="absolute top-16 right-16 w-[550px] h-[350px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2
               {...scrollAnim(0.1)}
@@ -1693,10 +1776,20 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap gap-6 font-semibold">
-            <a href="#jurusan" style={{ color: '#FFFFFF' }} className="hover:text-cyan-300 transition-colors">
+            <a
+              href="#jurusan"
+              onClick={(e) => scrollToSectionWithBeam(e, 'jurusan')}
+              style={{ color: '#FFFFFF' }}
+              className="hover:text-cyan-200 transition-colors cursor-pointer"
+            >
               6 Jurusan & 29 Prodi
             </a>
-            <a href="#organisasi" style={{ color: '#FFFFFF' }} className="hover:text-cyan-300 transition-colors">
+            <a
+              href="#organisasi"
+              onClick={(e) => scrollToSectionWithBeam(e, 'organisasi')}
+              style={{ color: '#FFFFFF' }}
+              className="hover:text-cyan-200 transition-colors cursor-pointer"
+            >
               Ormawa PNL
             </a>
             <Link
