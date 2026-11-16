@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { RoleName } from '../types';
 import { Layout } from '../components/common/Layout';
@@ -74,8 +75,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 };
 
 export const AppRoutes: React.FC = () => {
+  const location = useLocation();
+  const isPublicRoute =
+    location.pathname === '/' ||
+    location.pathname.startsWith('/login') ||
+    location.pathname.startsWith('/register') ||
+    location.pathname.startsWith('/verify');
+
   return (
-    <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={isPublicRoute ? location.pathname : 'protected-app'}>
       {/* Public Pages with Smooth Transition */}
       <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
       <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
@@ -155,5 +164,6 @@ export const AppRoutes: React.FC = () => {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+  </AnimatePresence>
   );
 };
