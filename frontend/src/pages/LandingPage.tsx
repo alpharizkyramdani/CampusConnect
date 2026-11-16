@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   GraduationCap,
   CalendarCheck2,
@@ -93,55 +93,8 @@ interface OrgCategory {
 }
 
 export const LandingPage: React.FC = () => {
-  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<'hero' | 'fitur' | 'jurusan' | 'organisasi'>('hero');
-  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
-  const [transitioningTitle, setTransitioningTitle] = useState<string | null>(null);
-
-  // Navigation Items
-  const navItems = [
-    { id: 'fitur', label: 'Platform Features', isSection: true, target: 'fitur' },
-    { id: 'jurusan', label: 'Jurusan PNL', isSection: true, target: 'jurusan' },
-    { id: 'organisasi', label: 'Organisasi PNL', isSection: true, target: 'organisasi' },
-    { id: 'verify', label: 'Verify Certificate', isSection: false, target: '/verify' },
-  ];
-
-  // Unusual, Cool, Minimalist Page Transition Handler
-  const handlePageTransition = (
-    e: React.MouseEvent,
-    title: string,
-    targetSectionId?: string,
-    targetRoute?: string
-  ) => {
-    e.preventDefault();
-    if (transitioningTitle) return;
-
-    setTransitioningTitle(title);
-
-    // After brief shutter entry (200ms), perform the move
-    setTimeout(() => {
-      if (targetSectionId) {
-        const el = document.getElementById(targetSectionId);
-        if (el) {
-          const navOffset = 70;
-          const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
-          const offsetPosition = elementPosition - navOffset;
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth',
-          });
-        }
-      } else if (targetRoute) {
-        navigate(targetRoute);
-      }
-
-      // Exit shutter smoothly
-      setTimeout(() => {
-        setTransitioningTitle(null);
-      }, 300);
-    }, 200);
-  };
 
   // Page Scroll Progress for Smooth Landing Page Transition Bar
   const { scrollYProgress } = useScroll();
@@ -908,64 +861,103 @@ export const LandingPage: React.FC = () => {
             </div>
           </Link>
 
-          <div
-            className="hidden md:flex items-center gap-8 text-sm font-bold"
-            onMouseLeave={() => setHoveredNav(null)}
-          >
-            {navItems.map((item) => {
-              const isCurrent =
-                hoveredNav === item.id || (!hoveredNav && activeSection === item.id);
+          <div className="hidden md:flex items-center gap-8 text-sm font-bold">
+            <a
+              href="#fitur"
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled
+                  ? activeSection === 'fitur'
+                    ? 'text-brand-600 font-extrabold'
+                    : 'text-slate-600 hover:text-brand-600'
+                  : activeSection === 'fitur'
+                  ? 'text-white font-extrabold'
+                  : 'text-white/90 hover:text-white'
+              }`}
+            >
+              <span>Platform Features</span>
+              <span
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'fitur'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
+                }`}
+              />
+            </a>
 
-              return (
-                <a
-                  key={item.id}
-                  href={item.isSection ? `#${item.target}` : item.target}
-                  onMouseEnter={() => setHoveredNav(item.id)}
-                  onClick={(e) =>
-                    handlePageTransition(
-                      e,
-                      item.label,
-                      item.isSection ? item.target : undefined,
-                      !item.isSection ? item.target : undefined
-                    )
-                  }
-                  className={`relative py-1.5 transition-colors cursor-pointer select-none ${
-                    isScrolled
-                      ? isCurrent
-                        ? 'text-brand-600 font-extrabold'
-                        : 'text-slate-600 hover:text-brand-600'
-                      : isCurrent
-                      ? 'text-white font-extrabold'
-                      : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  <span>{item.label}</span>
+            <a
+              href="#jurusan"
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled
+                  ? activeSection === 'jurusan'
+                    ? 'text-brand-600 font-extrabold'
+                    : 'text-slate-600 hover:text-brand-600'
+                  : activeSection === 'jurusan'
+                  ? 'text-white font-extrabold'
+                  : 'text-white/90 hover:text-white'
+              }`}
+            >
+              <span>Jurusan PNL</span>
+              <span
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'jurusan'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
+                }`}
+              />
+            </a>
 
-                  {/* Morphing Gliding Underline (Only ONE instance at a time!) */}
-                  {isCurrent && (
-                    <motion.span
-                      layoutId="navActiveGlidingUnderline"
-                      className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${
-                        isScrolled
-                          ? 'bg-brand-600 shadow-[0_0_10px_rgba(37,99,235,0.6)]'
-                          : 'bg-white shadow-[0_0_12px_rgba(255,255,255,0.95)]'
-                      }`}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 420,
-                        damping: 32,
-                      }}
-                    />
-                  )}
-                </a>
-              );
-            })}
+            <a
+              href="#organisasi"
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled
+                  ? activeSection === 'organisasi'
+                    ? 'text-brand-600 font-extrabold'
+                    : 'text-slate-600 hover:text-brand-600'
+                  : activeSection === 'organisasi'
+                  ? 'text-white font-extrabold'
+                  : 'text-white/90 hover:text-white'
+              }`}
+            >
+              <span>Organisasi PNL</span>
+              <span
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'organisasi'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
+                }`}
+              />
+            </a>
+
+            <Link
+              to="/verify"
+              className={`relative py-1.5 transition-colors group ${
+                isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
+              }`}
+            >
+              <span>Verify Certificate</span>
+              <span
+                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
+                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                }`}
+              />
+            </Link>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               to="/login"
-              onClick={(e) => handlePageTransition(e, 'Portal Sign In', undefined, '/login')}
               className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${
                 isScrolled
                   ? 'text-brand-600 hover:text-brand-700 hover:bg-brand-50'
@@ -976,7 +968,6 @@ export const LandingPage: React.FC = () => {
             </Link>
             <Link
               to="/register"
-              onClick={(e) => handlePageTransition(e, 'Daftar Akun Civitas', undefined, '/register')}
               className="hidden sm:inline-flex px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-brand-600/30 transition-all transform hover:scale-105"
             >
               Daftar Akun
@@ -1043,7 +1034,6 @@ export const LandingPage: React.FC = () => {
             >
               <Link
                 to="/login"
-                onClick={(e) => handlePageTransition(e, 'Portal Civitas PNL', undefined, '/login')}
                 className="px-8 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-xl shadow-brand-600/30 flex items-center gap-2 text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 Masuk Portal Civitas
@@ -1051,13 +1041,12 @@ export const LandingPage: React.FC = () => {
               </Link>
               <a
                 href="#jurusan"
-                onClick={(e) => handlePageTransition(e, 'Jurusan & Program Studi', 'jurusan')}
                 style={{
                   border: '2px solid rgba(255, 255, 255, 0.4)',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   color: '#ffffff',
                 }}
-                className="px-8 py-3.5 hover:bg-white/20 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer"
+                className="px-8 py-3.5 hover:bg-white/20 backdrop-blur-md font-bold rounded-2xl shadow-sm text-base transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
               >
                 <FolderOpen className="w-5 h-5" />
                 Jelajahi 6 Jurusan & 29 Prodi
@@ -1704,43 +1693,30 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap gap-6 font-semibold">
-            <a
-              href="#jurusan"
-              onClick={(e) => handlePageTransition(e, '6 Jurusan & 29 Prodi', 'jurusan')}
-              style={{ color: '#FFFFFF' }}
-              className="hover:text-cyan-200 transition-colors cursor-pointer"
-            >
+            <a href="#jurusan" style={{ color: '#FFFFFF' }} className="hover:text-cyan-300 transition-colors">
               6 Jurusan & 29 Prodi
             </a>
-            <a
-              href="#organisasi"
-              onClick={(e) => handlePageTransition(e, 'Ormawa PNL', 'organisasi')}
-              style={{ color: '#FFFFFF' }}
-              className="hover:text-cyan-200 transition-colors cursor-pointer"
-            >
+            <a href="#organisasi" style={{ color: '#FFFFFF' }} className="hover:text-cyan-300 transition-colors">
               Ormawa PNL
             </a>
             <Link
               to="/verify"
-              onClick={(e) => handlePageTransition(e, 'Verify Certificate', undefined, '/verify')}
               style={{ color: '#FFFFFF' }}
-              className="hover:text-cyan-200 transition-colors cursor-pointer"
+              className="hover:text-cyan-300 transition-colors"
             >
               Verify Certificate
             </Link>
             <Link
               to="/login"
-              onClick={(e) => handlePageTransition(e, 'Portal Login', undefined, '/login')}
               style={{ color: '#FFFFFF' }}
-              className="hover:text-cyan-200 transition-colors cursor-pointer"
+              className="hover:text-cyan-300 transition-colors"
             >
               Portal Login
             </Link>
             <Link
               to="/register"
-              onClick={(e) => handlePageTransition(e, 'Daftar Akun Civitas', undefined, '/register')}
               style={{ color: '#FFFFFF' }}
-              className="hover:text-cyan-200 transition-colors cursor-pointer"
+              className="hover:text-cyan-300 transition-colors"
             >
               Daftar Akun Civitas
             </Link>
@@ -1767,64 +1743,6 @@ export const LandingPage: React.FC = () => {
           >
             <ChevronUp className="w-5 h-5" />
           </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* ========================================================================= */}
-      {/* UNUSUAL, COOL & MINIMALIST PAGE TRANSITION SHUTTER OVERLAY */}
-      {/* ========================================================================= */}
-      <AnimatePresence>
-        {transitioningTitle && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.16 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
-          >
-            {/* Top Shutter Curtain (Curved ease sweep down) */}
-            <motion.div
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              exit={{ scaleY: 0 }}
-              style={{ originY: 0 }}
-              transition={{ duration: 0.24, ease: [0.76, 0, 0.24, 1] }}
-              className="absolute inset-x-0 top-0 h-1/2 bg-slate-950/95 backdrop-blur-xl border-b border-cyan-500/30 shadow-2xl"
-            />
-
-            {/* Bottom Shutter Curtain (Curved ease sweep up) */}
-            <motion.div
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              exit={{ scaleY: 0 }}
-              style={{ originY: 1 }}
-              transition={{ duration: 0.24, ease: [0.76, 0, 0.24, 1] }}
-              className="absolute inset-x-0 bottom-0 h-1/2 bg-slate-950/95 backdrop-blur-xl border-t border-cyan-500/30 shadow-2xl"
-            />
-
-            {/* Center Glowing Laser Line Accent */}
-            <motion.div
-              initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ scaleX: 1, opacity: 1 }}
-              exit={{ scaleX: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_24px_rgba(6,182,212,1)] z-10"
-            />
-
-            {/* Center Minimalist Transition Pill Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.88, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: -10 }}
-              transition={{ duration: 0.18, delay: 0.04 }}
-              className="relative z-20 px-6 py-2.5 rounded-full bg-slate-900/90 border border-cyan-400/50 text-white shadow-2xl flex items-center gap-3 backdrop-blur-md"
-            >
-              <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-ping" />
-              <span className="font-mono text-xs sm:text-sm font-bold tracking-widest uppercase text-cyan-200">
-                {transitioningTitle}
-              </span>
-            </motion.div>
-          </motion.div>
         )}
       </AnimatePresence>
     </div>
