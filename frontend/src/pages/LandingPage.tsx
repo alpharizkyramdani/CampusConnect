@@ -1094,13 +1094,10 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Layer 3: Smooth Seamless Gradient Transition to White Features Section */}
-        <div className="absolute bottom-0 inset-x-0 h-28 sm:h-36 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-10" />
       </section>
 
       {/* 2. PLATFORM FEATURES HIGHLIGHT */}
-      <section id="fitur" className="py-24 bg-white relative">
+      <section id="fitur" className="py-24 bg-white border-b border-slate-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2
@@ -1142,20 +1139,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Seamless Transition Divider: Fitur -> Jurusan */}
-      <div className="w-full overflow-hidden leading-none bg-white -mb-px">
-        <svg
-          className="relative block w-full h-8 sm:h-12 text-[#F8FBFF]"
-          viewBox="0 0 1200 120"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,0 C300,70 900,70 1200,0 L1200,120 L0,120 Z"
-            fill="currentColor"
-          />
-        </svg>
-      </div>
-
       {/* ========================================================================= */}
       {/* 3. JURUSAN & 29 PRODI: 6 PHYSICAL FOLDER CARDS (HOVER RAISES PRODI SHEETS, CLICK OPENS ONLY 1 PRODI) */}
       {/* ========================================================================= */}
@@ -1181,12 +1164,6 @@ export const LandingPage: React.FC = () => {
                 className="mt-2 text-3xl sm:text-4xl font-extrabold text-navy"
               >
                 Folder Jurusan & Program Studi
-              </motion.p>
-              <motion.p
-                {...scrollAnim(0.25)}
-                className="mt-2 text-sm text-slate-600 max-w-2xl"
-              >
-                Arahkan cursor ke folder untuk melihat berkas prodi keluar dari map, lalu pilih salah satu prodi untuk membuka detail lengkapnya.
               </motion.p>
             </div>
           </div>
@@ -1307,26 +1284,12 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Seamless Transition Divider: Jurusan -> Organisasi */}
-      <div className="w-full overflow-hidden leading-none bg-[#F5F9FE] -mb-px">
-        <svg
-          className="relative block w-full h-8 sm:h-12 text-white"
-          viewBox="0 0 1200 120"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,0 C400,60 800,60 1200,0 L1200,120 L0,120 Z"
-            fill="currentColor"
-          />
-        </svg>
-      </div>
-
       {/* ========================================================================= */}
       {/* 4. ORGANISASI MAHASISWA PNL (CLICK ON ANY ORMAWA OPENS ONLY 1 ORMAWA) */}
       {/* ========================================================================= */}
       <section
         id="organisasi"
-        className="py-24"
+        className="py-24 border-t border-slate-200/70"
         style={{
           background: 'linear-gradient(180deg, #FFFFFF 0%, #F5F9FE 50%, #FFFFFF 100%)',
         }}
@@ -1711,24 +1674,10 @@ export const LandingPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Seamless Transition Divider: Organisasi -> Footer */}
-      <div className="w-full overflow-hidden leading-none bg-white -mb-px">
-        <svg
-          className="relative block w-full h-10 sm:h-14 text-[#0F296B]"
-          viewBox="0 0 1200 120"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z"
-            fill="currentColor"
-          />
-        </svg>
-      </div>
-
-      {/* 5. FOOTER (SOLID DEEP BLUE #0F296B + PURE WHITE #FFFFFF TEXT & LINKS) */}
+      {/* 5. FOOTER (MODERN FRESH CAMPUS BLUE - NOT TOO DARK) */}
       <footer
-        style={{ backgroundColor: '#0F296B' }}
-        className="py-12 text-white"
+        style={{ backgroundColor: '#1D4ED8' }}
+        className="py-12 text-white border-t border-blue-400/30 shadow-inner"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-xs">
           <div className="flex items-center gap-2.5">
