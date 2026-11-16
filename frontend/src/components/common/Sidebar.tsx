@@ -214,15 +214,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
         {/* Brand Header */}
         <div className="h-16 px-5 flex items-center justify-between border-b border-white/10">
           <NavLink to="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center shadow-lg shadow-brand-500/30">
-              <GraduationCap className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-white/10 p-1 flex items-center justify-center shadow-lg border border-white/20">
+              <img src="/images/pnl-logo.png" alt="PNL" className="w-full h-full object-contain filter drop-shadow-sm" />
             </div>
             <div>
               <div className="font-bold text-sm tracking-tight text-white flex items-center gap-1">
                 PNLConnect
               </div>
-              <div className="text-[10px] text-brand-300 font-medium tracking-wide">
-                PNL DIGITAL ECOSYSTEM
+              <div className="text-[10px] text-brand-300 font-medium tracking-wide uppercase">
+                Politeknik Negeri Lhokseumawe
               </div>
             </div>
           </NavLink>

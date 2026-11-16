@@ -55,8 +55,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs font-semibold text-slate-500">Loading CampusConnect...</p>
+          <div className="w-12 h-12 relative flex items-center justify-center">
+            <div className="absolute inset-0 border-3 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+            <img src="/images/pnl-logo.png" alt="PNL" className="w-6 h-6 object-contain" />
+          </div>
+          <p className="text-xs font-semibold text-slate-500">Memuat PNLConnect...</p>
         </div>
       </div>
     );
