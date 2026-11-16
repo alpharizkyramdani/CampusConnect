@@ -21,7 +21,6 @@ import {
   FileText,
   X,
   ChevronRight,
-  ChevronUp,
   CheckCircle2,
   ExternalLink,
   Landmark,
@@ -1727,24 +1726,6 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
-
-      {/* FLOATING SCROLL-TO-TOP BUTTON WITH SMOOTH SPRING TRANSITION */}
-      <AnimatePresence>
-        {isScrolled && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-6 right-6 z-40 p-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white shadow-xl shadow-brand-600/30 border border-white/20 transition-all flex items-center justify-center cursor-pointer"
-            title="Kembali ke atas"
-          >
-            <ChevronUp className="w-5 h-5" />
-          </motion.button>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
