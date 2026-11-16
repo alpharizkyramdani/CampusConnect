@@ -21,7 +21,6 @@ import {
   FileText,
   X,
   ChevronRight,
-  ChevronDown,
   CheckCircle2,
   ExternalLink,
   Landmark,
@@ -864,7 +863,7 @@ export const LandingPage: React.FC = () => {
           <div className="hidden md:flex items-center gap-8 text-sm font-bold">
             <a
               href="#fitur"
-              className={`relative py-1.5 transition-colors ${
+              className={`relative py-1.5 transition-colors group ${
                 isScrolled
                   ? activeSection === 'fitur'
                     ? 'text-brand-600 font-extrabold'
@@ -875,22 +874,22 @@ export const LandingPage: React.FC = () => {
               }`}
             >
               <span>Platform Features</span>
-              {activeSection === 'fitur' && (
-                <motion.span
-                  layoutId="navActiveGlidingLine"
-                  className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${
-                    isScrolled
-                      ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
-                      : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
-                  }`}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
+              <span
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'fitur'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
+                }`}
+              />
             </a>
 
             <a
               href="#jurusan"
-              className={`relative py-1.5 transition-colors ${
+              className={`relative py-1.5 transition-colors group ${
                 isScrolled
                   ? activeSection === 'jurusan'
                     ? 'text-brand-600 font-extrabold'
@@ -901,22 +900,22 @@ export const LandingPage: React.FC = () => {
               }`}
             >
               <span>Jurusan PNL</span>
-              {activeSection === 'jurusan' && (
-                <motion.span
-                  layoutId="navActiveGlidingLine"
-                  className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${
-                    isScrolled
-                      ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
-                      : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
-                  }`}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
+              <span
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'jurusan'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
+                }`}
+              />
             </a>
 
             <a
               href="#organisasi"
-              className={`relative py-1.5 transition-colors ${
+              className={`relative py-1.5 transition-colors group ${
                 isScrolled
                   ? activeSection === 'organisasi'
                     ? 'text-brand-600 font-extrabold'
@@ -927,26 +926,31 @@ export const LandingPage: React.FC = () => {
               }`}
             >
               <span>Organisasi PNL</span>
-              {activeSection === 'organisasi' && (
-                <motion.span
-                  layoutId="navActiveGlidingLine"
-                  className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${
-                    isScrolled
-                      ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
-                      : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
-                  }`}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
+              <span
+                className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-out ${
+                  activeSection === 'organisasi'
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                } ${
+                  isScrolled
+                    ? 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]'
+                    : 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.95)]'
+                }`}
+              />
             </a>
 
             <Link
               to="/verify"
-              className={`relative py-1.5 transition-colors ${
+              className={`relative py-1.5 transition-colors group ${
                 isScrolled ? 'text-slate-600 hover:text-brand-600' : 'text-white/90 hover:text-white'
               }`}
             >
               <span>Verify Certificate</span>
+              <span
+                className={`absolute bottom-0 left-0 w-0 h-[2.5px] rounded-full transition-all duration-300 ease-out group-hover:w-full ${
+                  isScrolled ? 'bg-brand-600' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                }`}
+              />
             </Link>
           </div>
 
@@ -1087,77 +1091,28 @@ export const LandingPage: React.FC = () => {
                 </motion.div>
               ))}
             </div>
-            {/* Page 1 to Page 2 Transition Cue: Eksplor Fitur Platform */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55, duration: 0.6 }}
-              className="mt-12 flex justify-center"
-            >
-              <a
-                href="#fitur"
-                className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-black/35 hover:bg-black/55 backdrop-blur-md border border-white/20 text-white/90 hover:text-white text-xs sm:text-sm font-semibold shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <span>Eksplor Fitur Platform</span>
-                <ChevronDown className="w-4 h-4 text-cyan-400 group-hover:translate-y-0.5 transition-transform animate-bounce" />
-              </a>
-            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* 2. PLATFORM FEATURES HIGHLIGHT WITH DYNAMIC CLIP WIPE TRANSITION */}
-      <motion.section
-        id="fitur"
-        initial={{
-          clipPath: 'polygon(0% 75px, 100% 0%, 100% 100%, 0% 100%)',
-          opacity: 0.95,
-        }}
-        whileInView={{
-          clipPath: 'polygon(0% 0px, 100% 0%, 100% 100%, 0% 100%)',
-          opacity: 1,
-        }}
-        viewport={{ once: false, amount: 0.12 }}
-        transition={{
-          duration: 0.75,
-          ease: [0.16, 1, 0.3, 1],
-        }}
-        className="relative -mt-10 sm:-mt-14 pt-28 sm:pt-32 pb-24 bg-white border-b border-slate-200/60 z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.18)]"
-      >
-        {/* Leading Edge Clip Wipe Laser Line */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: false, amount: 0.12 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute top-0 inset-x-0 h-[2.5px] bg-gradient-to-r from-cyan-400 via-brand-500 to-indigo-600 shadow-[0_0_16px_rgba(6,182,212,0.9)] origin-left z-30"
-        />
-
+      {/* 2. PLATFORM FEATURES HIGHLIGHT */}
+      <section id="fitur" className="py-24 bg-white border-b border-slate-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2
-              initial={{ opacity: 0, y: 15, clipPath: 'inset(100% 0 0 0)' }}
-              whileInView={{ opacity: 1, y: 0, clipPath: 'inset(0% 0 0 0)' }}
-              viewport={{ once: false, amount: 0.18 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              {...scrollAnim(0.1)}
               className="text-xs font-bold text-brand-600 uppercase tracking-widest text-center"
             >
               Infrastruktur Kampus Vokasi Terpadu
             </motion.h2>
             <motion.p
-              initial={{ opacity: 0, y: 18, clipPath: 'inset(50% 0 0 0)' }}
-              whileInView={{ opacity: 1, y: 0, clipPath: 'inset(0% 0 0 0)' }}
-              viewport={{ once: false, amount: 0.18 }}
-              transition={{ duration: 0.55, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+              {...scrollAnim(0.2)}
               className="mt-2 text-3xl sm:text-4xl font-extrabold text-navy"
             >
               Fitur Lengkap untuk Civitas Politeknik Negeri Lhokseumawe
             </motion.p>
             <motion.p
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.18 }}
-              transition={{ duration: 0.55, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+              {...scrollAnim(0.3)}
               className="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed"
             >
               Dirancang untuk memfasilitasi kebutuhan administrasi kegiatan kemahasiswaan, peminjaman sarana laboratorium praktikum, dan verifikasi sertifikasi vokasi dalam satu pintu.
@@ -1168,14 +1123,7 @@ export const LandingPage: React.FC = () => {
             {platformFeatures.map((feat, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 25, clipPath: 'inset(16% 0 0 0)' }}
-                whileInView={{ opacity: 1, y: 0, clipPath: 'inset(0% 0 0 0)' }}
-                viewport={{ once: false, amount: 0.15 }}
-                transition={{
-                  duration: 0.55,
-                  delay: 0.05 + (idx % 3) * 0.1,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+                {...scrollAnim(0.1 + (idx % 3) * 0.1)}
                 style={{ backgroundColor: '#ffffff' }}
                 className="p-7 rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-xl hover:border-brand-300 transition-all transform hover:-translate-y-1"
               >
@@ -1188,7 +1136,7 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* ========================================================================= */}
       {/* 3. JURUSAN & 29 PRODI: 6 PHYSICAL FOLDER CARDS (HOVER RAISES PRODI SHEETS, CLICK OPENS ONLY 1 PRODI) */}
