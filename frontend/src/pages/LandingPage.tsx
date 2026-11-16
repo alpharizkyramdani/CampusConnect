@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -94,6 +94,52 @@ interface OrgCategory {
 export const LandingPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<'hero' | 'fitur' | 'jurusan' | 'organisasi'>('hero');
+
+  // Initial Landing Entry Logo Intro Animation
+  const [introPhase, setIntroPhase] = useState<'center' | 'gliding' | 'settled' | 'done'>('center');
+  const navBrandRef = useRef<HTMLAnchorElement>(null);
+  const [navCoords, setNavCoords] = useState<{ top: number; left: number } | null>(null);
+
+  const updateNavCoords = () => {
+    if (navBrandRef.current) {
+      const rect = navBrandRef.current.getBoundingClientRect();
+      setNavCoords({ top: rect.top, left: rect.left });
+    }
+  };
+
+  useEffect(() => {
+    updateNavCoords();
+    const raf = requestAnimationFrame(updateNavCoords);
+    window.addEventListener('resize', updateNavCoords);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', updateNavCoords);
+    };
+  }, []);
+
+  useEffect(() => {
+    // 0s - 1.9s: Center presentation (0.5s longer than original 1.4s)
+    const timer1 = setTimeout(() => {
+      updateNavCoords();
+      setIntroPhase('gliding');
+    }, 1900);
+
+    // 1.9s - 3.0s: Gliding from center to navbar target (1.1s glide)
+    const timer2 = setTimeout(() => {
+      setIntroPhase('settled');
+    }, 3000);
+
+    // 3.0s - 3.45s: Seamless cross-fade settle into static navbar
+    const timer3 = setTimeout(() => {
+      setIntroPhase('done');
+    }, 3450);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
+  }, []);
 
   // Page Scroll Progress for Smooth Landing Page Transition Bar
   const { scrollYProgress } = useScroll();
@@ -817,6 +863,202 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-brand-500 selection:text-white">
+      {/* INITIAL VISITOR LOGO INTRO ANIMATION (GLIDES FROM CENTER TO NAVBAR/HEADER) */}
+      <AnimatePresence>
+        {introPhase !== 'done' && (
+          <div
+            key="splash-overlay-root"
+            onClick={() => setIntroPhase('done')}
+            className={`fixed inset-0 z-[100] ${
+              introPhase === 'center' ? 'cursor-pointer' : 'pointer-events-none'
+            }`}
+          >
+            {/* 1. Ambient Backdrop - Fades out smoothly during glide to reveal website beneath */}
+            <motion.div
+              initial={{ opacity: 1 }}
+              animate={{ opacity: introPhase === 'center' ? 1 : 0 }}
+              transition={{ duration: 0.9, ease: 'easeInOut' }}
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 60%, #EEF2F6 100%)',
+              }}
+            >
+              <div className="absolute inset-0 bg-radial from-indigo-50/70 via-transparent to-transparent pointer-events-none" />
+            </motion.div>
+
+            {/* 2. Gliding & Morphing Brand Container - Glides from center to exact navbar coordinates */}
+            <motion.div
+              initial={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                x: '-50%',
+                y: '-50%',
+                opacity: 1,
+              }}
+              animate={
+                introPhase === 'center'
+                  ? {
+                      position: 'fixed',
+                      top: '50%',
+                      left: '50%',
+                      x: '-50%',
+                      y: '-50%',
+                      opacity: 1,
+                    }
+                  : {
+                      position: 'fixed',
+                      top: navCoords ? `${navCoords.top}px` : '20px',
+                      left: navCoords ? `${navCoords.left}px` : '32px',
+                      x: '0%',
+                      y: '0%',
+                      opacity: introPhase === 'settled' ? 0 : 1,
+                    }
+              }
+              transition={
+                introPhase === 'settled'
+                  ? { opacity: { duration: 0.4, ease: 'easeOut' } }
+                  : {
+                      top: { duration: 1.1, ease: [0.16, 1, 0.3, 1] },
+                      left: { duration: 1.1, ease: [0.16, 1, 0.3, 1] },
+                      x: { duration: 1.1, ease: [0.16, 1, 0.3, 1] },
+                      y: { duration: 1.1, ease: [0.16, 1, 0.3, 1] },
+                    }
+              }
+              className="flex items-center gap-3 select-none z-[110]"
+            >
+              {/* Emblem with Ambient Glow Halo */}
+              <div className="relative flex items-center justify-center">
+                {/* Outer Glow Halo Rings (fade out when gliding starts) */}
+                <motion.div
+                  animate={
+                    introPhase === 'center'
+                      ? {
+                          scale: [1, 1.25, 1],
+                          opacity: [0.65, 0.25, 0.65],
+                        }
+                      : {
+                          scale: 0.6,
+                          opacity: 0,
+                        }
+                  }
+                  transition={
+                    introPhase === 'center'
+                      ? {
+                          duration: 1.8,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }
+                      : {
+                          duration: 0.5,
+                          ease: 'easeOut',
+                        }
+                  }
+                  className="absolute -inset-6 rounded-full bg-brand-500/25 blur-xl pointer-events-none"
+                />
+                <motion.div
+                  animate={
+                    introPhase === 'center'
+                      ? {
+                          scale: [1, 1.15, 1],
+                          opacity: [0.8, 0.35, 0.8],
+                        }
+                      : {
+                          scale: 0.6,
+                          opacity: 0,
+                        }
+                  }
+                  transition={
+                    introPhase === 'center'
+                      ? {
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }
+                      : {
+                          duration: 0.5,
+                          ease: 'easeOut',
+                        }
+                  }
+                  className="absolute -inset-3 rounded-full bg-cyan-400/30 blur-md pointer-events-none"
+                />
+
+                {/* Morphing Badge Holder (Smoothly morphs from big gradient brand rounded-3xl to navbar rounded-2xl glass) */}
+                <motion.div
+                  animate={
+                    introPhase === 'center'
+                      ? {
+                          width: '84px',
+                          height: '84px',
+                          borderRadius: '24px',
+                          backgroundColor: 'rgba(37, 99, 235, 1)',
+                          borderWidth: '0px',
+                          padding: '0px',
+                          boxShadow: '0 20px 30px -10px rgba(37, 99, 235, 0.45)',
+                        }
+                      : {
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '16px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                          borderColor: 'rgba(255, 255, 255, 0.3)',
+                          borderWidth: '1px',
+                          padding: '0px',
+                          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        }
+                  }
+                  transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex items-center justify-center relative z-10 backdrop-blur-md overflow-hidden bg-gradient-to-tr from-brand-600 to-brand-500 text-white"
+                >
+                  <motion.div
+                    animate={{
+                      scale: introPhase === 'center' ? 1.6 : 1,
+                    }}
+                    transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-center justify-center text-white"
+                  >
+                    <GraduationCap className="w-6 h-6 text-white" />
+                  </motion.div>
+                </motion.div>
+              </div>
+
+              {/* Text: PNLConnect & POLITEKNIK NEGERI LHOKSEUMAWE (Morphs into navbar style) */}
+              <div className="flex flex-col text-left">
+                <motion.span
+                  animate={{
+                    fontSize: introPhase === 'center' ? '28px' : '20px',
+                    color: introPhase === 'center' ? '#0f172a' : '#ffffff',
+                  }}
+                  transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                  className="font-black tracking-tight leading-none filter drop-shadow-sm"
+                >
+                  PNL
+                  <motion.span
+                    animate={{
+                      color: introPhase === 'center' ? '#2563eb' : '#22d3ee',
+                    }}
+                    transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    Connect
+                  </motion.span>
+                </motion.span>
+                <motion.span
+                  animate={{
+                    fontSize: introPhase === 'center' ? '12px' : '10px',
+                    color: introPhase === 'center' ? '#475569' : 'rgba(255, 255, 255, 0.8)',
+                    marginTop: introPhase === 'center' ? '4px' : '2px',
+                  }}
+                  transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                  className="font-bold tracking-widest uppercase block leading-tight"
+                >
+                  Politeknik Negeri Lhokseumawe
+                </motion.span>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* 0. TOP SCROLL PAGE TRANSITION PROGRESS BAR */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-brand-500 to-indigo-600 z-[60] origin-left shadow-xs"
@@ -832,15 +1074,21 @@ export const LandingPage: React.FC = () => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link
+            ref={navBrandRef}
+            to="/"
+            className={`flex items-center gap-3 group transition-opacity duration-300 ${
+              introPhase === 'done' || introPhase === 'settled' ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
             <div
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
                 isScrolled
-                  ? 'bg-brand-600 text-white shadow-md'
-                  : 'bg-white/20 backdrop-blur-md text-white border border-white/30'
+                  ? 'bg-gradient-to-tr from-brand-600 to-brand-500 text-white shadow-md'
+                  : 'bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-xs'
               }`}
             >
-              <GraduationCap className="w-6 h-6 transform group-hover:scale-110 transition-transform" />
+              <GraduationCap className="w-6 h-6 transform group-hover:scale-110 transition-transform text-white" />
             </div>
             <div>
               <span
