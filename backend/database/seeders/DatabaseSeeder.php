@@ -803,5 +803,8 @@ class DatabaseSeeder extends Seeder
             'ip_address' => '127.0.0.1',
             'details' => ['title' => 'Semester Examination Schedule & Regulations 2026/2027'],
         ]);
+
+        // 16. PNL CAMPUS DATA (FACULTIES, DEPARTMENTS/PRODI, ORGANIZATIONS)
+        $this->call(CampusDataPnlSeeder::class);
     }
 }
