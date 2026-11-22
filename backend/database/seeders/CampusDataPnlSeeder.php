@@ -282,6 +282,18 @@ class CampusDataPnlSeeder extends Seeder
             ],
             [
                 'faculty' => 'bisnis',
+                'name' => 'D4 Bahasa Inggris untuk Komunikasi Bisnis dan Profesional',
+                'code' => 'BIKBP-D4',
+                'description' => 'Mencetak tenaga sarjana terapan komunikasi bisnis internasional, diplomasi korporat, dan content strategist terdigitalisasi.',
+            ],
+            [
+                'faculty' => 'kimia',
+                'name' => 'D4 Teknologi Rekayasa Kimia Berkelanjutan',
+                'code' => 'TRKB-D4',
+                'description' => 'Pendidikan vokasi rekayasa kimia hijau, pemanfaatan bioproses ramah lingkungan, dan mitigasi emisi industri masa depan.',
+            ],
+            [
+                'faculty' => 'bisnis',
                 'name' => 'S2 (Magister Terapan) Keuangan Islam Terapan',
                 'code' => 'KIT-S2',
                 'description' => 'Program pascasarjana terapan pertama di Aceh yang mengkaji inovasi fintech syariah, manajemen portofolio wakaf produktif, dan kebijakan moneter Islam kontemporer. Gelar: Magister Terapan (M.Tr.E).',
@@ -289,12 +301,12 @@ class CampusDataPnlSeeder extends Seeder
         ];
 
         $prodiCodeMap = [
-            'TI-D4' => '55301', 'TRKJ-D4' => '56301', 'TRM-D4' => '55302', 'TRPL-D4' => '55303', 'TI-D3' => '55401',
-            'TKBA-D3' => '22402', 'TKJJ-D3' => '22403', 'TKBG-D3' => '22404', 'TRKJJ-D4' => '22301', 'TRKBG-D4' => '22302',
-            'TM-D3' => '21401', 'TIND-D3' => '21402', 'TRM-D4M' => '21301', 'TRPF-D4' => '21302',
-            'TK-D3' => '24401', 'TPMG-D3' => '24402', 'TRKI-D4' => '24301',
-            'TL-D3' => '20401', 'TT-D3' => '20402', 'TE-D3' => '20403', 'TRPE-D4' => '20301', 'TRJT-D4' => '20302', 'TRIK-D4' => '20303', 'TRMK-D4' => '20304',
-            'AKT-D3' => '62401', 'AB-D3' => '63411', 'ALKS-D4' => '62301', 'ASP-D4' => '62302', 'MKSP-D4' => '61301', 'KIT-S2' => '60202',
+            'TI-D4' => '57301', 'TRKJ-D4' => '90343', 'TRM-D4' => '58302', 'TRPL-D4' => '58305',
+            'TKBA-D3' => '22402', 'TKJJ-D3' => '22403', 'TKBG-D3' => '22404', 'TRKJJ-D4' => '22302', 'TRKBG-D4' => '22303',
+            'TM-D3' => '21401', 'TIND-D3' => '21402', 'TRM-D4M' => '21301', 'TRPF-D4' => '36303',
+            'TK-D3' => '24401', 'TPMG-D3' => '32402', 'TRKI-D4' => '24301', 'TRKB-D4' => '24309',
+            'TL-D3' => '20401', 'TT-D3' => '20402', 'TE-D3' => '20401', 'TRPE-D4' => '20305', 'TRJT-D4' => '20302', 'TRIK-D4' => '20301', 'TRMK-D4' => '21312',
+            'AKT-D3' => '62401', 'AB-D3' => '63411', 'ALKS-D4' => '62301', 'ASP-D4' => '62302', 'MKSP-D4' => '61306', 'BIKBP-D4' => '79308', 'KIT-S2' => '60202',
         ];
 
         $validDeptIds = [];

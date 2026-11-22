@@ -16,7 +16,7 @@ class PnlRegistrationRulesTest extends TestCase
             'name' => 'Test Student',
             'email' => 'shortnim@student.pnl.ac.id',
             'password' => 'password123',
-            'nim' => '202555301', // only 9 digits
+            'nim' => '202557301', // only 9 digits
         ]);
 
         $response->assertStatus(422);
@@ -40,13 +40,13 @@ class PnlRegistrationRulesTest extends TestCase
     {
         // Cleanup if existing
         User::where('email', 'cutmutia_test@student.pnl.ac.id')->delete();
-        StudentProfile::where('nim', '2025553010078')->delete();
+        StudentProfile::where('nim', '2025573010078')->delete();
 
         $response = $this->postJson('/api/v1/auth/register-student', [
             'name' => 'Cut Mutia',
             'email' => 'cutmutia_test@student.pnl.ac.id',
             'password' => 'password123',
-            'nim' => '2025553010078', // 2025 + 55301 (D4 TI) + 0078
+            'nim' => '2025573010078', // 2025 + 57301 (D4 TI) + 0078
         ]);
 
         $response->assertStatus(201);

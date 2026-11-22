@@ -3,21 +3,20 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { University, Faculty, Department } from '../types';
-import { GraduationCap, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialType = searchParams.get('type') === 'lecturer' ? 'lecturer' : 'student';
   const [roleType, setRoleType] = useState<'student' | 'lecturer'>(initialType);
 
-  const [universities, setUniversities] = useState<University[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [universityId, setUniversityId] = useState('5');
+  const universityId = '5';
   const [facultyId, setFacultyId] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [nim, setNim] = useState('');
@@ -78,24 +77,12 @@ export const RegisterPage: React.FC = () => {
   };
 
   useEffect(() => {
-    api.get('/universities').then((res) => {
-      if (res.data.success && res.data.data?.length > 0) {
-        setUniversities(res.data.data);
-        const pnl = res.data.data.find((u: any) => u.code === 'PNL') || res.data.data[0];
-        setUniversityId(pnl.id.toString());
-      }
+    api.get(`/universities/${universityId}/faculties`).then((res) => {
+      if (res.data.success) setFaculties(res.data.data);
     });
-  }, []);
-
-  useEffect(() => {
-    if (universityId) {
-      api.get(`/universities/${universityId}/faculties`).then((res) => {
-        if (res.data.success) setFaculties(res.data.data);
-      });
-      api.get(`/universities/${universityId}/departments`).then((res) => {
-        if (res.data.success) setDepartments(res.data.data);
-      });
-    }
+    api.get(`/universities/${universityId}/departments`).then((res) => {
+      if (res.data.success) setDepartments(res.data.data);
+    });
   }, [universityId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,7 +122,7 @@ export const RegisterPage: React.FC = () => {
         return;
       }
       if (!departmentId) {
-        setError('Silakan pilih Jurusan / Departemen dosen.');
+        setError('Silakan pilih Program Studi dosen.');
         return;
       }
     }
@@ -313,7 +300,7 @@ export const RegisterPage: React.FC = () => {
                       maxLength={13}
                       value={nim}
                       onChange={(e) => handleNimChange(e.target.value)}
-                      placeholder="e.g. 2025553010078"
+                      placeholder="e.g. 2025573010078"
                       className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                     />
                   </div>
@@ -331,46 +318,32 @@ export const RegisterPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Department / Jurusan
-                    </label>
-                    <select
-                      value={departmentId}
-                      onChange={(e) => handleDepartmentChange(e.target.value)}
-                      className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                    >
-                      <option value="">Pilih Jurusan / Departemen...</option>
-                      {faculties.length > 0
-                        ? faculties.map((f) => (
-                            <optgroup key={f.id} label={f.name}>
-                              {(f.departments || []).map((d) => (
-                                <option key={d.id} value={d.id}>
-                                  {d.name} ({d.prodi_code || d.code})
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))
-                        : departments.map((d) => (
-                            <option key={d.id} value={d.id}>
-                              {d.name} ({d.prodi_code || d.code})
-                            </option>
-                          ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Study Program / Peminatan
-                    </label>
-                    <input
-                      type="text"
-                      value={studyProgram}
-                      onChange={(e) => setStudyProgram(e.target.value)}
-                      placeholder="e.g. Teknik Informatika"
-                      className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Program Studi
+                  </label>
+                  <select
+                    value={departmentId}
+                    onChange={(e) => handleDepartmentChange(e.target.value)}
+                    className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                  >
+                    <option value="">Pilih Program Studi...</option>
+                    {faculties.length > 0
+                      ? faculties.map((f) => (
+                          <optgroup key={f.id} label={f.name}>
+                            {(f.departments || []).map((d) => (
+                              <option key={d.id} value={d.id}>
+                                {d.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))
+                      : departments.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name}
+                          </option>
+                        ))}
+                  </select>
                 </div>
               </>
             ) : (
@@ -434,27 +407,27 @@ export const RegisterPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Jurusan / Departemen Dosen
+                    Program Studi Dosen
                   </label>
                   <select
                     value={departmentId}
                     onChange={(e) => handleDepartmentChange(e.target.value)}
                     className="mt-1.5 w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                   >
-                    <option value="">Pilih Jurusan / Departemen...</option>
+                    <option value="">Pilih Program Studi...</option>
                     {faculties.length > 0
                       ? faculties.map((f) => (
                           <optgroup key={f.id} label={f.name}>
                             {(f.departments || []).map((d) => (
                               <option key={d.id} value={d.id}>
-                                {d.name} ({d.prodi_code || d.code})
+                                {d.name}
                               </option>
                             ))}
                           </optgroup>
                         ))
                       : departments.map((d) => (
                           <option key={d.id} value={d.id}>
-                            {d.name} ({d.prodi_code || d.code})
+                            {d.name}
                           </option>
                         ))}
                   </select>
