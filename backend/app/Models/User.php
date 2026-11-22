@@ -125,11 +125,6 @@ class User extends Authenticatable
         return $this->hasMany(SavedPost::class);
     }
 
-    public function academicSemesters()
-    {
-        return $this->hasMany(AcademicSemester::class);
-    }
-
     public function careerApplications()
     {
         return $this->hasMany(CareerApplication::class);

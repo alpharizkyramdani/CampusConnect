@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AcademicCourse;
-use App\Models\AcademicSemester;
 use App\Models\Achievement;
 use App\Models\CampusLocation;
 use App\Models\CampusPost;
@@ -142,48 +140,6 @@ class AdvancedFeaturesTest extends TestCase
             'blocker_id' => $userA->id,
             'blocked_id' => $userB->id,
         ]);
-    }
-
-    public function test_academic_progress_endpoint(): void
-    {
-        $student = $this->createTestUser('Student Felicia', 'student');
-
-        $sem = AcademicSemester::create([
-            'user_id' => $student->id,
-            'university_id' => $student->default_university_id,
-            'semester_name' => 'Semester 1 - Ganjil 2024',
-            'semester_number' => 1,
-            'gpa' => 3.85,
-            'cumulative_gpa' => 3.85,
-            'sks_taken' => 20,
-            'sks_passed' => 20,
-            'status' => 'completed',
-        ]);
-
-        AcademicCourse::create([
-            'semester_id' => $sem->id,
-            'user_id' => $student->id,
-            'course_code' => 'TIF101',
-            'course_name' => 'Pemrograman Web',
-            'sks' => 3,
-            'grade' => 'A',
-            'grade_point' => 4.00,
-            'attendance_percentage' => 96.5,
-        ]);
-
-        $res = $this->actingAs($student, 'sanctum')->getJson('/api/v1/academic-progress');
-
-        $res->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'data' => [
-                    'summary' => [
-                        'cumulative_gpa' => 3.85,
-                        'total_sks_taken' => 20,
-                        'total_sks_passed' => 20,
-                    ],
-                ],
-            ]);
     }
 
     public function test_campus_map_locations(): void

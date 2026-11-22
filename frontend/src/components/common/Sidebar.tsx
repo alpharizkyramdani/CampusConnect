@@ -73,7 +73,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
               { label: 'Pusat Moderasi Konten', icon: ShieldAlert, path: '/moderation' },
               { label: 'Pencarian Global', icon: Search, path: '/search' },
-              { label: 'Progress Akademik', icon: GraduationCap, path: '/academic-progress' },
               { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
               { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
               { label: 'Career & Internship Center', icon: Briefcase, path: '/career-center' },
@@ -106,7 +105,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
               { label: 'Pencarian Global', icon: Search, path: '/search' },
-              { label: 'Progress Akademik Jurusan', icon: GraduationCap, path: '/academic-progress' },
               { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
               { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
               { label: 'Equipment Inventory', icon: PackageCheck, path: '/facilities' },
@@ -144,7 +142,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             items: [
               { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
               { label: 'Pencarian Global', icon: Search, path: '/search' },
-              { label: 'Bimbingan Akademik (Mahasiswa)', icon: GraduationCap, path: '/academic-progress' },
               { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
               { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
               { label: 'Campus Feed (Timeline)', icon: Sparkles, path: '/feed' },
@@ -167,7 +164,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             items: [
               { label: 'My Dashboard', icon: LayoutDashboard, path: '/dashboard' },
               { label: 'Pencarian Global', icon: Search, path: '/search' },
-              { label: 'Progress Akademik (KHS/IPK)', icon: GraduationCap, path: '/academic-progress' },
               { label: 'Pusat Karier & Magang', icon: Briefcase, path: '/career-center' },
               { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
               { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },

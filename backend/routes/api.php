@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\AcademicCalendarController;
-use App\Http\Controllers\Api\AcademicProgressController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AuditLogController;
@@ -227,11 +226,6 @@ Route::prefix('v1')->group(function () {
         Route::delete('/users/{id}/block', [PrivacyController::class, 'unblockUser']);
         Route::post('/users/{id}/mute', [PrivacyController::class, 'muteUser']);
         Route::delete('/users/{id}/mute', [PrivacyController::class, 'unmuteUser']);
-
-        // 3. Academic Progress Dashboard & Management
-        Route::get('/academic-progress', [AcademicProgressController::class, 'show']);
-        Route::get('/academic-progress/students', [AcademicProgressController::class, 'listStudents']);
-        Route::post('/academic-progress/khs', [AcademicProgressController::class, 'storeKHS']);
 
         // 4. Smart Campus Map (Admin Management)
         Route::post('/campus-map/locations', [CampusMapController::class, 'store']);

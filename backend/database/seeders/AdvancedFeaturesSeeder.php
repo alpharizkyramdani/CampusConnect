@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\AcademicCourse;
-use App\Models\AcademicSemester;
 use App\Models\CampusLocation;
 use App\Models\CampusPost;
 use App\Models\CareerOpportunity;
@@ -36,138 +34,21 @@ class AdvancedFeaturesSeeder extends Seeder
         $superAdmin = User::where('email', 'superadmin@campusconnect.id')->first();
         $adminUser = User::whereHas('roleAssignments.role', fn($q) => $q->where('slug', 'campus_admin'))->first() ?? $superAdmin;
 
-        // 1. Seed Academic Progress for students
+        // 1. Seed default privacy settings for students
         foreach ($students as $student) {
-            $semestersData = [
-                [
-                    'num' => 1,
-                    'name' => 'Semester 1 - Ganjil 2022/2023',
-                    'gpa' => 3.70,
-                    'cgpa' => 3.70,
-                    'taken' => 20,
-                    'passed' => 20,
-                    'status' => 'completed',
-                    'courses' => [
-                        ['code' => 'TIF101', 'name' => 'Algoritma & Logika Pemrograman', 'sks' => 4, 'grade' => 'A', 'point' => 4.00, 'att' => 95.0, 'lect' => 'Dr. Ir. Teuku Fachruddin, M.T.'],
-                        ['code' => 'TIF102', 'name' => 'Pengantar Teknologi Informasi', 'sks' => 3, 'grade' => 'A-', 'point' => 3.70, 'att' => 100.0, 'lect' => 'Siti Rahmah, S.Kom., M.Cs.'],
-                        ['code' => 'TIF103', 'name' => 'Matematika Diskrit', 'sks' => 3, 'grade' => 'B+', 'point' => 3.30, 'att' => 90.0, 'lect' => 'Drs. Zulkifli, M.Sc.'],
-                        ['code' => 'TIF104', 'name' => 'Pendidikan Pancasila & Kewarganegaraan', 'sks' => 2, 'grade' => 'A', 'point' => 4.00, 'att' => 96.0, 'lect' => 'Dra. Nurhayati, M.Pd.'],
-                        ['code' => 'TIF105', 'name' => 'Bahasa Inggris Teknis', 'sks' => 2, 'grade' => 'A', 'point' => 4.00, 'att' => 94.0, 'lect' => 'Cut Meurah, M.Ed.'],
-                        ['code' => 'TIF106', 'name' => 'Sistem Digital & Arsitektur Komputer', 'sks' => 3, 'grade' => 'B+', 'point' => 3.30, 'att' => 92.0, 'lect' => 'Ir. Faisal, M.Kom.'],
-                        ['code' => 'TIF107', 'name' => 'Praktikum Algoritma Komputer', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 98.0, 'lect' => 'Rahmat Hidayat, M.T.'],
-                    ],
-                ],
-                [
-                    'num' => 2,
-                    'name' => 'Semester 2 - Genap 2022/2023',
-                    'gpa' => 3.82,
-                    'cgpa' => 3.76,
-                    'taken' => 21,
-                    'passed' => 21,
-                    'status' => 'completed',
-                    'courses' => [
-                        ['code' => 'TIF201', 'name' => 'Struktur Data & Kompleksitas Algoritma', 'sks' => 4, 'grade' => 'A', 'point' => 4.00, 'att' => 96.0, 'lect' => 'Dr. Ir. Teuku Fachruddin, M.T.'],
-                        ['code' => 'TIF202', 'name' => 'Pemrograman Berorientasi Objek', 'sks' => 4, 'grade' => 'A', 'point' => 4.00, 'att' => 94.0, 'lect' => 'Siti Rahmah, S.Kom., M.Cs.'],
-                        ['code' => 'TIF203', 'name' => 'Sistem Basis Data Relasional', 'sks' => 3, 'grade' => 'A-', 'point' => 3.70, 'att' => 92.0, 'lect' => 'M. Iqbal, S.T., M.Kom.'],
-                        ['code' => 'TIF204', 'name' => 'Jaringan Komputer Dasar', 'sks' => 3, 'grade' => 'B+', 'point' => 3.30, 'att' => 90.0, 'lect' => 'Ir. Faisal, M.Kom.'],
-                        ['code' => 'TIF205', 'name' => 'Kalkulus Lanjut', 'sks' => 3, 'grade' => 'B+', 'point' => 3.30, 'att' => 88.0, 'lect' => 'Drs. Zulkifli, M.Sc.'],
-                        ['code' => 'TIF206', 'name' => 'Praktikum Basis Data', 'sks' => 2, 'grade' => 'A', 'point' => 4.00, 'att' => 100.0, 'lect' => 'M. Iqbal, S.T., M.Kom.'],
-                        ['code' => 'TIF207', 'name' => 'Kewirausahaan Berbasis Teknologi', 'sks' => 2, 'grade' => 'A', 'point' => 4.00, 'att' => 95.0, 'lect' => 'Dra. Maryati, M.M.'],
-                    ],
-                ],
-                [
-                    'num' => 3,
-                    'name' => 'Semester 3 - Ganjil 2023/2024',
-                    'gpa' => 3.88,
-                    'cgpa' => 3.80,
-                    'taken' => 22,
-                    'passed' => 22,
-                    'status' => 'completed',
-                    'courses' => [
-                        ['code' => 'TIF301', 'name' => 'Rekayasa Perangkat Lunak Modern', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 96.0, 'lect' => 'Dr. Ir. Teuku Fachruddin, M.T.'],
-                        ['code' => 'TIF302', 'name' => 'Pemrograman Web Full-Stack', 'sks' => 4, 'grade' => 'A', 'point' => 4.00, 'att' => 98.0, 'lect' => 'Ahmad Dani, M.Cs.'],
-                        ['code' => 'TIF303', 'name' => 'Sistem Operasi & Linux Kernel', 'sks' => 3, 'grade' => 'A-', 'point' => 3.70, 'att' => 94.0, 'lect' => 'Ir. Faisal, M.Kom.'],
-                        ['code' => 'TIF304', 'name' => 'Probabilitas & Statistika Sains Data', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 92.0, 'lect' => 'Dr. Cut Safira, M.Si.'],
-                        ['code' => 'TIF305', 'name' => 'Manajemen Proyek Teknologi Informasi', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 96.0, 'lect' => 'Siti Rahmah, S.Kom., M.Cs.'],
-                        ['code' => 'TIF306', 'name' => 'Desain Antarmuka Pengguna (UI/UX)', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 100.0, 'lect' => 'Putri Ayu, M.Ds.'],
-                        ['code' => 'TIF307', 'name' => 'Praktikum Web & Cloud Dev', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 98.0, 'lect' => 'Ahmad Dani, M.Cs.'],
-                    ],
-                ],
-                [
-                    'num' => 4,
-                    'name' => 'Semester 4 - Genap 2023/2024',
-                    'gpa' => 3.92,
-                    'cgpa' => 3.83,
-                    'taken' => 21,
-                    'passed' => 21,
-                    'status' => 'completed',
-                    'courses' => [
-                        ['code' => 'TIF401', 'name' => 'Kecerdasan Buatan & Machine Learning', 'sks' => 4, 'grade' => 'A', 'point' => 4.00, 'att' => 97.0, 'lect' => 'Dr. Hendra Gunawan, Ph.D.'],
-                        ['code' => 'TIF402', 'name' => 'Pemrograman Aplikasi Bergerak (Mobile)', 'sks' => 4, 'grade' => 'A', 'point' => 4.00, 'att' => 96.0, 'lect' => 'Ahmad Dani, M.Cs.'],
-                        ['code' => 'TIF403', 'name' => 'Keamanan Siber & Kriptografi Terapan', 'sks' => 3, 'grade' => 'A-', 'point' => 3.70, 'att' => 93.0, 'lect' => 'Ir. Faisal, M.Kom.'],
-                        ['code' => 'TIF404', 'name' => 'Komputasi Awan (Cloud Computing)', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 95.0, 'lect' => 'M. Iqbal, S.T., M.Kom.'],
-                        ['code' => 'TIF405', 'name' => 'Metodologi Penelitian & Penulisan Ilmiah', 'sks' => 3, 'grade' => 'A', 'point' => 4.00, 'att' => 98.0, 'lect' => 'Dr. Ir. Teuku Fachruddin, M.T.'],
-                        ['code' => 'TIF406', 'name' => 'Etika Profesi & Hukum Siber', 'sks' => 2, 'grade' => 'A', 'point' => 4.00, 'att' => 100.0, 'lect' => 'Dra. Nurhayati, M.Pd.'],
-                        ['code' => 'TIF407', 'name' => 'Proyek Terpadu Perangkat Lunak', 'sks' => 2, 'grade' => 'A', 'point' => 4.00, 'att' => 98.0, 'lect' => 'Tim Dosen Industri'],
-                    ],
-                ],
-                [
-                    'num' => 5,
-                    'name' => 'Semester 5 - Ganjil 2024/2025 (Aktif Berjalan)',
-                    'gpa' => 3.90,
-                    'cgpa' => 3.85,
-                    'taken' => 20,
-                    'passed' => 0, // Still in progress
-                    'status' => 'active',
-                    'courses' => [
-                        ['code' => 'TIF501', 'name' => 'Arsitektur Microservices & DevOps', 'sks' => 4, 'grade' => 'IP', 'point' => 0.00, 'att' => 96.0, 'lect' => 'M. Iqbal, S.T., M.Kom.'],
-                        ['code' => 'TIF502', 'name' => 'Pengolahan Bahasa Alami (NLP) & GenAI', 'sks' => 4, 'grade' => 'IP', 'point' => 0.00, 'att' => 94.0, 'lect' => 'Dr. Hendra Gunawan, Ph.D.'],
-                        ['code' => 'TIF503', 'name' => 'Big Data Analytics & Data Warehouse', 'sks' => 3, 'grade' => 'IP', 'point' => 0.00, 'att' => 98.0, 'lect' => 'Dr. Cut Safira, M.Si.'],
-                        ['code' => 'TIF504', 'name' => 'Internet of Things (IoT) & Embedded Sys', 'sks' => 3, 'grade' => 'IP', 'point' => 0.00, 'att' => 92.0, 'lect' => 'Ir. Faisal, M.Kom.'],
-                        ['code' => 'TIF505', 'name' => 'Proposal Tugas Akhir / Skripsi', 'sks' => 3, 'grade' => 'IP', 'point' => 0.00, 'att' => 100.0, 'lect' => 'Dr. Ir. Teuku Fachruddin, M.T.'],
-                        ['code' => 'TIF506', 'name' => 'Magang Industri Bersertifikat (MBKM)', 'sks' => 3, 'grade' => 'IP', 'point' => 0.00, 'att' => 95.0, 'lect' => 'Koordinator MBKM'],
-                    ],
-                ],
-            ];
-
-            foreach ($semestersData as $sData) {
-                $sem = AcademicSemester::updateOrCreate(
-                    [
-                        'user_id' => $student->id,
-                        'semester_number' => $sData['num'],
-                    ],
-                    [
-                        'university_id' => $student->default_university_id ?? $univ->id,
-                        'semester_name' => $sData['name'],
-                        'gpa' => $sData['gpa'],
-                        'cumulative_gpa' => $sData['cgpa'],
-                        'sks_taken' => $sData['taken'],
-                        'sks_passed' => $sData['passed'],
-                        'status' => $sData['status'],
-                    ]
-                );
-
-                foreach ($sData['courses'] as $c) {
-                    AcademicCourse::updateOrCreate(
-                        [
-                            'semester_id' => $sem->id,
-                            'course_code' => $c['code'],
-                        ],
-                        [
-                            'user_id' => $student->id,
-                            'course_name' => $c['name'],
-                            'sks' => $c['sks'],
-                            'grade' => $c['grade'],
-                            'grade_point' => $c['point'],
-                            'attendance_percentage' => $c['att'],
-                            'lecturer_name' => $c['lect'],
-                        ]
-                    );
-                }
-            }
-
-            // Create default privacy settings
             UserPrivacySetting::firstOrCreate(
+                ['user_id' => $student->id],
+                [
+                    'profile_visibility' => 'campus',
+                    'dm_permission' => 'everyone',
+                    'notify_follow' => true,
+                    'notify_message' => true,
+                    'notify_like' => true,
+                    'notify_comment' => true,
+                    'notify_event' => true,
+                ]
+            );
+        }
                 ['user_id' => $student->id],
                 [
                     'profile_visibility' => 'campus',
