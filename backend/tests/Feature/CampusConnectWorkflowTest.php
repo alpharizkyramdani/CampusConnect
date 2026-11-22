@@ -455,34 +455,6 @@ class CampusConnectWorkflowTest extends TestCase
         }
     }
 
-    public function test_super_admin_university_registration_approval()
-    {
-        $rand = rand(1000, 9999);
-        // 1. Submit university request
-        $reqResponse = $this->postJson('/api/v1/auth/register-university', [
-            'university_name' => "Universitas Sains Terbuka {$rand}",
-            'email' => "contact_{$rand}@ust.ac.id",
-            'website' => "https://ust{$rand}.ac.id",
-            'address' => 'Jl. Pendidikan Nasional No. 10',
-            'contact_person' => 'Prof. Dr. Hendriawan',
-            'contact_phone' => '+62811223344',
-        ]);
-        $reqResponse->assertStatus(201);
-        $reqId = $reqResponse->json('data.id');
-
-        // 2. Super Admin approves request
-        $superAdmin = $this->getTestSuperAdmin();
-        $approveResponse = $this->actingAs($superAdmin)->postJson("/api/v1/university-requests/{$reqId}/approve");
-        $approveResponse->assertStatus(200)
-                        ->assertJsonPath('success', true);
-
-        // Clean up test university so it doesn't leave junk records in database
-        $createdUniv = University::where('name', "Universitas Sains Terbuka {$rand}")->first();
-        if ($createdUniv) {
-            $createdUniv->forceDelete();
-        }
-        \App\Models\UniversityRegistrationRequest::where('id', $reqId)->delete();
-    }
 
     public function test_super_admin_can_delete_university()
     {

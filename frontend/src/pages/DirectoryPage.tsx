@@ -30,29 +30,14 @@ import {
   MessageSquare,
 } from 'lucide-react';
 
-interface UniversityRequest {
-  id: number;
-  university_name: string;
-  email: string;
-  website?: string;
-  address: string;
-  contact_person: string;
-  contact_phone?: string;
-  document_url?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  admin_notes?: string;
-  created_at: string;
-}
-
 export const DirectoryPage: React.FC = () => {
   const { activeRole, activeAssignment } = useAuth();
   const isSuperAdmin = activeRole === 'super_admin';
 
-  const [tab, setTab] = useState<'universities' | 'faculties' | 'lecturers' | 'requests'>('faculties');
+  const [tab, setTab] = useState<'universities' | 'faculties' | 'lecturers'>('faculties');
   const [universities, setUniversities] = useState<University[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [lecturers, setLecturers] = useState<User[]>([]);
-  const [requests, setRequests] = useState<UniversityRequest[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -160,11 +145,6 @@ export const DirectoryPage: React.FC = () => {
       if (fRes.data.success) setFaculties(fRes.data.data || []);
       if (lRes.data.success) setLecturers(lRes.data.data.data || lRes.data.data || []);
       if (rRes.data.success) setRoles(rRes.data.data || []);
-
-      if (isSuperAdmin) {
-        const reqRes = await api.get('/university-requests');
-        if (reqRes.data.success) setRequests(reqRes.data.data || []);
-      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -431,38 +411,6 @@ export const DirectoryPage: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [activeAssignment, isSuperAdmin]);
-
-  const handleApproveRequest = async (id: number) => {
-    setActionLoading(true);
-    setMessage(null);
-    try {
-      const res = await api.post(`/university-requests/${id}/approve`);
-      if (res.data.success) {
-        setMessage({ type: 'success', text: 'University approved and activated successfully!' });
-        await fetchData();
-      }
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to approve request.' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleRejectRequest = async (id: number) => {
-    setActionLoading(true);
-    setMessage(null);
-    try {
-      const res = await api.post(`/university-requests/${id}/reject`);
-      if (res.data.success) {
-        setMessage({ type: 'success', text: 'University request marked as rejected.' });
-        await fetchData();
-      }
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to reject request.' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const handleCreateUniversityDirectly = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1170,99 +1118,6 @@ export const DirectoryPage: React.FC = () => {
                 })}
             </div>
           )}
-        </div>
-      )}
-
-      {/* Tab 4: Onboarding Requests (Super Admin Only) */}
-      {isSuperAdmin && tab === 'requests' && (
-        <div className="space-y-4">
-          <div className="bg-white rounded-3xl border border-borderMuted p-6 shadow-xs">
-            <h2 className="text-base font-bold text-navy mb-1 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-brand-600" />
-              University Onboarding & Verification Queue
-            </h2>
-            <p className="text-xs text-slate-500 mb-6">
-              Review institutional registration submissions and approve them to grant live multi-tenant access
-            </p>
-
-            <div className="space-y-4">
-              {requests.length === 0 ? (
-                <div className="text-center py-10 text-slate-400 text-xs font-semibold">
-                  No university registration requests found.
-                </div>
-              ) : (
-                requests.map((r) => (
-                  <div
-                    key={r.id}
-                    className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1.5 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-navy">{r.university_name}</span>
-                        <Badge
-                          variant={r.status === 'approved' ? 'emerald' : r.status === 'rejected' ? 'rose' : 'amber'}
-                          size="sm"
-                        >
-                          {r.status.toUpperCase()}
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Mail className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{r.email}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Users2 className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Contact: {r.contact_person} ({r.contact_phone || 'N/A'})</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 truncate sm:col-span-2">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{r.address}</span>
-                        </div>
-                        {r.website && (
-                          <div className="flex items-center gap-1.5 truncate sm:col-span-2">
-                            <Globe className="w-3.5 h-3.5 text-slate-400" />
-                            <a href={r.website} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">
-                              {r.website}
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {r.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleApproveRequest(r.id)}
-                            disabled={actionLoading}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all disabled:opacity-50"
-                          >
-                            <CheckCircle2 className="w-4 h-4" />
-                            Approve & Activate
-                          </button>
-                          <button
-                            onClick={() => handleRejectRequest(r.id)}
-                            disabled={actionLoading}
-                            className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {r.status === 'approved' && (
-                        <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4" /> Live on CampusConnect
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
         </div>
       )}
 

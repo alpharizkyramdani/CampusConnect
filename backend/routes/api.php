@@ -46,7 +46,6 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/register-student', [AuthController::class, 'registerStudent']);
     Route::post('/auth/register-lecturer', [AuthController::class, 'registerLecturer']);
-    Route::post('/auth/register-university', [AuthController::class, 'registerUniversity']);
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
     // Public University & Directory
@@ -291,8 +290,5 @@ Route::prefix('v1')->group(function () {
         Route::post('/faculties/{facultyId}/departments', [UniversityController::class, 'storeDepartment']);
         Route::put('/departments/{id}', [UniversityController::class, 'updateDepartment']);
         Route::delete('/departments/{id}', [UniversityController::class, 'destroyDepartment']);
-        Route::get('/university-requests', [UniversityController::class, 'getRequests']);
-        Route::post('/university-requests/{id}/approve', [UniversityController::class, 'approveRequest']);
-        Route::post('/university-requests/{id}/reject', [UniversityController::class, 'rejectRequest']);
     });
 });

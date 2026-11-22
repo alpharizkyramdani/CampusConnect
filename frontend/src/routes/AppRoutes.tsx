@@ -9,7 +9,6 @@ import { PageTransition } from '../components/common/PageTransition';
 import { LandingPage } from '../pages/LandingPage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
-import { UniversityRegisterPage } from '../pages/UniversityRegisterPage';
 import { VerifyCertificatePage } from '../pages/VerifyCertificatePage';
 
 // Protected Pages
@@ -82,7 +81,6 @@ export const AppRoutes: React.FC = () => {
       <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
       <Route path="/register-student" element={<PageTransition><RegisterPage /></PageTransition>} />
       <Route path="/register-lecturer" element={<PageTransition><RegisterPage /></PageTransition>} />
-      <Route path="/register-university" element={<Navigate to="/register" replace />} />
       <Route path="/verify" element={<PageTransition><VerifyCertificatePage /></PageTransition>} />
       <Route path="/verify/:hash" element={<PageTransition><VerifyCertificatePage /></PageTransition>} />
 

@@ -7,7 +7,6 @@ use App\Models\ActivityLog;
 use App\Models\Department;
 use App\Models\Faculty;
 use App\Models\University;
-use App\Models\UniversityRegistrationRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -47,78 +46,6 @@ class UniversityController extends Controller
         ]);
     }
 
-    public function getRequests(Request $request): JsonResponse
-    {
-        $requests = UniversityRegistrationRequest::latest()->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $requests,
-        ]);
-    }
-
-    public function approveRequest(Request $request, $id): JsonResponse
-    {
-        $reg = UniversityRegistrationRequest::findOrFail($id);
-        $reg->update([
-            'status' => 'approved',
-            'reviewed_by' => $request->user()->id,
-            'reviewed_at' => now(),
-            'admin_notes' => $request->admin_notes ?? 'Approved by Super Admin.',
-        ]);
-
-        $baseSlug = Str::slug($reg->university_name) ?: 'univ';
-        $slug = $baseSlug;
-        $counter = 1;
-        while (University::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter++;
-        }
-
-        $baseCode = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $reg->university_name), 0, 4));
-        if (strlen($baseCode) < 3) $baseCode = 'UNIV';
-        $code = $baseCode . rand(10, 99);
-        while (University::where('code', $code)->exists()) {
-            $code = $baseCode . rand(100, 999);
-        }
-
-        $email = $reg->email;
-        if (University::where('email', $email)->exists()) {
-            $parts = explode('@', $email);
-            $email = $parts[0] . '+' . rand(100, 999) . '@' . ($parts[1] ?? 'campusconnect.id');
-        }
-
-        $univ = University::create([
-            'name' => $reg->university_name,
-            'slug' => $slug,
-            'code' => $code,
-            'email' => $email,
-            'website' => $reg->website,
-            'address' => $reg->address,
-            'status' => 'active',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'University registration request approved and university created.',
-            'data' => $univ,
-        ]);
-    }
-
-    public function rejectRequest(Request $request, $id): JsonResponse
-    {
-        $reg = UniversityRegistrationRequest::findOrFail($id);
-        $reg->update([
-            'status' => 'rejected',
-            'reviewed_by' => $request->user()->id,
-            'reviewed_at' => now(),
-            'admin_notes' => $request->admin_notes ?? 'Registration request rejected.',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'University registration request rejected.',
-        ]);
-    }
 
     public function store(Request $request): JsonResponse
     {

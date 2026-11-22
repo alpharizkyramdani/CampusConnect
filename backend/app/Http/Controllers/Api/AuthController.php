@@ -8,7 +8,6 @@ use App\Models\LecturerProfile;
 use App\Models\Role;
 use App\Models\StudentProfile;
 use App\Models\University;
-use App\Models\UniversityRegistrationRequest;
 use App\Models\User;
 use App\Models\UserRoleAssignment;
 use Illuminate\Http\JsonResponse;
@@ -222,43 +221,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function registerUniversity(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'university_name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'website' => 'nullable|url',
-            'address' => 'required|string',
-            'contact_person' => 'required|string',
-            'contact_phone' => 'nullable|string',
-            'document_url' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $req = UniversityRegistrationRequest::create([
-            'university_name' => $request->university_name,
-            'email' => $request->email,
-            'website' => $request->website,
-            'address' => $request->address,
-            'contact_person' => $request->contact_person,
-            'contact_phone' => $request->contact_phone,
-            'document_url' => $request->document_url,
-            'status' => 'pending',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'University registration request submitted successfully. It will be reviewed by the Super Admin.',
-            'data' => $req,
-        ], 201);
-    }
 
     public function me(Request $request): JsonResponse
     {
