@@ -100,3 +100,4 @@ class PnlRegistrationRulesTest extends TestCase
         User::where('email', 'teuku_valid@pnl.ac.id')->delete();
     }
 }
+
