@@ -91,8 +91,11 @@ class CampusConnectWorkflowTest extends TestCase
         $student = $this->getTestStudent();
         $facility = Facility::first();
         if (!$facility) {
+            $dept = \App\Models\Department::where('university_id', 5)->first();
             $facility = Facility::create([
-                'university_id' => $student->default_university_id ?? 1,
+                'university_id' => $student->default_university_id ?? 5,
+                'department_id' => $dept?->id,
+                'code' => 'FAC-TEST-' . rand(100, 999),
                 'name' => 'Projector Test Equipment',
                 'category_id' => 1,
                 'status' => 'available',

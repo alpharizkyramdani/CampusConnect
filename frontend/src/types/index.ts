@@ -61,6 +61,7 @@ export interface Department {
   faculty_id?: number;
   name: string;
   code?: string;
+  prodi_code?: string;
   description?: string;
 }
 
@@ -98,7 +99,9 @@ export interface LecturerProfile {
   university_id: number;
   faculty_id?: number;
   department_id?: number;
-  nidn: string;
+  nidn?: string;
+  nip?: string;
+  gender?: 'L' | 'P';
   title?: string;
   specialization?: string;
   bio?: string;

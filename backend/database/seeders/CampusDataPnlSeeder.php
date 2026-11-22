@@ -288,6 +288,15 @@ class CampusDataPnlSeeder extends Seeder
             ],
         ];
 
+        $prodiCodeMap = [
+            'TI-D4' => '55301', 'TRKJ-D4' => '56301', 'TRM-D4' => '55302', 'TRPL-D4' => '55303', 'TI-D3' => '55401',
+            'TKBA-D3' => '22402', 'TKJJ-D3' => '22403', 'TKBG-D3' => '22404', 'TRKJJ-D4' => '22301', 'TRKBG-D4' => '22302',
+            'TM-D3' => '21401', 'TIND-D3' => '21402', 'TRM-D4M' => '21301', 'TRPF-D4' => '21302',
+            'TK-D3' => '24401', 'TPMG-D3' => '24402', 'TRKI-D4' => '24301',
+            'TL-D3' => '20401', 'TT-D3' => '20402', 'TE-D3' => '20403', 'TRPE-D4' => '20301', 'TRJT-D4' => '20302', 'TRIK-D4' => '20303', 'TRMK-D4' => '20304',
+            'AKT-D3' => '62401', 'AB-D3' => '63411', 'ALKS-D4' => '62301', 'ASP-D4' => '62302', 'MKSP-D4' => '61301', 'KIT-S2' => '60202',
+        ];
+
         $validDeptIds = [];
         foreach ($departmentsData as $d) {
             $faculty = $faculties[$d['faculty']];
@@ -299,6 +308,7 @@ class CampusDataPnlSeeder extends Seeder
                 [
                     'faculty_id' => $faculty->id,
                     'code' => $d['code'],
+                    'prodi_code' => $prodiCodeMap[$d['code']] ?? null,
                     'description' => $d['description'],
                 ]
             );

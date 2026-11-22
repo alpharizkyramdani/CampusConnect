@@ -15,6 +15,8 @@ class LecturerProfile extends Model
         'faculty_id',
         'department_id',
         'nidn',
+        'nip',
+        'gender',
         'title',
         'specialization',
         'bio',

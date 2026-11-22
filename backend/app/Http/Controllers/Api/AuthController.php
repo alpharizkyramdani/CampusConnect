@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Department;
 use App\Models\LecturerProfile;
 use App\Models\Role;
 use App\Models\StudentProfile;
@@ -93,27 +94,57 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'university_id' => 'required|exists:universities,id',
-            'nim' => 'required|string|max:50',
-            'faculty_id' => 'nullable|exists:faculties,id',
-            'department_id' => 'nullable|exists:departments,id',
-            'study_program' => 'nullable|string|max:100',
-            'enrollment_year' => 'nullable|integer',
+            'nim' => ['required', 'string', 'regex:/^\d{13}$/'],
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Email ini sudah terdaftar pada sistem.',
+            'password.min' => 'Password minimal terdiri dari 6 karakter.',
+            'nim.required' => 'NIM mahasiswa wajib diisi.',
+            'nim.regex' => 'NIM harus terdiri dari tepat 13 digit angka.',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors(),
             ], 422);
         }
 
-        // Ensure unique NIM per university
-        if (StudentProfile::where('university_id', $request->university_id)->where('nim', $request->nim)->exists()) {
+        $nim = trim($request->nim);
+        $universityId = 5; // Enforce Politeknik Negeri Lhokseumawe (PNL)
+
+        // Parse 13-digit NIM: [YYYY (4)][PRODI (5)][MHS (4)]
+        $enrollmentYear = intval(substr($nim, 0, 4));
+        $prodiCode = substr($nim, 4, 5);
+        $studentNumber = substr($nim, 9, 4);
+
+        $currentYear = intval(date('Y'));
+        if ($enrollmentYear < 2000 || $enrollmentYear > ($currentYear + 1)) {
             return response()->json([
                 'success' => false,
-                'message' => 'The Student ID (NIM) has already been registered in this university.',
+                'message' => "Tahun masuk '{$enrollmentYear}' pada 4 digit awal NIM tidak valid (harus antara 2000 - " . ($currentYear + 1) . ").",
+            ], 422);
+        }
+
+        // Match prodi_code with PNL departments
+        $department = Department::where('university_id', $universityId)
+            ->where('prodi_code', $prodiCode)
+            ->first();
+
+        if (!$department) {
+            return response()->json([
+                'success' => false,
+                'message' => "Kode program studi '{$prodiCode}' (digit ke-5 s/d 9 NIM) tidak terdaftar di Politeknik Negeri Lhokseumawe.",
+            ], 422);
+        }
+
+        // Ensure unique NIM in PNL
+        if (StudentProfile::where('university_id', $universityId)->where('nim', $nim)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => "NIM '{$nim}' sudah terdaftar pada sistem Civitas PNL.",
             ], 422);
         }
 
@@ -121,18 +152,18 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'default_university_id' => $request->university_id,
+            'default_university_id' => $universityId,
             'status' => 'active',
         ]);
 
         StudentProfile::create([
             'user_id' => $user->id,
-            'university_id' => $request->university_id,
-            'faculty_id' => $request->faculty_id,
-            'department_id' => $request->department_id,
-            'nim' => $request->nim,
-            'study_program' => $request->study_program,
-            'enrollment_year' => $request->enrollment_year ?? date('Y'),
+            'university_id' => $universityId,
+            'faculty_id' => $department->faculty_id,
+            'department_id' => $department->id,
+            'nim' => $nim,
+            'study_program' => $department->name,
+            'enrollment_year' => $enrollmentYear,
         ]);
 
         $studentRole = Role::where('slug', 'student')->first();
@@ -140,8 +171,8 @@ class AuthController extends Controller
             UserRoleAssignment::create([
                 'user_id' => $user->id,
                 'role_id' => $studentRole->id,
-                'university_id' => $request->university_id,
-                'department_id' => $request->department_id,
+                'university_id' => $universityId,
+                'department_id' => $department->id,
                 'status' => 'active',
             ]);
         }
@@ -150,10 +181,13 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Student registration successful',
+            'message' => 'Pendaftaran Mahasiswa PNL berhasil',
             'data' => [
                 'token' => $token,
                 'user' => $user,
+                'detected_program' => $department->name,
+                'enrollment_year' => $enrollmentYear,
+                'student_number' => $studentNumber,
             ],
         ], 201);
     }
@@ -164,19 +198,87 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'university_id' => 'required|exists:universities,id',
-            'nidn' => 'required|string|max:50',
-            'faculty_id' => 'nullable|exists:faculties,id',
-            'department_id' => 'nullable|exists:departments,id',
+            'nip' => ['required', 'string', 'regex:/^\d{18}$/'],
+            'gender' => 'required|in:L,P',
+            'department_id' => 'required|exists:departments,id',
+            'nidn' => 'nullable|string|max:50',
             'title' => 'nullable|string',
             'specialization' => 'nullable|string',
+        ], [
+            'name.required' => 'Nama dosen / tenaga pendidik wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Email ini sudah terdaftar pada sistem.',
+            'password.min' => 'Password minimal terdiri dari 6 karakter.',
+            'nip.required' => 'NIP dosen wajib diisi.',
+            'nip.regex' => 'NIP harus terdiri dari tepat 18 digit angka sesuai standar BKN/ASN.',
+            'gender.required' => 'Jenis kelamin dosen wajib dipilih.',
+            'gender.in' => 'Pilihan jenis kelamin harus L (Laki-laki) atau P (Perempuan).',
+            'department_id.required' => 'Program studi / jurusan dosen wajib dipilih.',
+            'department_id.exists' => 'Program studi yang dipilih tidak valid.',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $nip = trim($request->nip);
+        $gender = $request->gender;
+        $universityId = 5; // Enforce PNL
+
+        // Validate 15th digit against gender
+        // Format NIP 18 Digit: [YYYYMMDD (8)][YYYYMM (6)][G (1)][NNN (3)]
+        $genderDigit = substr($nip, 14, 1);
+
+        if (!in_array($genderDigit, ['1', '2'])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Digit ke-15 NIP harus berupa angka 1 (Laki-laki) atau 2 (Perempuan), ditemukan: '{$genderDigit}'.",
+            ], 422);
+        }
+
+        if ($gender === 'L' && $genderDigit !== '1') {
+            return response()->json([
+                'success' => false,
+                'message' => "Digit ke-15 NIP Anda bernilai '{$genderDigit}', tidak cocok dengan jenis kelamin Laki-laki (wajib bernilai 1).",
+            ], 422);
+        }
+
+        if ($gender === 'P' && $genderDigit !== '2') {
+            return response()->json([
+                'success' => false,
+                'message' => "Digit ke-15 NIP Anda bernilai '{$genderDigit}', tidak cocok dengan jenis kelamin Perempuan (wajib bernilai 2).",
+            ], 422);
+        }
+
+        // Validate birthdate in NIP (YYYYMMDD)
+        $birthYear = intval(substr($nip, 0, 4));
+        $birthMonth = intval(substr($nip, 4, 2));
+        $birthDay = intval(substr($nip, 6, 2));
+        $currentYear = intval(date('Y'));
+        if ($birthMonth < 1 || $birthMonth > 12 || $birthDay < 1 || $birthDay > 31 || $birthYear < 1940 || $birthYear > $currentYear) {
+            return response()->json([
+                'success' => false,
+                'message' => "Format tanggal lahir pada 8 digit awal NIP tidak valid.",
+            ], 422);
+        }
+
+        // Ensure unique NIP in PNL
+        if (LecturerProfile::where('university_id', $universityId)->where('nip', $nip)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => "NIP '{$nip}' sudah terdaftar pada sistem Civitas PNL.",
+            ], 422);
+        }
+
+        $department = Department::where('university_id', $universityId)->where('id', $request->department_id)->first();
+        if (!$department) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Program studi yang dipilih bukan bagian dari Politeknik Negeri Lhokseumawe.',
             ], 422);
         }
 
@@ -184,16 +286,18 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'default_university_id' => $request->university_id,
+            'default_university_id' => $universityId,
             'status' => 'active',
         ]);
 
         LecturerProfile::create([
             'user_id' => $user->id,
-            'university_id' => $request->university_id,
-            'faculty_id' => $request->faculty_id,
-            'department_id' => $request->department_id,
-            'nidn' => $request->nidn,
+            'university_id' => $universityId,
+            'faculty_id' => $department->faculty_id,
+            'department_id' => $department->id,
+            'nip' => $nip,
+            'nidn' => $request->nidn ?: $nip,
+            'gender' => $gender,
             'title' => $request->title,
             'specialization' => $request->specialization,
         ]);
@@ -203,8 +307,8 @@ class AuthController extends Controller
             UserRoleAssignment::create([
                 'user_id' => $user->id,
                 'role_id' => $lecturerRole->id,
-                'university_id' => $request->university_id,
-                'department_id' => $request->department_id,
+                'university_id' => $universityId,
+                'department_id' => $department->id,
                 'status' => 'active',
             ]);
         }
@@ -213,7 +317,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Lecturer registration successful',
+            'message' => 'Pendaftaran Dosen / Tendik PNL berhasil',
             'data' => [
                 'token' => $token,
                 'user' => $user,

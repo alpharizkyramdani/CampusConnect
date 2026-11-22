@@ -14,6 +14,7 @@ class Department extends Model
         'faculty_id',
         'name',
         'code',
+        'prodi_code',
         'description',
     ];
 
