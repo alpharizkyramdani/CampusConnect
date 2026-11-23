@@ -16,3 +16,4 @@ return new class extends Migration
         // Dropped permanently to streamline scope
     }
 };
+

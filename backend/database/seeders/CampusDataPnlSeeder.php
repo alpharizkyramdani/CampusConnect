@@ -581,5 +581,9 @@ class CampusDataPnlSeeder extends Seeder
         Organization::where('university_id', $univId)
             ->whereNotIn('slug', $validOrgSlugs)
             ->delete();
+
+        // 5. Seed PNL Lab Equipment Inventory & Borrowings
+        $this->call(PnlEquipmentBorrowingSeeder::class);
     }
 }
+

@@ -15,6 +15,7 @@ import {
   History,
   ArrowRight,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -24,6 +25,7 @@ export const FacilitiesPage: React.FC = () => {
   const [categories, setCategories] = useState<FacilityCategory[]>([]);
   const [search, setSearch] = useState('');
   const [selectedCondition, setSelectedCondition] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(true);
 
   // Borrow Modal
@@ -48,13 +50,25 @@ export const FacilitiesPage: React.FC = () => {
 
   const canManageInventory = hasAnyRole(['super_admin', 'campus_admin', 'department_admin']);
 
+  const fetchCategories = async () => {
+    try {
+      const univId = activeAssignment?.university_id || 5;
+      const res = await api.get(`/facility-categories/${univId}`);
+      if (res.data.success) {
+        setCategories(res.data.data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const fetchFacilities = async () => {
     setLoading(true);
     try {
       const res = await api.get('/facilities', {
         params: {
-          university_id: activeAssignment?.university_id,
-          department_id: activeAssignment?.department_id,
+          university_id: activeAssignment?.university_id || 5,
+          category_id: selectedCategory || undefined,
           condition: selectedCondition || undefined,
           search: search || undefined,
         },
@@ -70,8 +84,25 @@ export const FacilitiesPage: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchCategories();
+  }, [activeAssignment]);
+
+  useEffect(() => {
     fetchFacilities();
-  }, [selectedCondition, activeAssignment]);
+  }, [selectedCondition, selectedCategory, activeAssignment]);
+
+  const openBorrowModal = (fac?: Facility | null) => {
+    const target = fac || facilities.find((f) => f.available_quantity > 0) || facilities[0] || null;
+    setBorrowModal(target);
+    setBorrowSuccess(false);
+    setBorrowQty('1');
+    setBorrowPurpose('');
+
+    const today = new Date().toISOString().split('T')[0];
+    const threeDaysLater = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
+    setBorrowDate(today);
+    setReturnDueDate(threeDaysLater);
+  };
 
   const handleBorrowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +123,7 @@ export const FacilitiesPage: React.FC = () => {
         fetchFacilities();
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to submit borrowing request');
+      alert(err.response?.data?.message || 'Gagal mengajukan peminjaman alat');
     } finally {
       setBorrowLoading(false);
     }
@@ -103,8 +134,8 @@ export const FacilitiesPage: React.FC = () => {
     setSaving(true);
     try {
       const res = await api.post('/facilities', {
-        university_id: activeAssignment?.university_id || 1,
-        department_id: activeAssignment?.department_id || 1,
+        university_id: activeAssignment?.university_id || 5,
+        department_id: activeAssignment?.department_id || 44,
         name,
         code,
         condition,
@@ -121,7 +152,7 @@ export const FacilitiesPage: React.FC = () => {
         fetchFacilities();
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to add equipment');
+      alert(err.response?.data?.message || 'Gagal menambahkan alat laboratorium');
     } finally {
       setSaving(false);
     }
@@ -133,29 +164,38 @@ export const FacilitiesPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2.5">
             <PackageCheck className="w-6 h-6 text-brand-600" />
-            Campus Facility & Equipment Inventory
+            Peminjaman Alat & Fasilitas Laboratorium PNL
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Department-owned laboratory equipment, hardware kits, presentation media, and loan requests
+            Katalog peralatan laboratorium, perangkat IoT, proyektor, kamera multimedia, dan instrumen teknik terintegrasi
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Main User Borrow Button with + Sign */}
+          <button
+            onClick={() => openBorrowModal()}
+            className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md shadow-brand-500/25 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            + Pinjam Alat Baru
+          </button>
+
           <Link
             to="/borrowings"
             className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5"
           >
             <History className="w-4 h-4 text-slate-600" />
-            Loan Queue
+            Catatan Peminjaman
           </Link>
 
           {canManageInventory && (
             <button
               onClick={() => setAddModal(true)}
-              className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-2 transition-all"
+              className="px-4 py-2.5 bg-navy hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-2 transition-all"
             >
               <Plus className="w-4 h-4" />
-              Add Equipment
+              Tambah Alat (Admin)
             </button>
           )}
         </div>
@@ -170,38 +210,57 @@ export const FacilitiesPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchFacilities()}
-            placeholder="Search equipment by name or code..."
+            placeholder="Cari nama alat, kode aset, atau spesifikasi..."
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
-          {['', 'excellent', 'good', 'fair', 'in_repair'].map((cond) => (
-            <button
-              key={cond}
-              onClick={() => setSelectedCondition(cond)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
-                selectedCondition === cond ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          {categories.length > 0 && (
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:bg-white focus:outline-hidden"
             >
-              {cond === '' ? 'All Conditions' : cond.replace('_', ' ')}
-            </button>
-          ))}
+              <option value="">Semua Kategori Lab ({facilities.length})</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          <div className="flex flex-wrap items-center gap-1">
+            {['', 'excellent', 'good', 'fair', 'in_repair'].map((cond) => (
+              <button
+                key={cond}
+                onClick={() => setSelectedCondition(cond)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
+                  selectedCondition === cond
+                    ? 'bg-brand-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {cond === '' ? 'Semua Kondisi' : cond.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Equipment Catalog Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-72 bg-slate-200 rounded-2xl" />
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-80 bg-slate-200 rounded-2xl" />
           ))}
         </div>
       ) : facilities.length === 0 ? (
         <div className="bg-white rounded-3xl p-12 text-center border border-borderMuted">
           <PackageCheck className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="font-bold text-slate-800 text-base">No inventory records available</h3>
-          <p className="text-xs text-slate-500 mt-1">Try broadening your search filters.</p>
+          <h3 className="font-bold text-slate-800 text-base">Tidak ada peralatan yang ditemukan</h3>
+          <p className="text-xs text-slate-500 mt-1">Coba sesuaikan kata kunci pencarian atau kategori filter.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -210,69 +269,90 @@ export const FacilitiesPage: React.FC = () => {
             return (
               <div
                 key={fac.id}
-                className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-lg hover:border-brand-300 transition-all flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-lg hover:border-brand-300 transition-all flex flex-col justify-between group"
               >
                 <div>
-                  <div className="h-44 overflow-hidden bg-slate-100 relative">
+                  <div className="h-48 overflow-hidden bg-slate-100 relative">
                     <img
-                      src={fac.photo_url || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80'}
+                      src={
+                        fac.photo_url ||
+                        'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80'
+                      }
                       alt={fac.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-3 left-3">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-navy text-white shadow-xs">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-navy/90 text-white shadow-xs backdrop-blur-xs">
                         {fac.code}
                       </span>
                     </div>
                     <div className="absolute top-3 right-3">
-                      <Badge variant={fac.condition === 'excellent' || fac.condition === 'good' ? 'emerald' : 'amber'} size="sm">
+                      <Badge
+                        variant={fac.condition === 'excellent' || fac.condition === 'good' ? 'emerald' : 'amber'}
+                        size="sm"
+                      >
                         {fac.condition}
                       </Badge>
                     </div>
+
+                    {/* Quick Floating + Button on Image */}
+                    {isAvailable && (
+                      <button
+                        type="button"
+                        onClick={() => openBorrowModal(fac)}
+                        title="Klik untuk langsung meminjam alat ini"
+                        className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-brand-600 hover:bg-brand-700 text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                      >
+                        <Plus className="w-5 h-5 stroke-[2.5]" />
+                      </button>
+                    )}
                   </div>
 
                   <div className="p-5">
-                    <div className="text-[11px] font-bold text-brand-600 uppercase tracking-wider mb-1">
-                      {fac.department?.name || 'Department Hardware'}
+                    <div className="flex items-center justify-between text-[11px] font-bold text-brand-600 uppercase tracking-wider mb-1">
+                      <span>{fac.category?.name || fac.department?.name || 'Laboratorium PNL'}</span>
+                      <span className="text-[10px] text-slate-400 font-mono font-normal">
+                        {fac.department?.code || 'PNL'}
+                      </span>
                     </div>
-                    <h3 className="font-bold text-sm text-navy line-clamp-1">{fac.name}</h3>
+                    <h3 className="font-bold text-sm text-navy line-clamp-1 group-hover:text-brand-600 transition-colors">
+                      {fac.name}
+                    </h3>
                     <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{fac.description}</p>
 
                     <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-slate-400">
-                          <MapPin className="w-3.5 h-3.5" /> Location
+                          <MapPin className="w-3.5 h-3.5" /> Lokasi
                         </span>
-                        <span className="font-semibold text-slate-800">{fac.location || 'Lab Building'}</span>
+                        <span className="font-semibold text-slate-800 text-right">{fac.location || 'Gedung Lab PNL'}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400">Availability</span>
+                        <span className="text-slate-400">Ketersediaan</span>
                         <span className="font-bold">
                           <span className={isAvailable ? 'text-emerald-600' : 'text-rose-600'}>
                             {fac.available_quantity}
                           </span>{' '}
-                          / {fac.total_quantity} units
+                          / {fac.total_quantity} unit siap pakai
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
+                {/* Card Action Button with + Sign */}
                 <div className="p-5 pt-0">
                   <button
-                    onClick={() => {
-                      setBorrowModal(fac);
-                      setBorrowSuccess(false);
-                    }}
+                    onClick={() => openBorrowModal(fac)}
                     disabled={!isAvailable}
-                    className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                    className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs ${
                       isAvailable
-                        ? 'bg-brand-600 hover:bg-brand-700 text-white shadow-xs'
+                        ? 'bg-brand-600 hover:bg-brand-700 text-white hover:shadow-md hover:shadow-brand-500/25 active:scale-[0.99]'
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }`}
                   >
-                    <PackageCheck className="w-4 h-4" />
-                    {isAvailable ? 'Submit Borrow Request' : 'Currently Unavailable'}
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    {isAvailable ? 'Pinjam Alat Ini' : 'Stok Habis / Tidak Tersedia'}
                   </button>
                 </div>
               </div>
@@ -285,32 +365,66 @@ export const FacilitiesPage: React.FC = () => {
       <Modal
         isOpen={!!borrowModal}
         onClose={() => setBorrowModal(null)}
-        title={borrowSuccess ? 'Borrow Request Submitted' : `Borrow Equipment: ${borrowModal?.name}`}
+        title={borrowSuccess ? 'Pengajuan Peminjaman Berhasil' : `Formulir Peminjaman Alat: ${borrowModal?.name}`}
       >
         {borrowSuccess ? (
           <div className="text-center py-6 space-y-3">
             <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
               <CheckCircle className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-navy">Request Received</h3>
+            <h3 className="text-lg font-bold text-navy">Pengajuan Telah Diterima</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-              Your borrowing application has been routed to the Department Administrator for review. You will receive an approval notification when ready for pickup.
+              Permohonan peminjaman peralatan laboratorium Anda telah diteruskan ke Admin Jurusan/Laboratorium untuk verifikasi. Anda dapat memantau status persetujuan pada menu Catatan Peminjaman.
             </p>
-            <button
-              onClick={() => setBorrowModal(null)}
-              className="mt-4 px-6 py-2.5 bg-brand-600 text-white font-bold text-xs rounded-xl"
-            >
-              Close
-            </button>
+            <div className="pt-2 flex justify-center gap-3">
+              <Link
+                to="/borrowings"
+                className="px-5 py-2.5 bg-brand-600 text-white font-bold text-xs rounded-xl shadow-xs"
+              >
+                Lihat Catatan Peminjaman
+              </Link>
+              <button
+                onClick={() => setBorrowModal(null)}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleBorrowSubmit} className="space-y-4 text-xs">
-            <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 leading-relaxed">
-              <strong>Concurrency Protection:</strong> Department Admin approval is required before pickup. Available stock: <strong>{borrowModal?.available_quantity}</strong> units.
+            <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 leading-relaxed flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <div>
+                <strong>Ketentuan Peminjaman:</strong> Wajib melampirkan tujuan akademik atau kegiatan kampus. Stok tersedia saat ini: <strong>{borrowModal?.available_quantity}</strong> unit.
+              </div>
+            </div>
+
+            {/* Select Equipment Dropdown */}
+            <div>
+              <label className="font-bold text-slate-700 block uppercase tracking-wider">
+                Peralatan Yang Dipinjam
+              </label>
+              <select
+                value={borrowModal?.id || ''}
+                onChange={(e) => {
+                  const sel = facilities.find((f) => f.id.toString() === e.target.value);
+                  if (sel) setBorrowModal(sel);
+                }}
+                className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-semibold focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20"
+              >
+                {facilities.map((f) => (
+                  <option key={f.id} value={f.id} disabled={f.available_quantity <= 0}>
+                    {f.name} ({f.code}) — {f.available_quantity > 0 ? `${f.available_quantity} unit tersedia` : 'Stok Habis'}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Requested Quantity</label>
+              <label className="font-bold text-slate-700 block uppercase tracking-wider">
+                Jumlah Unit (Maks: {borrowModal?.available_quantity || 1})
+              </label>
               <input
                 type="number"
                 min="1"
@@ -318,89 +432,113 @@ export const FacilitiesPage: React.FC = () => {
                 required
                 value={borrowQty}
                 onChange={(e) => setBorrowQty(e.target.value)}
-                className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+                className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="font-bold text-slate-700 block uppercase">Borrow Date</label>
+                <label className="font-bold text-slate-700 block uppercase tracking-wider">
+                  Tanggal Pinjam
+                </label>
                 <input
                   type="date"
                   required
                   value={borrowDate}
                   onChange={(e) => setBorrowDate(e.target.value)}
-                  className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+                  className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20"
                 />
               </div>
               <div>
-                <label className="font-bold text-slate-700 block uppercase">Return Due Date</label>
+                <label className="font-bold text-slate-700 block uppercase tracking-wider">
+                  Batas Pengembalian
+                </label>
                 <input
                   type="date"
                   required
                   value={returnDueDate}
                   onChange={(e) => setReturnDueDate(e.target.value)}
-                  className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+                  className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20"
                 />
               </div>
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Academic Purpose & Usage Details</label>
+              <label className="font-bold text-slate-700 block uppercase tracking-wider">
+                Keperluan / Tujuan Peminjaman
+              </label>
               <textarea
                 required
                 rows={3}
                 value={borrowPurpose}
                 onChange={(e) => setBorrowPurpose(e.target.value)}
-                placeholder="State the capstone project, lab course, or student organization activity..."
-                className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+                placeholder="Jelaskan mata kuliah praktikum, judul riset/tugas akhir, atau kegiatan ormawa..."
+                className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20"
               />
             </div>
 
             <button
               type="submit"
               disabled={borrowLoading}
-              className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all"
+              className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
-              {borrowLoading ? 'Submitting Request...' : 'Submit Request to Department Admin'}
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              {borrowLoading ? 'Mengirim Pengajuan...' : 'Kirim Pengajuan Peminjaman'}
             </button>
           </form>
         )}
       </Modal>
 
-      {/* Add Equipment Modal */}
+      {/* Add Equipment Modal (Department Admin) */}
       <Modal
         isOpen={addModal}
         onClose={() => setAddModal(false)}
-        title="Add Equipment to Department Inventory"
+        title="Tambah Peralatan ke Inventaris Lab PNL"
       >
         <form onSubmit={handleAddEquipment} className="space-y-4 text-xs">
           <div>
-            <label className="font-bold text-slate-700 block uppercase">Equipment Name</label>
+            <label className="font-bold text-slate-700 block uppercase">Nama Peralatan</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Raspberry Pi 5 Embedded Developer Kit"
+              placeholder="e.g. Total Station Topcon GM-55"
               className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Equipment Asset Code</label>
+              <label className="font-bold text-slate-700 block uppercase">Kode Aset / Inventaris</label>
               <input
                 type="text"
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="e.g. TI-RPI-05"
+                placeholder="e.g. PNL-SIP-TTS01"
                 className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
               />
             </div>
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Total Quantity</label>
+              <label className="font-bold text-slate-700 block uppercase">Kondisi</label>
+              <select
+                value={condition}
+                onChange={(e: any) => setCondition(e.target.value)}
+                className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+              >
+                <option value="excellent">Sangat Baik (Excellent)</option>
+                <option value="good">Baik (Good)</option>
+                <option value="fair">Cukup (Fair)</option>
+                <option value="damaged">Rusak (Damaged)</option>
+                <option value="in_repair">Sedang Servis (In Repair)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-bold text-slate-700 block uppercase">Total Stok</label>
               <input
                 type="number"
                 min="1"
@@ -410,50 +548,36 @@ export const FacilitiesPage: React.FC = () => {
                 className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-slate-700 block uppercase">Condition</label>
-              <select
-                value={condition}
-                onChange={(e: any) => setCondition(e.target.value)}
-                className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
-              >
-                <option value="excellent">Excellent</option>
-                <option value="good">Good</option>
-                <option value="fair">Fair</option>
-                <option value="in_repair">In Repair</option>
-              </select>
-            </div>
-            <div>
-              <label className="font-bold text-slate-700 block uppercase">Lab / Storage Location</label>
+              <label className="font-bold text-slate-700 block uppercase">Lokasi Ruang / Lab</label>
               <input
                 type="text"
-                required
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Lab Hardware Room 204"
+                placeholder="e.g. Gedung TIK Lt. 2 Lab IoT"
                 className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
               />
             </div>
           </div>
 
-          <ImageUploadField
-            label="Foto Peralatan / Fasilitas"
-            value={photoUrl}
-            onChange={setPhotoUrl}
-            placeholder="Atau tautan URL foto peralatan: https://..."
-            helperText="Unggah foto fisik peralatan atau ruangan lab dari perangkat."
-          />
+          <div>
+            <label className="font-bold text-slate-700 block uppercase">Foto Peralatan</label>
+            <div className="mt-1">
+              <ImageUploadField
+                value={photoUrl}
+                onChange={setPhotoUrl}
+                label="Unggah Foto Alat"
+              />
+            </div>
+          </div>
 
           <div>
-            <label className="font-bold text-slate-700 block uppercase">Specifications & Description</label>
+            <label className="font-bold text-slate-700 block uppercase">Deskripsi & Spesifikasi</label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Hardware details, accessories included..."
+              placeholder="Rincian kelengkapan, aksesori, spesifikasi teknis..."
               className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
             />
           </div>
@@ -463,11 +587,10 @@ export const FacilitiesPage: React.FC = () => {
             disabled={saving}
             className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all"
           >
-            {saving ? 'Adding...' : 'Save Equipment'}
+            {saving ? 'Menyimpan...' : 'Simpan Peralatan'}
           </button>
         </form>
       </Modal>
     </div>
   );
 };
-
