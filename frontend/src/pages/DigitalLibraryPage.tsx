@@ -20,6 +20,7 @@ import {
   Layers,
   ArrowRight,
   ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface LibraryItem {
@@ -67,6 +68,16 @@ export const DigitalLibraryPage: React.FC = () => {
   // Borrow Modal
   const [borrowModalItem, setBorrowModalItem] = useState<LibraryItem | null>(null);
   const [borrowing, setBorrowing] = useState(false);
+
+  // In-App E-Book Reader Modal
+  const [readingItem, setReadingItem] = useState<{
+    id: number;
+    title: string;
+    file_url?: string;
+    can_read: boolean;
+    due_date?: string;
+  } | null>(null);
+  const [checkingAccess, setCheckingAccess] = useState(false);
 
   // Add Item Modal
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -150,6 +161,29 @@ export const DigitalLibraryPage: React.FC = () => {
       }
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal memproses pengembalian.');
+    }
+  };
+
+  const handleReadEbook = async (item: LibraryItem) => {
+    setCheckingAccess(true);
+    try {
+      const res = await api.get(`/library/items/${item.id}/read-access`);
+      if (res.data.success && res.data.data?.can_read) {
+        setReadingItem({
+          id: item.id,
+          title: item.title,
+          file_url: res.data.data.file_url || item.file_url || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+          can_read: true,
+          due_date: res.data.data.due_date,
+        });
+      }
+    } catch (err: any) {
+      alert(
+        err.response?.data?.message ||
+        'Akses Membaca Ditolak: Anda wajib memiliki masa peminjaman aktif untuk membaca buku digital ini secara daring.'
+      );
+    } finally {
+      setCheckingAccess(false);
     }
   };
 
@@ -350,13 +384,26 @@ export const DigitalLibraryPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <button
-                      onClick={() => setBorrowModalItem(item)}
-                      disabled={item.available_copies < 1}
-                      className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs transition-colors shadow-2xs disabled:opacity-50"
-                    >
-                      Pinjam Koleksi
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {(item.is_digital_access || item.file_url) && (
+                        <button
+                          type="button"
+                          onClick={() => handleReadEbook(item)}
+                          disabled={checkingAccess}
+                          className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-xl text-xs transition-colors border border-brand-200 flex items-center gap-1 cursor-pointer"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Baca E-Book</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setBorrowModalItem(item)}
+                        disabled={item.available_copies < 1}
+                        className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+                      >
+                        Pinjam Koleksi
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -416,15 +463,26 @@ export const DigitalLibraryPage: React.FC = () => {
                           </span>
                         )}
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-right space-x-2 whitespace-nowrap">
                         {loan.status === 'borrowed' && (
-                          <button
-                            onClick={() => handleReturnBook(loan.id)}
-                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1 ml-auto"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>Kembalikan</span>
-                          </button>
+                          <>
+                            {(loan.item?.is_digital_access || loan.item?.file_url) && (
+                              <button
+                                onClick={() => handleReadEbook(loan.item)}
+                                className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-xl text-xs inline-flex items-center gap-1 border border-brand-200 cursor-pointer"
+                              >
+                                <BookOpen className="w-3.5 h-3.5" />
+                                <span>Baca Online</span>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleReturnBook(loan.id)}
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Kembalikan</span>
+                            </button>
+                          </>
                         )}
                       </td>
                     </tr>
@@ -612,6 +670,47 @@ export const DigitalLibraryPage: React.FC = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* In-App E-Book Reader Modal */}
+      <Modal
+        isOpen={!!readingItem}
+        onClose={() => setReadingItem(null)}
+        title={`Digital Reader: ${readingItem?.title}`}
+      >
+        <div className="space-y-3 font-sans">
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span><strong>Akses E-Book Terverifikasi:</strong> Peminjaman digital Anda aktif & valid.</span>
+            </div>
+            {readingItem?.due_date && (
+              <span className="text-[11px] font-mono text-emerald-700">
+                Batas Pinjam: {new Date(readingItem.due_date).toLocaleDateString('id-ID')}
+              </span>
+            )}
+          </div>
+
+          {/* Secure In-App Viewer Frame */}
+          <div className="w-full h-[450px] rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 shadow-inner flex flex-col">
+            <iframe
+              src={readingItem?.file_url || ''}
+              title={readingItem?.title || 'E-Book Viewer'}
+              className="w-full flex-1 border-0"
+            />
+          </div>
+
+          <div className="flex justify-between items-center text-[11px] text-slate-500 pt-2">
+            <span>Perpustakaan Digital Politeknik Negeri Lhokseumawe • Dilindungi Hak Akses</span>
+            <button
+              type="button"
+              onClick={() => setReadingItem(null)}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 rounded-xl cursor-pointer"
+            >
+              Tutup Pembaca
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

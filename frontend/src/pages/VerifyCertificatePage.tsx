@@ -18,12 +18,49 @@ export const VerifyCertificatePage: React.FC = () => {
     setLoading(true);
 
     try {
+      if (hashToVerify.trim().toUpperCase().startsWith('DOC-')) {
+        const docRes = await api.get(`/student-services/verify/${encodeURIComponent(hashToVerify.trim())}`);
+        if (docRes.data.success) {
+          setResult({
+            is_document: true,
+            title: docRes.data.data.service_type,
+            recipient_name: docRes.data.data.student_name,
+            certificate_number: docRes.data.data.verification_code,
+            issue_date: docRes.data.data.issued_at,
+            university: { name: 'Politeknik Negeri Lhokseumawe (PNL)' },
+            nim: docRes.data.data.nim,
+            study_program: docRes.data.data.study_program,
+            status_text: docRes.data.data.status,
+          });
+          return;
+        }
+      }
+
       const res = await api.get(`/certificates/verify/${encodeURIComponent(hashToVerify.trim())}`);
       if (res.data.success) {
         setResult(res.data.data);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Certificate verification failed. Record not found.');
+      // Fallback try student services verify
+      try {
+        const docRes = await api.get(`/student-services/verify/${encodeURIComponent(hashToVerify.trim())}`);
+        if (docRes.data.success) {
+          setResult({
+            is_document: true,
+            title: docRes.data.data.service_type,
+            recipient_name: docRes.data.data.student_name,
+            certificate_number: docRes.data.data.verification_code,
+            issue_date: docRes.data.data.issued_at,
+            university: { name: 'Politeknik Negeri Lhokseumawe (PNL)' },
+            nim: docRes.data.data.nim,
+            study_program: docRes.data.data.study_program,
+            status_text: docRes.data.data.status,
+          });
+          return;
+        }
+      } catch (e) {}
+
+      setError(err.response?.data?.message || 'Verifikasi gagal. Sertifikat atau dokumen surat resmi tidak ditemukan.');
     } finally {
       setLoading(false);
     }
@@ -84,7 +121,7 @@ export const VerifyCertificatePage: React.FC = () => {
               <div>
                 <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
                   <ShieldCheck className="w-4 h-4" />
-                  Cryptographically Verified Certificate
+                  {result.is_document ? 'Dokumen Surat Resmi Terverifikasi PNL' : 'Cryptographically Verified Certificate'}
                 </div>
                 <h3 className="text-xl font-extrabold text-navy">{result.title}</h3>
               </div>
@@ -92,21 +129,36 @@ export const VerifyCertificatePage: React.FC = () => {
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-slate-400 font-semibold block uppercase tracking-wider">Recipient Name</span>
+                <span className="text-slate-400 font-semibold block uppercase tracking-wider">
+                  {result.is_document ? 'Nama Mahasiswa' : 'Recipient Name'}
+                </span>
                 <span className="text-sm font-bold text-slate-900 mt-0.5 block">{result.recipient_name}</span>
+                {result.nim && (
+                  <span className="text-xs text-slate-500 font-mono mt-0.5 block">NIM: {result.nim}</span>
+                )}
               </div>
               <div>
-                <span className="text-slate-400 font-semibold block uppercase tracking-wider">Certificate ID</span>
+                <span className="text-slate-400 font-semibold block uppercase tracking-wider">
+                  {result.is_document ? 'Kode Verifikasi Dokumen' : 'Certificate ID'}
+                </span>
                 <span className="text-sm font-mono font-bold text-brand-600 mt-0.5 block">{result.certificate_number}</span>
               </div>
               <div>
-                <span className="text-slate-400 font-semibold block uppercase tracking-wider">Issuing University</span>
-                <span className="text-sm font-bold text-slate-900 mt-0.5 block">{result.university_name}</span>
+                <span className="text-slate-400 font-semibold block uppercase tracking-wider">Institusi Penerbit</span>
+                <span className="text-sm font-bold text-slate-900 mt-0.5 block">{result.university_name || result.university?.name || 'Politeknik Negeri Lhokseumawe'}</span>
               </div>
               <div>
-                <span className="text-slate-400 font-semibold block uppercase tracking-wider">Date of Issue</span>
-                <span className="text-sm font-semibold text-slate-700 mt-0.5 block">{result.issue_date}</span>
+                <span className="text-slate-400 font-semibold block uppercase tracking-wider">Tanggal Penerbitan / Validasi</span>
+                <span className="text-sm font-semibold text-slate-700 mt-0.5 block">
+                  {result.issue_date ? new Date(result.issue_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+                </span>
               </div>
+              {result.study_program && (
+                <div className="sm:col-span-2">
+                  <span className="text-slate-400 font-semibold block uppercase tracking-wider">Program Studi</span>
+                  <span className="text-sm font-semibold text-slate-800 mt-0.5 block">{result.study_program}</span>
+                </div>
+              )}
               {result.event_name && (
                 <div className="sm:col-span-2">
                   <span className="text-slate-400 font-semibold block uppercase tracking-wider">Event / Activity</span>

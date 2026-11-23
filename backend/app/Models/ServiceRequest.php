@@ -19,6 +19,9 @@ class ServiceRequest extends Model
         'status',
         'admin_notes',
         'result_document_url',
+        'doc_verification_code',
+        'verification_hash',
+        'is_verified_document',
         'processed_by',
         'completed_at',
     ];

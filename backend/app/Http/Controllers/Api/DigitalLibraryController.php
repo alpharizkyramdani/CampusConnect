@@ -178,5 +178,41 @@ class DigitalLibraryController extends Controller
             'data' => $loans,
         ]);
     }
+
+    /**
+     * Authenticated digital reader access check
+     */
+    public function readAccess(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        $item = LibraryItem::findOrFail($id);
+
+        $isStaff = $user->isSuperAdmin() || $user->isCampusAdmin() || $user->hasRole('lecturer');
+
+        // Check active loan for students
+        $hasActiveLoan = LibraryLoan::where('user_id', $user->id)
+            ->where('library_item_id', $item->id)
+            ->where('status', 'borrowed')
+            ->exists();
+
+        if (!$isStaff && !$hasActiveLoan && !$item->is_digital_access) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses membaca e-book ini dibatasi. Anda wajib memiliki pinjaman aktif dari katalog perpustakaan digital sebelum dapat membaca materi lengkap.',
+            ], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Akses membaca digital diizinkan.',
+            'data' => [
+                'item_id' => $item->id,
+                'title' => $item->title,
+                'author' => $item->author,
+                'file_url' => $item->file_url ?: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+                'has_active_loan' => $hasActiveLoan,
+            ],
+        ]);
+    }
 }
 

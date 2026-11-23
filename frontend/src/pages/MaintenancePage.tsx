@@ -31,13 +31,15 @@ export const MaintenancePage: React.FC = () => {
   const [photoUrl, setPhotoUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Status Update Modal (for Admin)
+  // Status Update Modal (for Admin / Sarpras)
   const [updateModal, setUpdateModal] = useState<MaintenanceReport | null>(null);
   const [newStatus, setNewStatus] = useState<string>('');
   const [resolutionNotes, setResolutionNotes] = useState<string>('');
+  const [technicianNotes, setTechnicianNotes] = useState<string>('');
+  const [completionPhotoUrl, setCompletionPhotoUrl] = useState<string>('');
   const [updating, setUpdating] = useState(false);
 
-  const canModerate = hasAnyRole(['super_admin', 'campus_admin', 'department_admin']);
+  const canModerate = hasAnyRole(['super_admin', 'campus_admin', 'department_admin', 'sarpras_admin']);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -100,6 +102,8 @@ export const MaintenancePage: React.FC = () => {
         status: newStatus,
         notes: resolutionNotes,
         resolution_notes: resolutionNotes,
+        technician_notes: technicianNotes,
+        completion_photo_url: completionPhotoUrl || null,
       });
 
       if (res.data.success) {
@@ -107,7 +111,7 @@ export const MaintenancePage: React.FC = () => {
         fetchReports();
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to update report status');
+      alert(err.response?.data?.message || 'Gagal memperbarui status perbaikan sarpras');
     } finally {
       setUpdating(false);
     }
@@ -203,6 +207,19 @@ export const MaintenancePage: React.FC = () => {
                       <strong>Resolution:</strong> {r.resolution_notes}
                     </div>
                   )}
+
+                  {r.technician_notes && (
+                    <div className="mt-2.5 p-2 bg-blue-50 text-[11px] text-blue-900 rounded-lg">
+                      <strong>Catatan Teknisi Sarpras:</strong> {r.technician_notes}
+                    </div>
+                  )}
+
+                  {r.completion_photo_url && (
+                    <div className="mt-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-2">
+                      <img src={r.completion_photo_url} alt="Foto Selesai" className="w-10 h-10 object-cover rounded-md" />
+                      <span className="text-[10px] text-slate-500 font-medium">Foto Bukti Selesai Perbaikan</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -213,10 +230,12 @@ export const MaintenancePage: React.FC = () => {
                       setUpdateModal(r);
                       setNewStatus(r.status);
                       setResolutionNotes(r.resolution_notes || '');
+                      setTechnicianNotes(r.technician_notes || '');
+                      setCompletionPhotoUrl(r.completion_photo_url || '');
                     }}
                     className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs transition-colors"
                   >
-                    Update Ticket Status
+                    Update Status & Tindak Lanjut Sarpras
                   </button>
                 </div>
               )}
@@ -342,22 +361,44 @@ export const MaintenancePage: React.FC = () => {
           </div>
 
           <div>
-            <label className="font-bold text-slate-700 block uppercase">Resolution Notes & Actions Taken</label>
+            <label className="font-bold text-slate-700 block uppercase">Catatan Resolusi / Tindakan Admin</label>
             <textarea
-              rows={3}
+              rows={2}
               value={resolutionNotes}
               onChange={(e) => setResolutionNotes(e.target.value)}
-              placeholder="Describe repairs undertaken or contractor dispatch notes..."
-              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs"
+              placeholder="Deskripsi tindak lanjut atau disposisi tim lapangan..."
+              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase">Catatan Teknisi Sarpras (Spesifik Lapangan)</label>
+            <textarea
+              rows={2}
+              value={technicianNotes}
+              onChange={(e) => setTechnicianNotes(e.target.value)}
+              placeholder="Pengecekan komponen, penggantian suku cadang, atau uji coba operasional..."
+              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase">Foto Bukti Selesai Perbaikan (URL / Path)</label>
+            <input
+              type="text"
+              value={completionPhotoUrl}
+              onChange={(e) => setCompletionPhotoUrl(e.target.value)}
+              placeholder="https://... atau uploads/maintenance/fixed_01.jpg"
+              className="mt-1 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white"
             />
           </div>
 
           <button
             type="submit"
             disabled={updating}
-            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all"
+            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer"
           >
-            {updating ? 'Saving...' : 'Update Maintenance Record'}
+            {updating ? 'Menyimpan...' : 'Simpan Pembaruan Sarpras'}
           </button>
         </form>
       </Modal>

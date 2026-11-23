@@ -19,6 +19,7 @@ class SocialFeedController extends Controller
         $feedType = $request->query('feed_type', 'for_you'); // 'for_you', 'following', 'trending', 'user'
         $targetUserId = $request->query('user_id');
         $search = $request->query('search');
+        $category = $request->query('category');
         $universityId = $request->query('university_id');
 
         $query = CampusPost::where('is_hidden', false)->with([
@@ -29,6 +30,10 @@ class SocialFeedController extends Controller
             'repostOf.author:id,name,avatar',
             'repostOf.university:id,name,code',
         ]);
+
+        if ($category && $category !== 'Semua') {
+            $query->where('category', $category);
+        }
 
         if ($feedType === 'following' && $user) {
             $followingIds = $user->following()->pluck('user_id');
@@ -92,6 +97,7 @@ class SocialFeedController extends Controller
     {
         $request->validate([
             'content' => 'required|string|max:1000',
+            'category' => 'nullable|string|in:Pengumuman Resmi,Event & Lomba,Prestasi,Diskusi',
             'media_url' => 'nullable|string',
             'repost_of_id' => 'nullable|exists:campus_posts,id',
             'university_id' => 'nullable|exists:universities,id',
@@ -103,6 +109,7 @@ class SocialFeedController extends Controller
         $post = CampusPost::create([
             'user_id' => $user->id,
             'university_id' => $univId,
+            'category' => $request->category ?? 'Diskusi',
             'content' => $request->content,
             'media_url' => $request->media_url,
             'repost_of_id' => $request->repost_of_id,

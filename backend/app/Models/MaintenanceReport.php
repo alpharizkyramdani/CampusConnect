@@ -22,6 +22,8 @@ class MaintenanceReport extends Model
         'status',
         'assigned_to',
         'resolution_notes',
+        'technician_notes',
+        'completion_photo_url',
         'resolved_at',
     ];
 

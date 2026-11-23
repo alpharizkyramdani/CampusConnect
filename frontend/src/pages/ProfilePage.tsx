@@ -46,6 +46,18 @@ export const ProfilePage: React.FC = () => {
   const [userPosts, setUserPosts] = useState<CampusPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
+  // Verified Campus Portfolio state
+  const [portfolioData, setPortfolioData] = useState<{
+    events_attended: any[];
+    organizations: any[];
+    certificates: any[];
+  }>({
+    events_attended: [],
+    organizations: [],
+    certificates: [],
+  });
+  const [loadingPortfolio, setLoadingPortfolio] = useState(false);
+
   // Followers / Following Modal
   const [followModalOpen, setFollowModalOpen] = useState(false);
   const [followModalType, setFollowModalType] = useState<'followers' | 'following'>('followers');
@@ -98,6 +110,20 @@ export const ProfilePage: React.FC = () => {
         })
         .catch(() => {})
         .finally(() => setLoadingPosts(false));
+
+      setLoadingPortfolio(true);
+      api.get('/portfolio', { params: { user_id: targetUserId } })
+        .then((res) => {
+          if (res.data.success && res.data.data) {
+            setPortfolioData({
+              events_attended: res.data.data.events_attended || [],
+              organizations: res.data.data.organizations || [],
+              certificates: res.data.data.certificates || [],
+            });
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoadingPortfolio(false));
     }
   }, [targetUserId]);
 
@@ -292,6 +318,18 @@ export const ProfilePage: React.FC = () => {
           <h2 className="mt-4 font-extrabold text-lg text-navy">{currentUser?.name}</h2>
           <p className="text-xs text-slate-400">{currentUser?.email}</p>
 
+          {currentUser?.is_verified ? (
+            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-bold">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Civitas Terverifikasi PNL</span>
+            </div>
+          ) : (
+            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 rounded-full text-xs font-bold">
+              <Shield className="w-3.5 h-3.5 text-amber-600" />
+              <span>Menunggu Verifikasi Identitas</span>
+            </div>
+          )}
+
           {!isOtherUser ? (
             <button
               onClick={() => {
@@ -466,6 +504,92 @@ export const ProfilePage: React.FC = () => {
             {!studentProf && !lecturerProf && (
               <div className="text-xs text-slate-500 py-2">
                 Akun administrator tingkat platform kampus.
+              </div>
+            )}
+          </div>
+
+          {/* Verified Campus Portfolio: Events & Ormawa */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-borderMuted shadow-xs space-y-4">
+            <h3 className="text-base font-bold text-navy flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                Portofolio Terverifikasi Kampus
+              </span>
+              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                Sistem Validasi Resmi PNL
+              </span>
+            </h3>
+
+            {loadingPortfolio ? (
+              <div className="text-center py-6 text-slate-400 text-xs">Memuat portofolio terverifikasi...</div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                {/* Verified Event Participations */}
+                <div>
+                  <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-brand-600" />
+                    Partisipasi Event Terverifikasi ({portfolioData.events_attended.length})
+                  </h4>
+                  {portfolioData.events_attended.length === 0 ? (
+                    <p className="text-slate-400 italic text-[11px] bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      Belum ada presensi tiket event resmi yang tercatat di gate scanner.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {portfolioData.events_attended.map((reg: any) => (
+                        <div
+                          key={reg.id}
+                          className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="font-bold text-slate-900 line-clamp-1">{reg.event?.title || 'Event Kampus'}</div>
+                            <div className="text-[11px] text-slate-500 mt-0.5">
+                              {reg.event?.organization?.name || 'Politeknik Negeri Lhokseumawe'}
+                            </div>
+                          </div>
+                          <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                            <span className="text-emerald-700 font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Presensi Gate Valid
+                            </span>
+                            <span className="font-mono text-slate-400">
+                              {reg.checked_in_at ? new Date(reg.checked_in_at).toLocaleDateString('id-ID') : 'Terverifikasi'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Approved Ormawa Memberships */}
+                <div className="pt-2 border-t border-slate-100">
+                  <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-purple-600" />
+                    Keanggotaan Organisasi / Ormawa ({portfolioData.organizations.length})
+                  </h4>
+                  {portfolioData.organizations.length === 0 ? (
+                    <p className="text-slate-400 italic text-[11px] bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      Belum terdaftar sebagai anggota aktif dalam organisasi mahasiswa (BEM/UKM/HIMA).
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {portfolioData.organizations.map((org: any) => (
+                        <div
+                          key={org.id}
+                          className="p-3 rounded-2xl bg-purple-50/50 border border-purple-200 flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-bold text-slate-900">{org.organization?.name || 'Organisasi Kampus'}</div>
+                            <div className="text-[11px] text-purple-700 font-semibold">{org.role_title || 'Anggota Aktif'}</div>
+                          </div>
+                          <Badge variant="blue" size="sm">
+                            {org.status || 'Aktif'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

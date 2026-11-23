@@ -196,6 +196,11 @@ export const StudentServicesPage: React.FC = () => {
                         >
                           {r.status}
                         </Badge>
+                        {r.doc_verification_code && (
+                          <div className="mt-1 font-mono text-[10px] text-brand-700 bg-brand-50 px-1.5 py-0.5 rounded-md border border-brand-200">
+                            Kode: {r.doc_verification_code}
+                          </div>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         {isCampusAdmin && (

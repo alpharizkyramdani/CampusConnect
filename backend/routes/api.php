@@ -71,8 +71,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/academic-calendar', [AcademicCalendarController::class, 'index']);
     Route::get('/achievements', [PortfolioController::class, 'listAchievements']);
 
-    // Public Certificate Verification
+    // Public Certificate & Student Document Verification
     Route::get('/certificates/verify/{hash}', [CertificateController::class, 'verify']);
+    Route::get('/student-services/verify/{code}', [StudentServiceController::class, 'verifyDocument']);
+    Route::get('/files/private', [UploadController::class, 'servePrivateFile'])->name('private.file.download');
 
     // Public Campus Social Feed
     Route::get('/feed', [SocialFeedController::class, 'index']);
@@ -97,6 +99,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/events/{id}/register', [EventController::class, 'register']);
         Route::get('/events/{id}/registrations', [EventController::class, 'registrations']);
         Route::post('/events/verify-ticket', [EventController::class, 'verifyTicket']);
+        Route::post('/events/scan-ticket', [EventController::class, 'verifyTicket']);
         Route::get('/my-tickets', [EventController::class, 'myTickets']);
 
         // Academic Calendar
@@ -141,8 +144,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/organizations/{id}/applications', [OrganizationController::class, 'listApplications']);
         Route::post('/applications/{id}/review', [OrganizationController::class, 'reviewApplication']);
 
-        // File Upload (Avatar & Logos & Post Media)
+        // File Upload (Avatar & Logos & Post Media & Private Storage)
         Route::post('/upload', [UploadController::class, 'uploadImage']);
+        Route::post('/upload/private', [UploadController::class, 'uploadPrivateFile']);
 
         // Campus Social Feed (Twitter-style Microblogging)
         Route::post('/feed', [SocialFeedController::class, 'store']);
@@ -178,6 +182,7 @@ Route::prefix('v1')->group(function () {
         // Notifications (Module 12)
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
         // Documents (Module 13)
@@ -206,6 +211,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/users', [UserManagementController::class, 'store']);
         Route::get('/users/{id}', [UserManagementController::class, 'show']);
         Route::put('/users/{id}/status', [UserManagementController::class, 'updateStatus']);
+        Route::post('/users/{id}/verify', [UserManagementController::class, 'verifyUser']);
+        Route::post('/users/{id}/transition-alumni', [UserManagementController::class, 'transitionToAlumni']);
         Route::delete('/users/{id}', [UserManagementController::class, 'destroy']);
         Route::post('/users/{id}/assign-role', [UserManagementController::class, 'assignRole']);
         Route::delete('/users/{userId}/roles/{assignmentId}', [UserManagementController::class, 'revokeRole']);
@@ -245,6 +252,7 @@ Route::prefix('v1')->group(function () {
         // 6. Digital Library
         Route::get('/library/items', [DigitalLibraryController::class, 'index']);
         Route::post('/library/items', [DigitalLibraryController::class, 'store']);
+        Route::get('/library/items/{id}/read-access', [DigitalLibraryController::class, 'readAccess']);
         Route::post('/library/items/{id}/borrow', [DigitalLibraryController::class, 'borrow']);
         Route::post('/library/loans/{id}/return', [DigitalLibraryController::class, 'returnBook']);
         Route::get('/library/my-loans', [DigitalLibraryController::class, 'myLoans']);

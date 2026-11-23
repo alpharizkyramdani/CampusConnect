@@ -316,6 +316,105 @@ class UserManagementController extends Controller
         ], 201);
     }
 
+    public function verifyUser(Request $request, $id): JsonResponse
+    {
+        $currentUser = $request->user();
+        if (!$currentUser->isSuperAdmin() && !$currentUser->isCampusAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Hanya Administrator yang berwenang memverifikasi akun civitas.'], 403);
+        }
+
+        $user = User::findOrFail($id);
+        $user->update([
+            'is_verified' => true,
+            'verification_status' => 'verified',
+            'verified_at' => now(),
+            'verified_by' => $currentUser->id,
+        ]);
+
+        ActivityLog::create([
+            'university_id' => $user->default_university_id,
+            'user_id' => $currentUser->id,
+            'action' => 'user.verify_identity',
+            'entity_type' => 'User',
+            'entity_id' => $user->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['target_user' => $user->email, 'name' => $user->name, 'verified_by' => $currentUser->name],
+        ]);
+
+        $user->notify(new \App\Notifications\SocialNotification(
+            'system',
+            'Akun Civitas Telah Terverifikasi',
+            'Selamat! Identitas akun Anda telah diverifikasi oleh Administrator Kampus PNL. Seluruh hak akses layanan kini telah aktif.',
+            ['action_url' => '/profile']
+        ));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Identitas akun {$user->name} ({$user->email}) berhasil diverifikasi.",
+            'data' => $user->fresh(['studentProfile', 'lecturerProfile', 'roleAssignments.role']),
+        ]);
+    }
+
+    public function transitionToAlumni(Request $request, $id): JsonResponse
+    {
+        $currentUser = $request->user();
+        if (!$currentUser->isSuperAdmin() && !$currentUser->isCampusAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Hanya Administrator yang berwenang mengalihkan status ke Alumni.'], 403);
+        }
+
+        $user = User::findOrFail($id);
+        $alumniRole = Role::firstOrCreate(
+            ['slug' => 'alumni'],
+            ['name' => 'Alumni PNL', 'scope_level' => 'university', 'description' => 'Lulusan civitas Politeknik Negeri Lhokseumawe']
+        );
+
+        // Update student profile status if exists
+        if ($user->studentProfile) {
+            $user->studentProfile->update([
+                'academic_status' => 'graduated',
+            ]);
+        }
+
+        // Add alumni role assignment
+        UserRoleAssignment::firstOrCreate(
+            [
+                'user_id' => $user->id,
+                'role_id' => $alumniRole->id,
+            ],
+            [
+                'university_id' => $user->default_university_id ?? 5,
+                'status' => 'active',
+                'assigned_by' => $currentUser->id,
+                'assigned_at' => now(),
+            ]
+        );
+
+        ActivityLog::create([
+            'university_id' => $user->default_university_id,
+            'user_id' => $currentUser->id,
+            'action' => 'user.transition_alumni',
+            'entity_type' => 'User',
+            'entity_id' => $user->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'details' => ['target_user' => $user->email, 'name' => $user->name],
+        ]);
+
+        $user->notify(new \App\Notifications\SocialNotification(
+            'system',
+            'Peralihan Status Alumni Berhasil',
+            'Selamat atas kelulusan Anda! Akun Anda kini memiliki status Alumni Politeknik Negeri Lhokseumawe dengan akses portal karier dan jejaring alumni.',
+            ['action_url' => '/career-center']
+        ));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Status {$user->name} berhasil dialihkan menjadi Alumni PNL.",
+            'data' => $user->fresh(['studentProfile', 'roleAssignments.role']),
+        ]);
+    }
+
     public function roles(): JsonResponse
     {
         $roles = Role::all();

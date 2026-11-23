@@ -130,6 +130,34 @@ export const UserManagementPage: React.FC = () => {
     }
   };
 
+  const handleVerifyUser = async (targetUser: any) => {
+    if (!window.confirm(`Verifikasi identitas resmi kampus untuk ${targetUser.name}? Pengguna akan diberikan akses ke fasilitas sensitif (peminjaman lab & pengajuan surat resmi).`)) return;
+
+    try {
+      const res = await api.post(`/users/${targetUser.id}/verify`);
+      if (res.data.success) {
+        setFeedbackMsg({ type: 'success', text: `Akun ${targetUser.name} berhasil diverifikasi resmi.` });
+        fetchUsers();
+      }
+    } catch (err: any) {
+      setFeedbackMsg({ type: 'error', text: err.response?.data?.message || 'Gagal memverifikasi akun.' });
+    }
+  };
+
+  const handleTransitionAlumni = async (targetUser: any) => {
+    if (!window.confirm(`Transisikan ${targetUser.name} ke status Alumni PNL? Akun mahasiswa akan dialihkan hak aksesnya ke Portal Alumni.`)) return;
+
+    try {
+      const res = await api.post(`/users/${targetUser.id}/transition-alumni`);
+      if (res.data.success) {
+        setFeedbackMsg({ type: 'success', text: `Pengguna ${targetUser.name} berhasil ditransisikan ke Alumni PNL.` });
+        fetchUsers();
+      }
+    } catch (err: any) {
+      setFeedbackMsg({ type: 'error', text: err.response?.data?.message || 'Gagal transisi ke alumni.' });
+    }
+  };
+
   const handleCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreatingUser(true);
@@ -416,13 +444,33 @@ export const UserManagementPage: React.FC = () => {
                         ))}
                       </div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <Badge variant={u.status === 'active' ? 'emerald' : u.status === 'suspended' ? 'rose' : 'amber'}>
-                        {u.status}
-                      </Badge>
+                    <td className="py-3.5 px-4 space-y-1">
+                      <div>
+                        <Badge variant={u.status === 'active' ? 'emerald' : u.status === 'suspended' ? 'rose' : 'amber'}>
+                          {u.status}
+                        </Badge>
+                      </div>
+                      {u.is_verified ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" /> Terverifikasi
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
+                          Belum Verifikasi
+                        </span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-slate-500">{new Date(u.created_at).toLocaleDateString()}</td>
                     <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                      {canManageUsers && !u.is_verified && (
+                        <button
+                          onClick={() => handleVerifyUser(u)}
+                          title="Verifikasi identitas resmi civitas"
+                          className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold rounded-lg transition-colors text-xs"
+                        >
+                          Verifikasi
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setAssignModalUser(u);
@@ -435,8 +483,17 @@ export const UserManagementPage: React.FC = () => {
                         }}
                         className="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg transition-colors text-xs"
                       >
-                        + Assign Role
+                        + Role
                       </button>
+                      {canManageUsers && (
+                        <button
+                          onClick={() => handleTransitionAlumni(u)}
+                          title="Transisikan akun mahasiswa ke Portal Alumni"
+                          className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold rounded-lg transition-colors text-xs"
+                        >
+                          Alumni
+                        </button>
+                      )}
                       <button
                         onClick={() => handleToggleStatus(u)}
                         className={`px-2.5 py-1 rounded-lg font-bold border transition-colors text-xs ${

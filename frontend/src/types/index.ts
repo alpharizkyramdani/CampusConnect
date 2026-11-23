@@ -4,8 +4,12 @@ export type RoleName =
   | 'department_admin'
   | 'ukm_admin'
   | 'ormawa_admin'
+  | 'sarpras_admin'
   | 'student'
-  | 'lecturer';
+  | 'mahasiswa'
+  | 'lecturer'
+  | 'dosen'
+  | 'alumni';
 
 export interface User {
   id: number;
@@ -14,6 +18,10 @@ export interface User {
   avatar?: string;
   phone?: string;
   status: 'active' | 'suspended' | 'pending';
+  is_verified?: boolean;
+  verification_status?: string;
+  verified_at?: string;
+  verified_by?: number;
   default_university_id?: number;
   student_profile?: StudentProfile;
   lecturer_profile?: LecturerProfile;
@@ -252,6 +260,9 @@ export interface FacilityBorrowing {
   actual_return_date?: string;
   status: 'pending' | 'approved' | 'rejected' | 'ready_for_pickup' | 'borrowed' | 'returned' | 'overdue' | 'cancelled';
   admin_notes?: string;
+  pickup_notes?: string;
+  pickup_photo_url?: string;
+  return_photo_url?: string;
   return_condition?: 'excellent' | 'good' | 'fair' | 'damaged';
   facility?: Facility;
   department?: Department;
@@ -272,6 +283,8 @@ export interface MaintenanceReport {
   priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'submitted' | 'under_review' | 'assigned' | 'in_progress' | 'resolved' | 'rejected';
   assigned_to?: number;
+  technician_notes?: string;
+  completion_photo_url?: string;
   resolution_notes?: string;
   resolved_at?: string;
   created_at: string;
@@ -389,6 +402,9 @@ export interface ServiceRequest {
   status: 'submitted' | 'processing' | 'completed' | 'rejected';
   admin_notes?: string;
   result_document_url?: string;
+  doc_verification_code?: string;
+  verification_hash?: string;
+  is_verified_document?: boolean;
   completed_at?: string;
   created_at: string;
   serviceType?: ServiceType;
@@ -500,6 +516,7 @@ export interface CampusPost {
   id: number;
   user_id: number;
   university_id?: number;
+  category?: string;
   content: string;
   media_url?: string;
   repost_of_id?: number;

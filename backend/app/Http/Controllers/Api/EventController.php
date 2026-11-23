@@ -219,14 +219,18 @@ class EventController extends Controller
         if (!$registration) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid ticket code or QR token. No matching record found.',
+                'status' => 'INVALID_TICKET',
+                'message' => 'Kode tiket atau QR token tidak valid. Tidak ada data pendaftaran yang cocok.',
             ], 404);
         }
 
-        if ($registration->status === 'attended') {
+        if ($registration->status === 'attended' || $registration->checked_in_at !== null) {
+            $formattedTime = $registration->checked_in_at?->format('d M Y H:i') ?? 'sebelumnya';
             return response()->json([
                 'success' => false,
-                'message' => 'DUPLICATE CHECK-IN PREVENTED: This participant has already checked in on ' . $registration->checked_in_at?->format('d M Y H:i'),
+                'status' => 'ALREADY_USED',
+                'checked_in_at' => $registration->checked_in_at,
+                'message' => "DUPLIKAT SCAN DICEGAH: Tiket ini sudah pernah digunakan untuk check-in pada {$formattedTime}.",
                 'data' => [
                     'registration' => $registration,
                     'already_attended' => true,
@@ -237,7 +241,8 @@ class EventController extends Controller
         if ($registration->status === 'cancelled') {
             return response()->json([
                 'success' => false,
-                'message' => 'This ticket registration was previously cancelled.',
+                'status' => 'INVALID_TICKET',
+                'message' => 'Pendaftaran tiket ini telah dibatalkan sebelumnya.',
             ], 400);
         }
 
@@ -255,13 +260,25 @@ class EventController extends Controller
                 'user_id' => $registration->user_id,
                 'scanned_by' => $request->user()->id,
                 'scanned_at' => now(),
-                'notes' => 'Checked in via CampusConnect QR Scanner',
+                'notes' => 'Checked in via PNLConnect Official Gate Scanner',
             ]);
+
+            \App\Services\AuditLogService::log(
+                'event.ticket_checkin',
+                'EventRegistration',
+                $registration->id,
+                [
+                    'event_title' => $registration->event?->title,
+                    'participant' => $registration->user?->name,
+                    'ticket_code' => $registration->ticket_code,
+                ]
+            );
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'Check-in confirmed successfully! Welcome ' . $registration->user->name,
+            'status' => 'VALID_CHECKIN',
+            'message' => 'Check-in berhasil diverifikasi! Selamat datang ' . $registration->user?->name,
             'data' => [
                 'registration' => $registration->fresh(['user', 'event']),
                 'already_attended' => false,

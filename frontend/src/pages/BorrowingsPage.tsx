@@ -25,9 +25,16 @@ export const BorrowingsPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
+  // Pickup Handover Modal (Admin)
+  const [pickupModal, setPickupModal] = useState<FacilityBorrowing | null>(null);
+  const [pickupPhotoUrl, setPickupPhotoUrl] = useState('');
+  const [pickupNotes, setPickupNotes] = useState('');
+  const [pickupLoading, setPickupLoading] = useState(false);
+
   // Return modal (Admin)
   const [returnModal, setReturnModal] = useState<FacilityBorrowing | null>(null);
   const [returnCondition, setReturnCondition] = useState<'excellent' | 'good' | 'fair' | 'damaged'>('good');
+  const [returnPhotoUrl, setReturnPhotoUrl] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -42,7 +49,7 @@ export const BorrowingsPage: React.FC = () => {
   const [borrowSubmitting, setBorrowSubmitting] = useState(false);
   const [borrowSuccess, setBorrowSuccess] = useState(false);
 
-  const isDeptAdmin = hasAnyRole(['super_admin', 'campus_admin', 'department_admin']);
+  const isDeptAdmin = hasAnyRole(['super_admin', 'campus_admin', 'department_admin', 'sarpras_admin']);
 
   const fetchBorrowings = async () => {
     setLoading(true);
@@ -143,15 +150,25 @@ export const BorrowingsPage: React.FC = () => {
     }
   };
 
-  const handleRecordPickup = async (id: number) => {
-    if (!window.confirm('Catat bahwa pemohon telah mengambil peralatan secara fisik di laboratorium?')) return;
+  const handleRecordPickupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pickupModal) return;
+    setPickupLoading(true);
     try {
-      const res = await api.post(`/borrowings/${id}/pickup`);
+      const res = await api.post(`/borrowings/${pickupModal.id}/pickup`, {
+        pickup_photo_url: pickupPhotoUrl.trim() || undefined,
+        pickup_notes: pickupNotes.trim() || undefined,
+      });
       if (res.data.success) {
+        setPickupModal(null);
+        setPickupPhotoUrl('');
+        setPickupNotes('');
         fetchBorrowings();
       }
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal mencatat serah terima barang');
+    } finally {
+      setPickupLoading(false);
     }
   };
 
@@ -163,11 +180,14 @@ export const BorrowingsPage: React.FC = () => {
     try {
       const res = await api.post(`/borrowings/${returnModal.id}/return`, {
         return_condition: returnCondition,
+        return_photo_url: returnPhotoUrl.trim() || undefined,
         admin_notes: adminNotes,
       });
 
       if (res.data.success) {
         setReturnModal(null);
+        setReturnCondition('good');
+        setReturnPhotoUrl('');
         setAdminNotes('');
         fetchBorrowings();
       }
@@ -332,7 +352,11 @@ export const BorrowingsPage: React.FC = () => {
 
                       {isDeptAdmin && b.status === 'approved' && (
                         <button
-                          onClick={() => handleRecordPickup(b.id)}
+                          onClick={() => {
+                            setPickupModal(b);
+                            setPickupPhotoUrl(b.pickup_photo_url || '');
+                            setPickupNotes(b.pickup_notes || '');
+                          }}
                           className="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-bold text-[11px] transition-colors"
                         >
                           Serahkan Barang
@@ -344,7 +368,8 @@ export const BorrowingsPage: React.FC = () => {
                           onClick={() => {
                             setReturnModal(b);
                             setReturnCondition('good');
-                            setAdminNotes('');
+                            setReturnPhotoUrl(b.return_photo_url || '');
+                            setAdminNotes(b.admin_notes || '');
                           }}
                           className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 inline-flex transition-colors"
                         >
@@ -501,16 +526,73 @@ export const BorrowingsPage: React.FC = () => {
         )}
       </Modal>
 
+      {/* Handover Pickup Modal (Admin) */}
+      <Modal
+        isOpen={!!pickupModal}
+        onClose={() => setPickupModal(null)}
+        title={`Serah Terima Fisik Alat: ${pickupModal?.facility?.name}`}
+      >
+        <form onSubmit={handleRecordPickupSubmit} className="space-y-4 text-xs">
+          <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 leading-relaxed">
+            Konfirmasi bahwa pemohon (<strong>{pickupModal?.user?.name}</strong>) telah hadir di laboratorium dan menerima <strong>{pickupModal?.quantity} unit</strong> peralatan dalam kondisi siap pakai.
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase tracking-wider">
+              Foto Bukti Kondisi Fisik Saat Pengambilan (URL / Path)
+            </label>
+            <input
+              type="text"
+              value={pickupPhotoUrl}
+              onChange={(e) => setPickupPhotoUrl(e.target.value)}
+              placeholder="Contoh: https://... atau uploads/facilities/pickup_01.jpg"
+              className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Dokumentasi foto awal serah terima sebelum barang dibawa keluar lab.
+            </p>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase tracking-wider">
+              Catatan Serah Terima / Kondisi Awal
+            </label>
+            <textarea
+              rows={3}
+              value={pickupNotes}
+              onChange={(e) => setPickupNotes(e.target.value)}
+              placeholder="Catatan serial number, kondisi fisik awal, charger/kabel lengkap..."
+              className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-brand-500/20"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={pickupLoading}
+            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer"
+          >
+            {pickupLoading ? 'Menyimpan...' : 'Konfirmasi Serah Terima Barang'}
+          </button>
+        </form>
+      </Modal>
+
       {/* Record Return Modal (Admin) */}
       <Modal
         isOpen={!!returnModal}
         onClose={() => setReturnModal(null)}
-        title={`Pencatatan Pengembalian: ${returnModal?.facility?.name}`}
+        title={`Audit & Pengembalian: ${returnModal?.facility?.name}`}
       >
         <form onSubmit={handleRecordReturn} className="space-y-4 text-xs">
-          <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 leading-relaxed">
-            Mencatat pengembalian ini akan mengembalikan stok ketersediaan barang sebanyak <strong>{returnModal?.quantity}</strong> unit ke inventaris lab.
-          </div>
+          {returnCondition === 'damaged' ? (
+            <div className="p-3 bg-rose-50 border-2 border-rose-300 rounded-xl text-rose-900 leading-relaxed font-medium">
+              <strong className="text-rose-700 block mb-1">Perhatian Aturan Stok Kritis:</strong>
+              Karena kondisi dipilih <strong>Rusak (Damaged)</strong>, stok unit <strong>TIDAK AKAN</strong> ditambahkan kembali ke inventaris siap pinjam. Sistem secara otomatis menandai unit dalam perbaikan dan menerbitkan tiket servis ke Unit Sarana & Prasarana (Sarpras).
+            </div>
+          ) : (
+            <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 leading-relaxed">
+              Mencatat pengembalian ini akan mengembalikan stok ketersediaan barang sebanyak <strong>{returnModal?.quantity} unit</strong> ke inventaris laboratorium.
+            </div>
+          )}
 
           <div>
             <label className="font-bold text-slate-700 block uppercase tracking-wider">
@@ -524,19 +606,35 @@ export const BorrowingsPage: React.FC = () => {
               <option value="excellent">Sangat Baik (Excellent) — mulus seperti semula</option>
               <option value="good">Baik (Good) — pemakaian wajar</option>
               <option value="fair">Cukup (Fair) — ada lecet pemakaian minor</option>
-              <option value="damaged">Rusak (Damaged) — perlu perbaikan/servis</option>
+              <option value="damaged">Rusak (Damaged) — pecah/mati total/perlu servis Sarpras</option>
             </select>
           </div>
 
           <div>
             <label className="font-bold text-slate-700 block uppercase tracking-wider">
-              Catatan Pemeriksaan Admin
+              Foto Bukti Kondisi Fisik Pengembalian (URL / Path)
+            </label>
+            <input
+              type="text"
+              value={returnPhotoUrl}
+              onChange={(e) => setReturnPhotoUrl(e.target.value)}
+              placeholder="Contoh: https://... atau uploads/facilities/return_01.jpg"
+              className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Dokumentasi foto kondisi fisik saat dikembalikan oleh peminjam.
+            </p>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block uppercase tracking-wider">
+              Catatan Pemeriksaan Admin Lab
             </label>
             <textarea
               rows={3}
               value={adminNotes}
               onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder="Kelengkapan kabel, aksesori, charger, dan tas pelindung..."
+              placeholder="Pemeriksaan fungsi, kelengkapan kabel, aksesori, charger, dan tas pelindung..."
               className="mt-1.5 w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs focus:bg-white"
             />
           </div>
@@ -544,9 +642,9 @@ export const BorrowingsPage: React.FC = () => {
           <button
             type="submit"
             disabled={actionLoading}
-            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all disabled:opacity-50"
+            className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer"
           >
-            {actionLoading ? 'Menyimpan...' : 'Konfirmasi Pengembalian Barang'}
+            {actionLoading ? 'Menyimpan...' : 'Konfirmasi Audit Pengembalian Barang'}
           </button>
         </form>
       </Modal>

@@ -32,6 +32,8 @@ export const CampusFeedPage: React.FC = () => {
   const { user, activeAssignment } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'for_you' | 'following' | 'trending' | 'saved'>('for_you');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
+  const [postCategory, setPostCategory] = useState<string>('Diskusi');
   const [posts, setPosts] = useState<CampusPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,6 +82,7 @@ export const CampusFeedPage: React.FC = () => {
           params: {
             feed_type: activeTab,
             university_id: activeAssignment?.university_id,
+            category: selectedCategory !== 'Semua' ? selectedCategory : undefined,
           },
         });
         if (res.data.success) {
@@ -117,7 +120,7 @@ export const CampusFeedPage: React.FC = () => {
 
   useEffect(() => {
     fetchFeed();
-  }, [activeTab, activeAssignment]);
+  }, [activeTab, activeAssignment, selectedCategory]);
 
   useEffect(() => {
     fetchSuggestions();
@@ -151,6 +154,7 @@ export const CampusFeedPage: React.FC = () => {
       const res = await api.post('/feed', {
         content: content.trim(),
         media_url: mediaUrl || null,
+        category: postCategory,
         university_id: activeAssignment?.university_id,
       });
 
@@ -477,6 +481,24 @@ export const CampusFeedPage: React.FC = () => {
                 <span>Tersimpan</span>
               </button>
             </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-3">
+              <span className="text-[11px] font-bold text-slate-400 mr-1 uppercase tracking-wider">Kategori:</span>
+              {['Semua', 'Pengumuman Resmi', 'Event & Lomba', 'Prestasi', 'Diskusi'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-navy text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Tweet / Post Composer */}
@@ -539,6 +561,17 @@ export const CampusFeedPage: React.FC = () => {
                           onChange={(e) => e.target.files?.[0] && handleUploadMedia(e.target.files[0])}
                         />
                       </label>
+
+                      <select
+                        value={postCategory}
+                        onChange={(e) => setPostCategory(e.target.value)}
+                        className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-2.5 rounded-xl border border-slate-200/80 focus:bg-white focus:outline-hidden cursor-pointer"
+                      >
+                        <option value="Diskusi">💬 Diskusi</option>
+                        <option value="Pengumuman Resmi">📢 Pengumuman Resmi</option>
+                        <option value="Event & Lomba">🏆 Event & Lomba</option>
+                        <option value="Prestasi">⭐ Prestasi</option>
+                      </select>
 
                       {uploadingImage && (
                         <span className="text-[11px] text-brand-600 font-semibold animate-pulse">
@@ -632,8 +665,15 @@ export const CampusFeedPage: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-400">
-                          {post.author.student_profile?.department?.name || 'Civitas Kampus'}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] text-slate-400">
+                            {post.author.student_profile?.department?.name || 'Civitas Kampus'}
+                          </span>
+                          {post.category && (
+                            <span className="px-2 py-0.2 rounded-md text-[10px] font-bold bg-brand-50 text-brand-700 border border-brand-100">
+                              {post.category}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </Link>

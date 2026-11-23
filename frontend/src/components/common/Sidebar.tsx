@@ -135,6 +135,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           },
         ];
 
+      case 'sarpras_admin':
+        return [
+          {
+            title: 'Unit Sarana & Prasarana',
+            items: [
+              { label: 'Dashboard Sarpras', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Equipment Inventory', icon: PackageCheck, path: '/facilities' },
+              { label: 'Audit Peminjaman', icon: History, path: '/borrowings' },
+              { label: 'Perbaikan & Maintenance', icon: Wrench, path: '/maintenance' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
+              { label: 'Pengumuman Kampus', icon: Megaphone, path: '/announcements' },
+              { label: 'Pengaturan Privasi', icon: Lock, path: '/settings/privacy' },
+            ],
+          },
+        ];
+
+      case 'alumni':
+        return [
+          {
+            title: 'Portal Alumni PNL',
+            items: [
+              { label: 'Dashboard Alumni', icon: LayoutDashboard, path: '/dashboard' },
+              { label: 'Karier & Lowongan Kerja', icon: Briefcase, path: '/career-center' },
+              { label: 'Perpustakaan Digital', icon: BookOpen, path: '/digital-library' },
+              { label: 'Campus Feed (Timeline)', icon: Sparkles, path: '/feed' },
+              { label: 'Pesan Kampus (DM)', icon: MessageSquare, path: '/messages' },
+              { label: 'Campus Events', icon: CalendarCheck2, path: '/events' },
+              { label: 'Smart Campus Map', icon: Compass, path: '/campus-map' },
+              { label: 'Discussion Space', icon: MessagesSquare, path: '/discussions' },
+              { label: 'Pengaturan Privasi', icon: Lock, path: '/settings/privacy' },
+            ],
+          },
+        ];
+
+      case 'dosen':
       case 'lecturer':
         return [
           {
@@ -156,6 +191,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           },
         ];
 
+      case 'mahasiswa':
       case 'student':
       default:
         return [

@@ -19,6 +19,10 @@ class User extends Authenticatable
         'avatar',
         'phone',
         'status',
+        'is_verified',
+        'verification_status',
+        'verified_at',
+        'verified_by',
         'default_university_id',
     ];
 
@@ -31,6 +35,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'verified_at' => 'datetime',
+            'is_verified' => 'boolean',
             'password' => 'hashed',
         ];
     }
@@ -135,10 +141,27 @@ class User extends Authenticatable
         return $this->hasMany(LibraryLoan::class);
     }
 
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
     public function hasRole(string $roleSlug, ?int $universityId = null): bool
     {
+        $aliases = match ($roleSlug) {
+            'mahasiswa' => ['mahasiswa', 'student'],
+            'student' => ['student', 'mahasiswa'],
+            'dosen' => ['dosen', 'lecturer'],
+            'lecturer' => ['lecturer', 'dosen'],
+            'ormawa_admin' => ['ormawa_admin', 'ukm_admin'],
+            'ukm_admin' => ['ukm_admin', 'ormawa_admin'],
+            'sarpras_admin' => ['sarpras_admin'],
+            'alumni' => ['alumni'],
+            default => [$roleSlug],
+        };
+
         return $this->roleAssignments()
-            ->whereHas('role', fn($q) => $q->where('slug', $roleSlug))
+            ->whereHas('role', fn($q) => $q->whereIn('slug', $aliases))
             ->when($universityId, fn($q) => $q->where(fn($sub) => $sub->where('university_id', $universityId)->orWhereNull('university_id')))
             ->where('status', 'active')
             ->exists();
@@ -147,5 +170,45 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('super_admin');
+    }
+
+    public function isCampusAdmin(): bool
+    {
+        return $this->hasRole('campus_admin');
+    }
+
+    public function isDeptAdmin(): bool
+    {
+        return $this->hasRole('department_admin');
+    }
+
+    public function isSarprasAdmin(): bool
+    {
+        return $this->hasRole('sarpras_admin');
+    }
+
+    public function isOrmawaAdmin(): bool
+    {
+        return $this->hasRole('ormawa_admin');
+    }
+
+    public function isLecturer(): bool
+    {
+        return $this->hasRole('lecturer');
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->hasRole('student');
+    }
+
+    public function isAlumni(): bool
+    {
+        return $this->hasRole('alumni');
+    }
+
+    public function isVerified(): bool
+    {
+        return (bool) $this->is_verified;
     }
 }

@@ -64,8 +64,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && activeRole && !allowedRoles.includes(activeRole as RoleName)) {
-    return <Navigate to="/dashboard" replace />;
+  const normalizedRole = (
+    activeRole === 'mahasiswa' ? 'student' :
+    activeRole === 'dosen' ? 'lecturer' :
+    activeRole === 'ormawa_admin' ? 'ukm_admin' :
+    activeRole
+  ) as RoleName;
+
+  if (allowedRoles && activeRole) {
+    const hasPermission = allowedRoles.includes(activeRole as RoleName) || allowedRoles.includes(normalizedRole);
+    if (!hasPermission) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <Outlet />;

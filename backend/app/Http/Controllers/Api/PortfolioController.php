@@ -15,7 +15,10 @@ class PortfolioController extends Controller
 {
     public function getPortfolio(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $targetUserId = $request->query('user_id');
+        $user = ($targetUserId && $targetUserId != $request->user()->id)
+            ? (\App\Models\User::find($targetUserId) ?? $request->user())
+            : $request->user();
 
         // 1. Events attended
         $eventsAttended = EventRegistration::where('user_id', $user->id)

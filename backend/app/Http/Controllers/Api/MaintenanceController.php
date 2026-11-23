@@ -95,6 +95,13 @@ class MaintenanceController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
+        $currentUser = $request->user();
+        $canManage = $currentUser->isSuperAdmin() || $currentUser->isCampusAdmin() || $currentUser->isSarprasAdmin() || $currentUser->isDeptAdmin();
+
+        if (!$canManage) {
+            return response()->json(['success' => false, 'message' => 'Hanya Tim Sarpras atau Administrator yang berwenang memperbarui status perbaikan fasilitas.'], 403);
+        }
+
         $report = MaintenanceReport::findOrFail($id);
 
         $request->validate([
@@ -102,31 +109,62 @@ class MaintenanceController extends Controller
             'assigned_to' => 'nullable|exists:users,id',
             'notes' => 'nullable|string',
             'resolution_notes' => 'nullable|string',
+            'technician_notes' => 'nullable|string',
+            'completion_photo_url' => 'nullable|string',
         ]);
 
         $report->status = $request->status;
 
-        if ($request->assigned_to) {
+        if ($request->filled('assigned_to')) {
             $report->assigned_to = $request->assigned_to;
+        }
+
+        if ($request->filled('technician_notes')) {
+            $report->technician_notes = $request->technician_notes;
+        }
+
+        if ($request->filled('completion_photo_url')) {
+            $report->completion_photo_url = $request->completion_photo_url;
         }
 
         if ($request->status === 'resolved') {
             $report->resolved_at = now();
-            $report->resolution_notes = $request->resolution_notes ?? $request->notes;
+            $report->resolution_notes = $request->resolution_notes ?? $request->technician_notes ?? $request->notes;
         }
 
         $report->save();
 
         MaintenanceUpdate::create([
             'maintenance_report_id' => $report->id,
-            'user_id' => $request->user()->id,
+            'user_id' => $currentUser->id,
             'status' => $request->status,
-            'notes' => $request->notes ?? "Status updated to {$request->status}",
+            'notes' => $request->technician_notes ?? $request->notes ?? "Status perbaikan diubah ke {$request->status}",
         ]);
+
+        \App\Services\AuditLogService::log(
+            'maintenance.update_status',
+            'MaintenanceReport',
+            $report->id,
+            [
+                'title' => $report->title,
+                'status' => $report->status,
+                'technician_notes' => $report->technician_notes,
+            ]
+        );
+
+        // Notify reporting user
+        if ($report->user) {
+            $report->user->notify(new \App\Notifications\SocialNotification(
+                'system',
+                'Status Perbaikan Fasilitas Diperbarui',
+                "Laporan fasilitas '{$report->title}' kini berstatus: " . strtoupper($report->status) . ".",
+                ['action_url' => '/maintenance']
+            ));
+        }
 
         return response()->json([
             'success' => true,
-            'message' => "Report status updated to {$request->status}",
+            'message' => "Status laporan fasilitas berhasil diperbarui menjadi {$request->status}",
             'data' => $report->fresh(['user', 'assignedTo', 'updates.user']),
         ]);
     }

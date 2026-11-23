@@ -14,6 +14,7 @@ class CampusPost extends Model
     protected $fillable = [
         'user_id',
         'university_id',
+        'category',
         'content',
         'media_url',
         'repost_of_id',

@@ -23,6 +23,7 @@ import {
   ExternalLink,
   FileText,
   Filter,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface CareerOpportunity {
@@ -584,6 +585,16 @@ export const CareerCenterPage: React.FC = () => {
         <form onSubmit={handleSubmitApplication} className="space-y-4 text-xs">
           <div className="p-3 bg-brand-50 border border-brand-200 rounded-2xl text-brand-900">
             Melamar posisi <strong>{selectedOpp?.title}</strong> di <strong>{selectedOpp?.company_name}</strong>.
+          </div>
+
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 flex items-start gap-2.5">
+            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="text-xs">
+              <span className="font-bold block">Portofolio Kampus Terverifikasi PNL Terlampir Otomatis</span>
+              <p className="text-[11px] text-emerald-700 mt-0.5">
+                Riwayat presensi tiket event kampus ({user?.name}) dan keanggotaan Ormawa aktif Anda otomatis disertakan sebagai bukti kredensial digital resmi.
+              </p>
+            </div>
           </div>
 
           <ImageUploadField
